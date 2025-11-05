@@ -16,7 +16,7 @@
 **
 **  Target      : STMicroelectronics STM32
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed "as is," without any warranty
 **                of any kind.
 **
 *****************************************************************************
@@ -106,14 +106,14 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .ARM.extab (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .ARM.extab   :
   {
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
   } >FLASH
 
-  .ARM (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .ARM :
   {
     . = ALIGN(4);
     __exidx_start = .;
@@ -122,7 +122,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .preinit_array (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .preinit_array     :
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -131,7 +131,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .init_array (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .init_array :
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__init_array_start = .);
@@ -141,7 +141,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .fini_array (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .fini_array :
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__fini_array_start = .);
@@ -207,5 +207,3 @@ SECTIONS
   }
 
 }
-
-

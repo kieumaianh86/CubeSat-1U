@@ -1,0 +1,2291 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"mpu6050.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.mpu6050_update_sensitivity,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	mpu6050_update_sensitivity:
+  25              	.LVL0:
+  26              	.LFB158:
+  27              		.file 1 "Core/Lib/mpu6050.c"
+   1:Core/Lib/mpu6050.c **** #include "mpu6050.h"
+   2:Core/Lib/mpu6050.c **** 
+   3:Core/Lib/mpu6050.c **** //private definitions
+   4:Core/Lib/mpu6050.c **** //địa chỉ thanh ghi
+   5:Core/Lib/mpu6050.c **** #define MPU6050_REG_WHO_AM_I         0x75
+   6:Core/Lib/mpu6050.c **** #define MPU6050_REG_PWR_MGMT_1       0x6B
+   7:Core/Lib/mpu6050.c **** #define MPU6050_REG_GYRO_CONFIG      0x1B
+   8:Core/Lib/mpu6050.c **** #define MPU6050_REG_ACCEL_CONFIG     0x1C
+   9:Core/Lib/mpu6050.c **** #define MPU6050_REG_ACCEL_XOUT_H     0x3B
+  10:Core/Lib/mpu6050.c **** #define MPU6050_REG_GYRO_XOUT_H      0x43
+  11:Core/Lib/mpu6050.c **** #define MPU6050_REG_TEMP_OUT_H       0x41
+  12:Core/Lib/mpu6050.c **** 
+  13:Core/Lib/mpu6050.c **** //hằng số
+  14:Core/Lib/mpu6050.c **** #define MPU6050_WHO_AM_I_VALUE       0x68
+  15:Core/Lib/mpu6050.c **** #define MPU6050_DEFAULT_TIMEOUT_MS   100
+  16:Core/Lib/mpu6050.c **** #define MPU6050_WAKEUP_DELAY_MS      10      // Thời gian đợi sau wake-up
+  17:Core/Lib/mpu6050.c **** 
+  18:Core/Lib/mpu6050.c **** //bit config
+  19:Core/Lib/mpu6050.c **** #define ACCEL_CONFIG_BIT_POS         3
+  20:Core/Lib/mpu6050.c **** #define GYRO_CONFIG_BIT_POS          3
+  21:Core/Lib/mpu6050.c **** #define PWR_MGMT_1_RESET_BIT         7
+  22:Core/Lib/mpu6050.c **** #define PWR_MGMT_1_SLEEP_BIT         6
+  23:Core/Lib/mpu6050.c **** 
+  24:Core/Lib/mpu6050.c **** //private variable
+  25:Core/Lib/mpu6050.c **** static uint32_t s_default_timeout = MPU6050_DEFAULT_TIMEOUT_MS;
+  26:Core/Lib/mpu6050.c **** 
+  27:Core/Lib/mpu6050.c **** //private function
+  28:Core/Lib/mpu6050.c **** static mpu6050_status_t mpu6050_read_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, ui
+  29:Core/Lib/mpu6050.c **** static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, u
+  30:Core/Lib/mpu6050.c **** static mpu6050_status_t mpu6050_read_registers(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, u
+  31:Core/Lib/mpu6050.c **** static void mpu6050_update_sensitivity(mpu6050_handle_t *mpu, mpu6050_accel_scale_t accel_scale, mp
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 2
+
+
+  32:Core/Lib/mpu6050.c **** 
+  33:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_init(mpu6050_handle_t *mpu, const mpu6050_config_t *config)
+  34:Core/Lib/mpu6050.c **** {
+  35:Core/Lib/mpu6050.c ****   //
+  36:Core/Lib/mpu6050.c ****   if (mpu == NULL || config == NULL || config->hi2c == NULL)
+  37:Core/Lib/mpu6050.c ****   {
+  38:Core/Lib/mpu6050.c ****     return MPU6050_INVALID_PARAM;
+  39:Core/Lib/mpu6050.c ****   }
+  40:Core/Lib/mpu6050.c **** 
+  41:Core/Lib/mpu6050.c ****   //khoi tao struct
+  42:Core/Lib/mpu6050.c ****   mpu->i2c = config->hi2c;
+  43:Core/Lib/mpu6050.c ****   mpu->device_addr = config->device_addr;
+  44:Core/Lib/mpu6050.c ****   mpu->init_state = MPU6050_INIT_STATE_UNINITIALIZED;
+  45:Core/Lib/mpu6050.c ****   mpu->wakeup_timestamp = 0;
+  46:Core/Lib/mpu6050.c **** 
+  47:Core/Lib/mpu6050.c ****   uint32_t timeout = (config->i2c_timeout_ms > 0) ? config->i2c_timeout_ms : s_default_timeout;
+  48:Core/Lib/mpu6050.c **** 
+  49:Core/Lib/mpu6050.c ****   //1. kiem tra ket noi i2c
+  50:Core/Lib/mpu6050.c ****   if (HAL_I2C_IsDeviceReady(mpu->i2c, mpu->device_addr << 1, 3, timeout) != HAL_OK)
+  51:Core/Lib/mpu6050.c ****   {
+  52:Core/Lib/mpu6050.c ****     return MPU6050_DEVICE_NOT_FOUND;
+  53:Core/Lib/mpu6050.c ****   }
+  54:Core/Lib/mpu6050.c **** 
+  55:Core/Lib/mpu6050.c ****   //2. kiem tra who am i
+  56:Core/Lib/mpu6050.c ****   uint8_t who_am_i;
+  57:Core/Lib/mpu6050.c ****   if (mpu6050_read_register(mpu, MPU6050_REG_WHO_AM_I, &who_am_i, timeout) != MPU6050_OK)
+  58:Core/Lib/mpu6050.c ****   {
+  59:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+  60:Core/Lib/mpu6050.c ****   }
+  61:Core/Lib/mpu6050.c ****   
+  62:Core/Lib/mpu6050.c ****   if (who_am_i != MPU6050_WHO_AM_I_VALUE)
+  63:Core/Lib/mpu6050.c ****   {
+  64:Core/Lib/mpu6050.c ****     return MPU6050_INVALID_WHO_AM_I;
+  65:Core/Lib/mpu6050.c ****   }
+  66:Core/Lib/mpu6050.c **** 
+  67:Core/Lib/mpu6050.c ****   //3. wakeup mpu (clear sleep bit)
+  68:Core/Lib/mpu6050.c ****   if (mpu6050_write_register(mpu, MPU6050_REG_PWR_MGMT_1, 0x00, timeout) != MPU6050_OK)
+  69:Core/Lib/mpu6050.c ****   {
+  70:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+  71:Core/Lib/mpu6050.c ****   }
+  72:Core/Lib/mpu6050.c **** 
+  73:Core/Lib/mpu6050.c ****   //save config
+  74:Core/Lib/mpu6050.c ****   mpu->init_state = MPU6050_INIT_STATE_WAKING_UP;
+  75:Core/Lib/mpu6050.c ****   mpu->wakeup_timestamp = HAL_GetTick();
+  76:Core/Lib/mpu6050.c **** 
+  77:Core/Lib/mpu6050.c ****   //save scale
+  78:Core/Lib/mpu6050.c ****   mpu6050_update_sensitivity(mpu, config->accel_scale, config->gyro_scale);
+  79:Core/Lib/mpu6050.c ****   mpu->pending_config.accel_scale = config->accel_scale;
+  80:Core/Lib/mpu6050.c ****   mpu->pending_config.gyro_scale = config->gyro_scale;
+  81:Core/Lib/mpu6050.c ****   mpu->pending_config.timeout = timeout;
+  82:Core/Lib/mpu6050.c ****   
+  83:Core/Lib/mpu6050.c ****   return MPU6050_NOT_READY;
+  84:Core/Lib/mpu6050.c **** 
+  85:Core/Lib/mpu6050.c **** }
+  86:Core/Lib/mpu6050.c **** 
+  87:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_init_process(mpu6050_handle_t *mpu)
+  88:Core/Lib/mpu6050.c **** {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 3
+
+
+  89:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+  90:Core/Lib/mpu6050.c ****   {
+  91:Core/Lib/mpu6050.c ****     return MPU6050_INVALID_PARAM;
+  92:Core/Lib/mpu6050.c ****   }
+  93:Core/Lib/mpu6050.c **** 
+  94:Core/Lib/mpu6050.c ****   if (mpu->init_state == MPU6050_INIT_STATE_UNINITIALIZED)
+  95:Core/Lib/mpu6050.c ****   {
+  96:Core/Lib/mpu6050.c ****     return MPU6050_ERROR;
+  97:Core/Lib/mpu6050.c ****   }
+  98:Core/Lib/mpu6050.c **** 
+  99:Core/Lib/mpu6050.c ****   if (mpu->init_state = MPU6050_INIT_STATE_WAKING_UP)
+ 100:Core/Lib/mpu6050.c ****   {
+ 101:Core/Lib/mpu6050.c ****     uint32_t ms = HAL_GetTick() - mpu->wakeup_timestamp;
+ 102:Core/Lib/mpu6050.c ****     if (ms < MPU6050_WAKEUP_DELAY_MS)
+ 103:Core/Lib/mpu6050.c ****     {
+ 104:Core/Lib/mpu6050.c ****       return MPU6050_NOT_READY;
+ 105:Core/Lib/mpu6050.c ****     }
+ 106:Core/Lib/mpu6050.c **** 
+ 107:Core/Lib/mpu6050.c ****     mpu6050_accel_scale_t accel_scale = mpu->pending_config.accel_scale;
+ 108:Core/Lib/mpu6050.c ****     mpu6050_gyro_scale_t gyro_scale = mpu->pending_config.gyro_scale;
+ 109:Core/Lib/mpu6050.c ****     uint32_t timeout = mpu->pending_config.timeout;
+ 110:Core/Lib/mpu6050.c **** 
+ 111:Core/Lib/mpu6050.c ****     //config gyro
+ 112:Core/Lib/mpu6050.c ****     if (mpu6050_write_register(mpu, MPU6050_REG_GYRO_CONFIG, (uint8_t) gyro_scale << GYRO_CONFIG_BI
+ 113:Core/Lib/mpu6050.c ****     {
+ 114:Core/Lib/mpu6050.c ****       return MPU6050_I2C_ERROR;
+ 115:Core/Lib/mpu6050.c ****     }
+ 116:Core/Lib/mpu6050.c ****     //config accel
+ 117:Core/Lib/mpu6050.c ****     if (mpu6050_write_register(mpu, MPU6050_REG_ACCEL_CONFIG, (uint8_t) accel_scale << ACCEL_CONFIG
+ 118:Core/Lib/mpu6050.c ****     {
+ 119:Core/Lib/mpu6050.c ****       return MPU6050_I2C_ERROR;
+ 120:Core/Lib/mpu6050.c ****     }
+ 121:Core/Lib/mpu6050.c ****     
+ 122:Core/Lib/mpu6050.c ****     mpu->init_state = MPU6050_INIT_STATE_READY;
+ 123:Core/Lib/mpu6050.c ****     return MPU6050_OK;
+ 124:Core/Lib/mpu6050.c **** 
+ 125:Core/Lib/mpu6050.c ****   }
+ 126:Core/Lib/mpu6050.c ****   
+ 127:Core/Lib/mpu6050.c ****   return MPU6050_ERROR;
+ 128:Core/Lib/mpu6050.c ****   
+ 129:Core/Lib/mpu6050.c ****   
+ 130:Core/Lib/mpu6050.c **** }
+ 131:Core/Lib/mpu6050.c **** 
+ 132:Core/Lib/mpu6050.c **** uint8_t mpu6050_is_ready(const mpu6050_handle_t *mpu)
+ 133:Core/Lib/mpu6050.c **** {
+ 134:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 135:Core/Lib/mpu6050.c ****   {
+ 136:Core/Lib/mpu6050.c ****     return 0;
+ 137:Core/Lib/mpu6050.c ****   }
+ 138:Core/Lib/mpu6050.c ****   return (mpu->init_state == MPU6050_INIT_STATE_READY) ? 1 : 0;
+ 139:Core/Lib/mpu6050.c ****   
+ 140:Core/Lib/mpu6050.c **** }
+ 141:Core/Lib/mpu6050.c **** 
+ 142:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_read_all(mpu6050_handle_t *mpu)
+ 143:Core/Lib/mpu6050.c **** {
+ 144:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 145:Core/Lib/mpu6050.c ****   {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 4
+
+
+ 146:Core/Lib/mpu6050.c ****     return MPU6050_ERROR;
+ 147:Core/Lib/mpu6050.c ****   }
+ 148:Core/Lib/mpu6050.c ****   uint8_t buffer[14];
+ 149:Core/Lib/mpu6050.c **** 
+ 150:Core/Lib/mpu6050.c ****   //read 14 byteses: 6 accel + 2 temp + 6 gyro
+ 151:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_ACCEL_XOUT_H, buffer, 14, s_default_timeout) != MPU60
+ 152:Core/Lib/mpu6050.c ****   {
+ 153:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 154:Core/Lib/mpu6050.c ****   }
+ 155:Core/Lib/mpu6050.c ****   
+ 156:Core/Lib/mpu6050.c ****   //parse raw data
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.x = (int16_t) (buffer[0] << 8) | buffer[1];
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 159:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 160:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 163:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 164:Core/Lib/mpu6050.c **** 
+ 165:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 166:Core/Lib/mpu6050.c ****   mpu->accel_scaled.x = (float) mpu->accel_raw.x/mpu->accel_sensitivity;
+ 167:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 168:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 169:Core/Lib/mpu6050.c ****    
+ 170:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.x = (float) mpu->gyro_raw.x/mpu->gyro_sensitivity;
+ 171:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 172:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 173:Core/Lib/mpu6050.c **** 
+ 174:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 175:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 176:Core/Lib/mpu6050.c ****   
+ 177:Core/Lib/mpu6050.c **** }
+ 178:Core/Lib/mpu6050.c **** 
+ 179:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_read_accel (mpu6050_handle_t *mpu)
+ 180:Core/Lib/mpu6050.c **** {
+ 181:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 182:Core/Lib/mpu6050.c ****   {
+ 183:Core/Lib/mpu6050.c ****     return MPU6050_ERROR;
+ 184:Core/Lib/mpu6050.c ****   }
+ 185:Core/Lib/mpu6050.c ****   uint8_t buffer[6];
+ 186:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_ACCEL_XOUT_H, buffer, 6, s_default_timeout) != MPU605
+ 187:Core/Lib/mpu6050.c ****   {
+ 188:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 189:Core/Lib/mpu6050.c ****   }
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.x = (int16_t) (buffer[0] << 8) | buffer[1];
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 192:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 193:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 194:Core/Lib/mpu6050.c ****   mpu->accel_scaled.x = (float) mpu->accel_raw.x/mpu->accel_sensitivity;
+ 195:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 196:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 197:Core/Lib/mpu6050.c ****   
+ 198:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 199:Core/Lib/mpu6050.c ****   
+ 200:Core/Lib/mpu6050.c ****   
+ 201:Core/Lib/mpu6050.c **** }
+ 202:Core/Lib/mpu6050.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 5
+
+
+ 203:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_read_gyro(mpu6050_handle_t *mpu)
+ 204:Core/Lib/mpu6050.c **** {
+ 205:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 206:Core/Lib/mpu6050.c ****   {
+ 207:Core/Lib/mpu6050.c ****     return MPU6050_ERROR;
+ 208:Core/Lib/mpu6050.c ****   }
+ 209:Core/Lib/mpu6050.c ****   uint8_t buffer[6];
+ 210:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_GYRO_XOUT_H, buffer, 6, s_default_timeout) != MPU6050
+ 211:Core/Lib/mpu6050.c ****   {
+ 212:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 213:Core/Lib/mpu6050.c ****   }
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[0] << 8) | buffer[1];
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 216:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 217:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 218:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.x = (float) mpu->gyro_raw.x/mpu->gyro_sensitivity;
+ 219:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 220:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 221:Core/Lib/mpu6050.c ****   
+ 222:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 223:Core/Lib/mpu6050.c **** }
+ 224:Core/Lib/mpu6050.c **** 
+ 225:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_read_temp(mpu6050_handle_t *mpu)
+ 226:Core/Lib/mpu6050.c **** {
+ 227:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 228:Core/Lib/mpu6050.c ****   {
+ 229:Core/Lib/mpu6050.c ****     return MPU6050_ERROR;
+ 230:Core/Lib/mpu6050.c ****   }
+ 231:Core/Lib/mpu6050.c ****   uint8_t buffer[2];
+ 232:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_TEMP_OUT_H, buffer, 6, s_default_timeout) != MPU6050_
+ 233:Core/Lib/mpu6050.c ****   {
+ 234:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 235:Core/Lib/mpu6050.c ****   }
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[0] << 8) | buffer[1];
+ 237:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 238:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 239:Core/Lib/mpu6050.c **** }
+ 240:Core/Lib/mpu6050.c **** 
+ 241:Core/Lib/mpu6050.c **** mpu6050_status_t mpu6050_reset(mpu6050_handle_t *mpu)
+ 242:Core/Lib/mpu6050.c **** {
+ 243:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 244:Core/Lib/mpu6050.c ****   {
+ 245:Core/Lib/mpu6050.c ****     return MPU6050_INVALID_PARAM;
+ 246:Core/Lib/mpu6050.c ****   }
+ 247:Core/Lib/mpu6050.c **** 
+ 248:Core/Lib/mpu6050.c ****   //set reset bit
+ 249:Core/Lib/mpu6050.c ****   if (mpu6050_write_register(mpu, MPU6050_REG_PWR_MGMT_1, (1 << PWR_MGMT_1_RESET_BIT), s_default_ti
+ 250:Core/Lib/mpu6050.c ****   {
+ 251:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 252:Core/Lib/mpu6050.c ****   }
+ 253:Core/Lib/mpu6050.c ****   mpu->init_state = MPU6050_INIT_STATE_UNINITIALIZED;
+ 254:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 255:Core/Lib/mpu6050.c ****   
+ 256:Core/Lib/mpu6050.c ****   
+ 257:Core/Lib/mpu6050.c **** }
+ 258:Core/Lib/mpu6050.c **** 
+ 259:Core/Lib/mpu6050.c **** static mpu6050_status_t mpu6050_read_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, ui
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 6
+
+
+ 260:Core/Lib/mpu6050.c **** {
+ 261:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Read(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeout
+ 262:Core/Lib/mpu6050.c ****   {
+ 263:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 264:Core/Lib/mpu6050.c ****   }
+ 265:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 266:Core/Lib/mpu6050.c **** }
+ 267:Core/Lib/mpu6050.c **** 
+ 268:Core/Lib/mpu6050.c **** static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, u
+ 269:Core/Lib/mpu6050.c **** {
+ 270:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Write(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeou
+ 271:Core/Lib/mpu6050.c ****   {
+ 272:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 273:Core/Lib/mpu6050.c ****   }
+ 274:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 275:Core/Lib/mpu6050.c **** }
+ 276:Core/Lib/mpu6050.c **** 
+ 277:Core/Lib/mpu6050.c **** /**
+ 278:Core/Lib/mpu6050.c ****  * @brief hàm đọc nhiều thanh ghi cùng 1 lúc -> phục vụ read all
+ 279:Core/Lib/mpu6050.c ****  * 
+ 280:Core/Lib/mpu6050.c ****  * @param mpu 
+ 281:Core/Lib/mpu6050.c ****  * @param reg: bắt đầu từ thanh ghi reg và tăng dần theo length
+ 282:Core/Lib/mpu6050.c ****  * @param data 
+ 283:Core/Lib/mpu6050.c ****  * @param length : tổng thanh ghi muốn đọc
+ 284:Core/Lib/mpu6050.c ****  * @param timeout 
+ 285:Core/Lib/mpu6050.c ****  * @return mpu6050_status_t 
+ 286:Core/Lib/mpu6050.c ****  */
+ 287:Core/Lib/mpu6050.c **** static mpu6050_status_t mpu6050_read_registers(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, u
+ 288:Core/Lib/mpu6050.c **** {
+ 289:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Read(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, length, ti
+ 290:Core/Lib/mpu6050.c ****   {
+ 291:Core/Lib/mpu6050.c ****     return MPU6050_I2C_ERROR;
+ 292:Core/Lib/mpu6050.c ****   }
+ 293:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 294:Core/Lib/mpu6050.c **** }
+ 295:Core/Lib/mpu6050.c **** 
+ 296:Core/Lib/mpu6050.c **** static void mpu6050_update_sensitivity(mpu6050_handle_t *mpu, mpu6050_accel_scale_t accel_scale, mp
+ 297:Core/Lib/mpu6050.c **** {
+  28              		.loc 1 297 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 298:Core/Lib/mpu6050.c ****   switch (accel_scale)
+  33              		.loc 1 298 3 view .LVU1
+  34 0000 0329     		cmp	r1, #3
+  35 0002 12D8     		bhi	.L2
+  36 0004 DFE801F0 		tbb	[pc, r1]
+  37              	.L4:
+  38 0008 02       		.byte	(.L7-.L4)/2
+  39 0009 06       		.byte	(.L6-.L4)/2
+  40 000a 0A       		.byte	(.L5-.L4)/2
+  41 000b 0E       		.byte	(.L3-.L4)/2
+  42              		.p2align 1
+  43              	.L7:
+ 299:Core/Lib/mpu6050.c ****   {
+ 300:Core/Lib/mpu6050.c ****   case MPU6050_ACCEL_SCALE_2G:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 7
+
+
+ 301:Core/Lib/mpu6050.c ****     mpu->accel_sensitivity = 16384.0f;
+  44              		.loc 1 301 5 view .LVU2
+  45              		.loc 1 301 28 is_stmt 0 view .LVU3
+  46 000c 4FF08D43 		mov	r3, #1182793728
+  47 0010 0363     		str	r3, [r0, #48]	@ float
+ 302:Core/Lib/mpu6050.c ****     break;
+  48              		.loc 1 302 5 is_stmt 1 view .LVU4
+  49 0012 0DE0     		b	.L8
+  50              	.L6:
+ 303:Core/Lib/mpu6050.c ****   case MPU6050_ACCEL_SCALE_4G:
+ 304:Core/Lib/mpu6050.c ****     mpu->accel_sensitivity = 8192.0f;
+  51              		.loc 1 304 5 view .LVU5
+  52              		.loc 1 304 28 is_stmt 0 view .LVU6
+  53 0014 4FF08C43 		mov	r3, #1174405120
+  54 0018 0363     		str	r3, [r0, #48]	@ float
+ 305:Core/Lib/mpu6050.c ****     break;
+  55              		.loc 1 305 5 is_stmt 1 view .LVU7
+  56 001a 09E0     		b	.L8
+  57              	.L5:
+ 306:Core/Lib/mpu6050.c ****   case MPU6050_ACCEL_SCALE_8G:
+ 307:Core/Lib/mpu6050.c ****     mpu->accel_sensitivity = 4096.0f;
+  58              		.loc 1 307 5 view .LVU8
+  59              		.loc 1 307 28 is_stmt 0 view .LVU9
+  60 001c 4FF08B43 		mov	r3, #1166016512
+  61 0020 0363     		str	r3, [r0, #48]	@ float
+ 308:Core/Lib/mpu6050.c ****     break;
+  62              		.loc 1 308 5 is_stmt 1 view .LVU10
+  63 0022 05E0     		b	.L8
+  64              	.L3:
+ 309:Core/Lib/mpu6050.c ****   case MPU6050_ACCEL_SCALE_16G:
+ 310:Core/Lib/mpu6050.c ****     mpu->accel_sensitivity = 2048.0f;
+  65              		.loc 1 310 5 view .LVU11
+  66              		.loc 1 310 28 is_stmt 0 view .LVU12
+  67 0024 4FF08A43 		mov	r3, #1157627904
+  68 0028 0363     		str	r3, [r0, #48]	@ float
+  69              	.L2:
+ 311:Core/Lib/mpu6050.c ****   default:
+ 312:Core/Lib/mpu6050.c ****     mpu->accel_sensitivity = 16384.0f;
+  70              		.loc 1 312 5 is_stmt 1 view .LVU13
+  71              		.loc 1 312 28 is_stmt 0 view .LVU14
+  72 002a 4FF08D43 		mov	r3, #1182793728
+  73 002e 0363     		str	r3, [r0, #48]	@ float
+ 313:Core/Lib/mpu6050.c ****     break;
+  74              		.loc 1 313 5 is_stmt 1 view .LVU15
+  75              	.L8:
+ 314:Core/Lib/mpu6050.c ****   }
+ 315:Core/Lib/mpu6050.c **** 
+ 316:Core/Lib/mpu6050.c ****   switch (gyro_scale)
+  76              		.loc 1 316 3 view .LVU16
+  77 0030 032A     		cmp	r2, #3
+  78 0032 0FD8     		bhi	.L9
+  79 0034 DFE802F0 		tbb	[pc, r2]
+  80              	.L11:
+  81 0038 02       		.byte	(.L14-.L11)/2
+  82 0039 05       		.byte	(.L13-.L11)/2
+  83 003a 08       		.byte	(.L12-.L11)/2
+  84 003b 0B       		.byte	(.L10-.L11)/2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 8
+
+
+  85              		.p2align 1
+  86              	.L14:
+ 317:Core/Lib/mpu6050.c ****   {
+ 318:Core/Lib/mpu6050.c ****   case MPU6050_GYRO_SCALE_250DPS:
+ 319:Core/Lib/mpu6050.c ****     mpu->gyro_sensitivity = 131.0f;
+  87              		.loc 1 319 5 view .LVU17
+  88              		.loc 1 319 27 is_stmt 0 view .LVU18
+  89 003c 074B     		ldr	r3, .L16
+  90 003e 4363     		str	r3, [r0, #52]	@ float
+ 320:Core/Lib/mpu6050.c ****     break;
+  91              		.loc 1 320 5 is_stmt 1 view .LVU19
+  92 0040 7047     		bx	lr
+  93              	.L13:
+ 321:Core/Lib/mpu6050.c ****   case MPU6050_GYRO_SCALE_500DPS:
+ 322:Core/Lib/mpu6050.c ****     mpu->gyro_sensitivity = 65.5f;
+  94              		.loc 1 322 5 view .LVU20
+  95              		.loc 1 322 27 is_stmt 0 view .LVU21
+  96 0042 074B     		ldr	r3, .L16+4
+  97 0044 4363     		str	r3, [r0, #52]	@ float
+ 323:Core/Lib/mpu6050.c ****     break;
+  98              		.loc 1 323 5 is_stmt 1 view .LVU22
+  99 0046 7047     		bx	lr
+ 100              	.L12:
+ 324:Core/Lib/mpu6050.c ****   case MPU6050_GYRO_SCALE_1000DPS:
+ 325:Core/Lib/mpu6050.c ****     mpu->gyro_sensitivity = 32.8f;
+ 101              		.loc 1 325 5 view .LVU23
+ 102              		.loc 1 325 27 is_stmt 0 view .LVU24
+ 103 0048 064B     		ldr	r3, .L16+8
+ 104 004a 4363     		str	r3, [r0, #52]	@ float
+ 326:Core/Lib/mpu6050.c ****     break;
+ 105              		.loc 1 326 5 is_stmt 1 view .LVU25
+ 106 004c 7047     		bx	lr
+ 107              	.L10:
+ 327:Core/Lib/mpu6050.c ****   case MPU6050_GYRO_SCALE_2000DPS:
+ 328:Core/Lib/mpu6050.c ****     mpu->gyro_sensitivity = 16.4f;
+ 108              		.loc 1 328 5 view .LVU26
+ 109              		.loc 1 328 27 is_stmt 0 view .LVU27
+ 110 004e 064B     		ldr	r3, .L16+12
+ 111 0050 4363     		str	r3, [r0, #52]	@ float
+ 329:Core/Lib/mpu6050.c ****     break;
+ 112              		.loc 1 329 5 is_stmt 1 view .LVU28
+ 113 0052 7047     		bx	lr
+ 114              	.L9:
+ 330:Core/Lib/mpu6050.c ****   default:
+ 331:Core/Lib/mpu6050.c ****     mpu->gyro_sensitivity = 131.0f;
+ 115              		.loc 1 331 5 view .LVU29
+ 116              		.loc 1 331 27 is_stmt 0 view .LVU30
+ 117 0054 014B     		ldr	r3, .L16
+ 118 0056 4363     		str	r3, [r0, #52]	@ float
+ 332:Core/Lib/mpu6050.c ****     break;
+ 119              		.loc 1 332 5 is_stmt 1 view .LVU31
+ 333:Core/Lib/mpu6050.c ****   }
+ 334:Core/Lib/mpu6050.c **** }
+ 120              		.loc 1 334 1 is_stmt 0 view .LVU32
+ 121 0058 7047     		bx	lr
+ 122              	.L17:
+ 123 005a 00BF     		.align	2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 9
+
+
+ 124              	.L16:
+ 125 005c 00000343 		.word	1124270080
+ 126 0060 00008342 		.word	1115881472
+ 127 0064 33330342 		.word	1107505971
+ 128 0068 33338341 		.word	1099117363
+ 129              		.cfi_endproc
+ 130              	.LFE158:
+ 132              		.section	.text.mpu6050_read_register,"ax",%progbits
+ 133              		.align	1
+ 134              		.syntax unified
+ 135              		.thumb
+ 136              		.thumb_func
+ 138              	mpu6050_read_register:
+ 139              	.LVL1:
+ 140              	.LFB155:
+ 260:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Read(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeout
+ 141              		.loc 1 260 1 is_stmt 1 view -0
+ 142              		.cfi_startproc
+ 143              		@ args = 0, pretend = 0, frame = 0
+ 144              		@ frame_needed = 0, uses_anonymous_args = 0
+ 260:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Read(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeout
+ 145              		.loc 1 260 1 is_stmt 0 view .LVU34
+ 146 0000 00B5     		push	{lr}
+ 147              	.LCFI0:
+ 148              		.cfi_def_cfa_offset 4
+ 149              		.cfi_offset 14, -4
+ 150 0002 85B0     		sub	sp, sp, #20
+ 151              	.LCFI1:
+ 152              		.cfi_def_cfa_offset 24
+ 261:Core/Lib/mpu6050.c ****   {
+ 153              		.loc 1 261 3 is_stmt 1 view .LVU35
+ 261:Core/Lib/mpu6050.c ****   {
+ 154              		.loc 1 261 37 is_stmt 0 view .LVU36
+ 155 0004 90F804C0 		ldrb	ip, [r0, #4]	@ zero_extendqisi2
+ 261:Core/Lib/mpu6050.c ****   {
+ 156              		.loc 1 261 7 view .LVU37
+ 157 0008 0293     		str	r3, [sp, #8]
+ 158 000a 0123     		movs	r3, #1
+ 159              	.LVL2:
+ 261:Core/Lib/mpu6050.c ****   {
+ 160              		.loc 1 261 7 view .LVU38
+ 161 000c 0193     		str	r3, [sp, #4]
+ 162 000e 0092     		str	r2, [sp]
+ 163 0010 0A46     		mov	r2, r1
+ 164              	.LVL3:
+ 261:Core/Lib/mpu6050.c ****   {
+ 165              		.loc 1 261 7 view .LVU39
+ 166 0012 0CFA03F1 		lsl	r1, ip, r3
+ 167              	.LVL4:
+ 261:Core/Lib/mpu6050.c ****   {
+ 168              		.loc 1 261 7 view .LVU40
+ 169 0016 0068     		ldr	r0, [r0]
+ 170              	.LVL5:
+ 261:Core/Lib/mpu6050.c ****   {
+ 171              		.loc 1 261 7 view .LVU41
+ 172 0018 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 173              	.LVL6:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 10
+
+
+ 261:Core/Lib/mpu6050.c ****   {
+ 174              		.loc 1 261 6 view .LVU42
+ 175 001c 10B9     		cbnz	r0, .L22
+ 176              	.L19:
+ 266:Core/Lib/mpu6050.c **** 
+ 177              		.loc 1 266 1 view .LVU43
+ 178 001e 05B0     		add	sp, sp, #20
+ 179              	.LCFI2:
+ 180              		.cfi_remember_state
+ 181              		.cfi_def_cfa_offset 4
+ 182              		@ sp needed
+ 183 0020 5DF804FB 		ldr	pc, [sp], #4
+ 184              	.L22:
+ 185              	.LCFI3:
+ 186              		.cfi_restore_state
+ 263:Core/Lib/mpu6050.c ****   }
+ 187              		.loc 1 263 12 view .LVU44
+ 188 0024 0220     		movs	r0, #2
+ 189 0026 FAE7     		b	.L19
+ 190              		.cfi_endproc
+ 191              	.LFE155:
+ 193              		.section	.text.mpu6050_read_registers,"ax",%progbits
+ 194              		.align	1
+ 195              		.syntax unified
+ 196              		.thumb
+ 197              		.thumb_func
+ 199              	mpu6050_read_registers:
+ 200              	.LVL7:
+ 201              	.LFB157:
+ 288:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Read(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, length, ti
+ 202              		.loc 1 288 1 is_stmt 1 view -0
+ 203              		.cfi_startproc
+ 204              		@ args = 4, pretend = 0, frame = 0
+ 205              		@ frame_needed = 0, uses_anonymous_args = 0
+ 288:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Read(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, length, ti
+ 206              		.loc 1 288 1 is_stmt 0 view .LVU46
+ 207 0000 10B5     		push	{r4, lr}
+ 208              	.LCFI4:
+ 209              		.cfi_def_cfa_offset 8
+ 210              		.cfi_offset 4, -8
+ 211              		.cfi_offset 14, -4
+ 212 0002 84B0     		sub	sp, sp, #16
+ 213              	.LCFI5:
+ 214              		.cfi_def_cfa_offset 24
+ 289:Core/Lib/mpu6050.c ****   {
+ 215              		.loc 1 289 3 is_stmt 1 view .LVU47
+ 289:Core/Lib/mpu6050.c ****   {
+ 216              		.loc 1 289 37 is_stmt 0 view .LVU48
+ 217 0004 90F804C0 		ldrb	ip, [r0, #4]	@ zero_extendqisi2
+ 289:Core/Lib/mpu6050.c ****   {
+ 218              		.loc 1 289 7 view .LVU49
+ 219 0008 069C     		ldr	r4, [sp, #24]
+ 220 000a 0294     		str	r4, [sp, #8]
+ 221 000c 0193     		str	r3, [sp, #4]
+ 222 000e 0092     		str	r2, [sp]
+ 223 0010 0123     		movs	r3, #1
+ 224              	.LVL8:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 11
+
+
+ 289:Core/Lib/mpu6050.c ****   {
+ 225              		.loc 1 289 7 view .LVU50
+ 226 0012 0A46     		mov	r2, r1
+ 227              	.LVL9:
+ 289:Core/Lib/mpu6050.c ****   {
+ 228              		.loc 1 289 7 view .LVU51
+ 229 0014 0CFA03F1 		lsl	r1, ip, r3
+ 230              	.LVL10:
+ 289:Core/Lib/mpu6050.c ****   {
+ 231              		.loc 1 289 7 view .LVU52
+ 232 0018 0068     		ldr	r0, [r0]
+ 233              	.LVL11:
+ 289:Core/Lib/mpu6050.c ****   {
+ 234              		.loc 1 289 7 view .LVU53
+ 235 001a FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 236              	.LVL12:
+ 289:Core/Lib/mpu6050.c ****   {
+ 237              		.loc 1 289 6 view .LVU54
+ 238 001e 08B9     		cbnz	r0, .L27
+ 239              	.L24:
+ 294:Core/Lib/mpu6050.c **** 
+ 240              		.loc 1 294 1 view .LVU55
+ 241 0020 04B0     		add	sp, sp, #16
+ 242              	.LCFI6:
+ 243              		.cfi_remember_state
+ 244              		.cfi_def_cfa_offset 8
+ 245              		@ sp needed
+ 246 0022 10BD     		pop	{r4, pc}
+ 247              	.LVL13:
+ 248              	.L27:
+ 249              	.LCFI7:
+ 250              		.cfi_restore_state
+ 291:Core/Lib/mpu6050.c ****   }
+ 251              		.loc 1 291 12 view .LVU56
+ 252 0024 0220     		movs	r0, #2
+ 253 0026 FBE7     		b	.L24
+ 254              		.cfi_endproc
+ 255              	.LFE157:
+ 257              		.section	.text.mpu6050_write_register,"ax",%progbits
+ 258              		.align	1
+ 259              		.syntax unified
+ 260              		.thumb
+ 261              		.thumb_func
+ 263              	mpu6050_write_register:
+ 264              	.LVL14:
+ 265              	.LFB156:
+ 269:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Write(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeou
+ 266              		.loc 1 269 1 is_stmt 1 view -0
+ 267              		.cfi_startproc
+ 268              		@ args = 0, pretend = 0, frame = 0
+ 269              		@ frame_needed = 0, uses_anonymous_args = 0
+ 269:Core/Lib/mpu6050.c ****   if (HAL_I2C_Mem_Write(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeou
+ 270              		.loc 1 269 1 is_stmt 0 view .LVU58
+ 271 0000 00B5     		push	{lr}
+ 272              	.LCFI8:
+ 273              		.cfi_def_cfa_offset 4
+ 274              		.cfi_offset 14, -4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 12
+
+
+ 275 0002 85B0     		sub	sp, sp, #20
+ 276              	.LCFI9:
+ 277              		.cfi_def_cfa_offset 24
+ 270:Core/Lib/mpu6050.c ****   {
+ 278              		.loc 1 270 3 is_stmt 1 view .LVU59
+ 270:Core/Lib/mpu6050.c ****   {
+ 279              		.loc 1 270 38 is_stmt 0 view .LVU60
+ 280 0004 90F804C0 		ldrb	ip, [r0, #4]	@ zero_extendqisi2
+ 270:Core/Lib/mpu6050.c ****   {
+ 281              		.loc 1 270 7 view .LVU61
+ 282 0008 0293     		str	r3, [sp, #8]
+ 283 000a 0123     		movs	r3, #1
+ 284              	.LVL15:
+ 270:Core/Lib/mpu6050.c ****   {
+ 285              		.loc 1 270 7 view .LVU62
+ 286 000c 0193     		str	r3, [sp, #4]
+ 287 000e 0092     		str	r2, [sp]
+ 288 0010 0A46     		mov	r2, r1
+ 289              	.LVL16:
+ 270:Core/Lib/mpu6050.c ****   {
+ 290              		.loc 1 270 7 view .LVU63
+ 291 0012 0CFA03F1 		lsl	r1, ip, r3
+ 292              	.LVL17:
+ 270:Core/Lib/mpu6050.c ****   {
+ 293              		.loc 1 270 7 view .LVU64
+ 294 0016 0068     		ldr	r0, [r0]
+ 295              	.LVL18:
+ 270:Core/Lib/mpu6050.c ****   {
+ 296              		.loc 1 270 7 view .LVU65
+ 297 0018 FFF7FEFF 		bl	HAL_I2C_Mem_Write
+ 298              	.LVL19:
+ 270:Core/Lib/mpu6050.c ****   {
+ 299              		.loc 1 270 6 view .LVU66
+ 300 001c 10B9     		cbnz	r0, .L32
+ 301              	.L29:
+ 275:Core/Lib/mpu6050.c **** 
+ 302              		.loc 1 275 1 view .LVU67
+ 303 001e 05B0     		add	sp, sp, #20
+ 304              	.LCFI10:
+ 305              		.cfi_remember_state
+ 306              		.cfi_def_cfa_offset 4
+ 307              		@ sp needed
+ 308 0020 5DF804FB 		ldr	pc, [sp], #4
+ 309              	.L32:
+ 310              	.LCFI11:
+ 311              		.cfi_restore_state
+ 272:Core/Lib/mpu6050.c ****   }
+ 312              		.loc 1 272 12 view .LVU68
+ 313 0024 0220     		movs	r0, #2
+ 314 0026 FAE7     		b	.L29
+ 315              		.cfi_endproc
+ 316              	.LFE156:
+ 318              		.section	.text.mpu6050_init,"ax",%progbits
+ 319              		.align	1
+ 320              		.global	mpu6050_init
+ 321              		.syntax unified
+ 322              		.thumb
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 13
+
+
+ 323              		.thumb_func
+ 325              	mpu6050_init:
+ 326              	.LVL20:
+ 327              	.LFB147:
+  34:Core/Lib/mpu6050.c ****   //
+ 328              		.loc 1 34 1 is_stmt 1 view -0
+ 329              		.cfi_startproc
+ 330              		@ args = 0, pretend = 0, frame = 8
+ 331              		@ frame_needed = 0, uses_anonymous_args = 0
+  36:Core/Lib/mpu6050.c ****   {
+ 332              		.loc 1 36 3 view .LVU70
+  36:Core/Lib/mpu6050.c ****   {
+ 333              		.loc 1 36 6 is_stmt 0 view .LVU71
+ 334 0000 0029     		cmp	r1, #0
+ 335 0002 18BF     		it	ne
+ 336 0004 0028     		cmpne	r0, #0
+ 337 0006 44D0     		beq	.L36
+  34:Core/Lib/mpu6050.c ****   //
+ 338              		.loc 1 34 1 discriminator 1 view .LVU72
+ 339 0008 70B5     		push	{r4, r5, r6, lr}
+ 340              	.LCFI12:
+ 341              		.cfi_def_cfa_offset 16
+ 342              		.cfi_offset 4, -16
+ 343              		.cfi_offset 5, -12
+ 344              		.cfi_offset 6, -8
+ 345              		.cfi_offset 14, -4
+ 346 000a 82B0     		sub	sp, sp, #8
+ 347              	.LCFI13:
+ 348              		.cfi_def_cfa_offset 24
+ 349 000c 0446     		mov	r4, r0
+ 350 000e 0D46     		mov	r5, r1
+  36:Core/Lib/mpu6050.c ****   {
+ 351              		.loc 1 36 46 discriminator 1 view .LVU73
+ 352 0010 0868     		ldr	r0, [r1]
+ 353              	.LVL21:
+  36:Core/Lib/mpu6050.c ****   {
+ 354              		.loc 1 36 37 discriminator 1 view .LVU74
+ 355 0012 0028     		cmp	r0, #0
+ 356 0014 3FD0     		beq	.L37
+  42:Core/Lib/mpu6050.c ****   mpu->device_addr = config->device_addr;
+ 357              		.loc 1 42 3 is_stmt 1 view .LVU75
+  42:Core/Lib/mpu6050.c ****   mpu->device_addr = config->device_addr;
+ 358              		.loc 1 42 12 is_stmt 0 view .LVU76
+ 359 0016 2060     		str	r0, [r4]
+  43:Core/Lib/mpu6050.c ****   mpu->init_state = MPU6050_INIT_STATE_UNINITIALIZED;
+ 360              		.loc 1 43 3 is_stmt 1 view .LVU77
+  43:Core/Lib/mpu6050.c ****   mpu->init_state = MPU6050_INIT_STATE_UNINITIALIZED;
+ 361              		.loc 1 43 28 is_stmt 0 view .LVU78
+ 362 0018 0979     		ldrb	r1, [r1, #4]	@ zero_extendqisi2
+ 363              	.LVL22:
+  43:Core/Lib/mpu6050.c ****   mpu->init_state = MPU6050_INIT_STATE_UNINITIALIZED;
+ 364              		.loc 1 43 20 view .LVU79
+ 365 001a 2171     		strb	r1, [r4, #4]
+  44:Core/Lib/mpu6050.c ****   mpu->wakeup_timestamp = 0;
+ 366              		.loc 1 44 3 is_stmt 1 view .LVU80
+  44:Core/Lib/mpu6050.c ****   mpu->wakeup_timestamp = 0;
+ 367              		.loc 1 44 19 is_stmt 0 view .LVU81
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 14
+
+
+ 368 001c 0023     		movs	r3, #0
+ 369 001e 84F83830 		strb	r3, [r4, #56]
+  45:Core/Lib/mpu6050.c **** 
+ 370              		.loc 1 45 3 is_stmt 1 view .LVU82
+  45:Core/Lib/mpu6050.c **** 
+ 371              		.loc 1 45 25 is_stmt 0 view .LVU83
+ 372 0022 E363     		str	r3, [r4, #60]
+  47:Core/Lib/mpu6050.c **** 
+ 373              		.loc 1 47 3 is_stmt 1 view .LVU84
+  47:Core/Lib/mpu6050.c **** 
+ 374              		.loc 1 47 29 is_stmt 0 view .LVU85
+ 375 0024 AE68     		ldr	r6, [r5, #8]
+  47:Core/Lib/mpu6050.c **** 
+ 376              		.loc 1 47 76 view .LVU86
+ 377 0026 06B9     		cbnz	r6, .L35
+ 378 0028 6426     		movs	r6, #100
+ 379              	.L35:
+ 380              	.LVL23:
+  50:Core/Lib/mpu6050.c ****   {
+ 381              		.loc 1 50 3 is_stmt 1 discriminator 4 view .LVU87
+  50:Core/Lib/mpu6050.c ****   {
+ 382              		.loc 1 50 7 is_stmt 0 discriminator 4 view .LVU88
+ 383 002a 3346     		mov	r3, r6
+ 384 002c 0322     		movs	r2, #3
+ 385 002e 4900     		lsls	r1, r1, #1
+ 386 0030 FFF7FEFF 		bl	HAL_I2C_IsDeviceReady
+ 387              	.LVL24:
+  50:Core/Lib/mpu6050.c ****   {
+ 388              		.loc 1 50 6 discriminator 4 view .LVU89
+ 389 0034 10B1     		cbz	r0, .L47
+  52:Core/Lib/mpu6050.c ****   }
+ 390              		.loc 1 52 12 view .LVU90
+ 391 0036 0320     		movs	r0, #3
+ 392              	.LVL25:
+ 393              	.L34:
+  85:Core/Lib/mpu6050.c **** 
+ 394              		.loc 1 85 1 view .LVU91
+ 395 0038 02B0     		add	sp, sp, #8
+ 396              	.LCFI14:
+ 397              		.cfi_remember_state
+ 398              		.cfi_def_cfa_offset 16
+ 399              		@ sp needed
+ 400 003a 70BD     		pop	{r4, r5, r6, pc}
+ 401              	.LVL26:
+ 402              	.L47:
+ 403              	.LCFI15:
+ 404              		.cfi_restore_state
+  56:Core/Lib/mpu6050.c ****   if (mpu6050_read_register(mpu, MPU6050_REG_WHO_AM_I, &who_am_i, timeout) != MPU6050_OK)
+ 405              		.loc 1 56 3 is_stmt 1 view .LVU92
+  57:Core/Lib/mpu6050.c ****   {
+ 406              		.loc 1 57 3 view .LVU93
+  57:Core/Lib/mpu6050.c ****   {
+ 407              		.loc 1 57 7 is_stmt 0 view .LVU94
+ 408 003c 3346     		mov	r3, r6
+ 409 003e 0DF10702 		add	r2, sp, #7
+ 410 0042 7521     		movs	r1, #117
+ 411 0044 2046     		mov	r0, r4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 15
+
+
+ 412 0046 FFF7FEFF 		bl	mpu6050_read_register
+ 413              	.LVL27:
+  57:Core/Lib/mpu6050.c ****   {
+ 414              		.loc 1 57 6 view .LVU95
+ 415 004a 30BB     		cbnz	r0, .L40
+  62:Core/Lib/mpu6050.c ****   {
+ 416              		.loc 1 62 3 is_stmt 1 view .LVU96
+  62:Core/Lib/mpu6050.c ****   {
+ 417              		.loc 1 62 16 is_stmt 0 view .LVU97
+ 418 004c 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+  62:Core/Lib/mpu6050.c ****   {
+ 419              		.loc 1 62 6 view .LVU98
+ 420 0050 682B     		cmp	r3, #104
+ 421 0052 01D0     		beq	.L48
+  64:Core/Lib/mpu6050.c ****   }
+ 422              		.loc 1 64 12 view .LVU99
+ 423 0054 0420     		movs	r0, #4
+ 424 0056 EFE7     		b	.L34
+ 425              	.L48:
+  68:Core/Lib/mpu6050.c ****   {
+ 426              		.loc 1 68 3 is_stmt 1 view .LVU100
+  68:Core/Lib/mpu6050.c ****   {
+ 427              		.loc 1 68 7 is_stmt 0 view .LVU101
+ 428 0058 3346     		mov	r3, r6
+ 429 005a 0022     		movs	r2, #0
+ 430 005c 6B21     		movs	r1, #107
+ 431 005e 2046     		mov	r0, r4
+ 432 0060 FFF7FEFF 		bl	mpu6050_write_register
+ 433              	.LVL28:
+  68:Core/Lib/mpu6050.c ****   {
+ 434              		.loc 1 68 6 view .LVU102
+ 435 0064 08B1     		cbz	r0, .L49
+  70:Core/Lib/mpu6050.c ****   }
+ 436              		.loc 1 70 12 view .LVU103
+ 437 0066 0220     		movs	r0, #2
+ 438 0068 E6E7     		b	.L34
+ 439              	.L49:
+  74:Core/Lib/mpu6050.c ****   mpu->wakeup_timestamp = HAL_GetTick();
+ 440              		.loc 1 74 3 is_stmt 1 view .LVU104
+  74:Core/Lib/mpu6050.c ****   mpu->wakeup_timestamp = HAL_GetTick();
+ 441              		.loc 1 74 19 is_stmt 0 view .LVU105
+ 442 006a 0123     		movs	r3, #1
+ 443 006c 84F83830 		strb	r3, [r4, #56]
+  75:Core/Lib/mpu6050.c **** 
+ 444              		.loc 1 75 3 is_stmt 1 view .LVU106
+  75:Core/Lib/mpu6050.c **** 
+ 445              		.loc 1 75 27 is_stmt 0 view .LVU107
+ 446 0070 FFF7FEFF 		bl	HAL_GetTick
+ 447              	.LVL29:
+  75:Core/Lib/mpu6050.c **** 
+ 448              		.loc 1 75 25 view .LVU108
+ 449 0074 E063     		str	r0, [r4, #60]
+  78:Core/Lib/mpu6050.c ****   mpu->pending_config.accel_scale = config->accel_scale;
+ 450              		.loc 1 78 3 is_stmt 1 view .LVU109
+ 451 0076 AA79     		ldrb	r2, [r5, #6]	@ zero_extendqisi2
+ 452 0078 6979     		ldrb	r1, [r5, #5]	@ zero_extendqisi2
+ 453 007a 2046     		mov	r0, r4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 16
+
+
+ 454 007c FFF7FEFF 		bl	mpu6050_update_sensitivity
+ 455              	.LVL30:
+  79:Core/Lib/mpu6050.c ****   mpu->pending_config.gyro_scale = config->gyro_scale;
+ 456              		.loc 1 79 3 view .LVU110
+  79:Core/Lib/mpu6050.c ****   mpu->pending_config.gyro_scale = config->gyro_scale;
+ 457              		.loc 1 79 43 is_stmt 0 view .LVU111
+ 458 0080 6B79     		ldrb	r3, [r5, #5]	@ zero_extendqisi2
+  79:Core/Lib/mpu6050.c ****   mpu->pending_config.gyro_scale = config->gyro_scale;
+ 459              		.loc 1 79 35 view .LVU112
+ 460 0082 84F84430 		strb	r3, [r4, #68]
+  80:Core/Lib/mpu6050.c ****   mpu->pending_config.timeout = timeout;
+ 461              		.loc 1 80 3 is_stmt 1 view .LVU113
+  80:Core/Lib/mpu6050.c ****   mpu->pending_config.timeout = timeout;
+ 462              		.loc 1 80 42 is_stmt 0 view .LVU114
+ 463 0086 AB79     		ldrb	r3, [r5, #6]	@ zero_extendqisi2
+  80:Core/Lib/mpu6050.c ****   mpu->pending_config.timeout = timeout;
+ 464              		.loc 1 80 34 view .LVU115
+ 465 0088 84F84530 		strb	r3, [r4, #69]
+  81:Core/Lib/mpu6050.c ****   
+ 466              		.loc 1 81 3 is_stmt 1 view .LVU116
+  81:Core/Lib/mpu6050.c ****   
+ 467              		.loc 1 81 31 is_stmt 0 view .LVU117
+ 468 008c A664     		str	r6, [r4, #72]
+  83:Core/Lib/mpu6050.c **** 
+ 469              		.loc 1 83 3 is_stmt 1 view .LVU118
+  83:Core/Lib/mpu6050.c **** 
+ 470              		.loc 1 83 10 is_stmt 0 view .LVU119
+ 471 008e 0720     		movs	r0, #7
+ 472 0090 D2E7     		b	.L34
+ 473              	.LVL31:
+ 474              	.L36:
+ 475              	.LCFI16:
+ 476              		.cfi_def_cfa_offset 0
+ 477              		.cfi_restore 4
+ 478              		.cfi_restore 5
+ 479              		.cfi_restore 6
+ 480              		.cfi_restore 14
+  38:Core/Lib/mpu6050.c ****   }
+ 481              		.loc 1 38 12 view .LVU120
+ 482 0092 0620     		movs	r0, #6
+ 483              	.LVL32:
+  85:Core/Lib/mpu6050.c **** 
+ 484              		.loc 1 85 1 view .LVU121
+ 485 0094 7047     		bx	lr
+ 486              	.LVL33:
+ 487              	.L37:
+ 488              	.LCFI17:
+ 489              		.cfi_def_cfa_offset 24
+ 490              		.cfi_offset 4, -16
+ 491              		.cfi_offset 5, -12
+ 492              		.cfi_offset 6, -8
+ 493              		.cfi_offset 14, -4
+  38:Core/Lib/mpu6050.c ****   }
+ 494              		.loc 1 38 12 view .LVU122
+ 495 0096 0620     		movs	r0, #6
+ 496 0098 CEE7     		b	.L34
+ 497              	.LVL34:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 17
+
+
+ 498              	.L40:
+  59:Core/Lib/mpu6050.c ****   }
+ 499              		.loc 1 59 12 view .LVU123
+ 500 009a 0220     		movs	r0, #2
+ 501 009c CCE7     		b	.L34
+ 502              		.cfi_endproc
+ 503              	.LFE147:
+ 505              		.section	.text.mpu6050_init_process,"ax",%progbits
+ 506              		.align	1
+ 507              		.global	mpu6050_init_process
+ 508              		.syntax unified
+ 509              		.thumb
+ 510              		.thumb_func
+ 512              	mpu6050_init_process:
+ 513              	.LVL35:
+ 514              	.LFB148:
+  88:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 515              		.loc 1 88 1 is_stmt 1 view -0
+ 516              		.cfi_startproc
+ 517              		@ args = 0, pretend = 0, frame = 0
+ 518              		@ frame_needed = 0, uses_anonymous_args = 0
+  89:Core/Lib/mpu6050.c ****   {
+ 519              		.loc 1 89 3 view .LVU125
+  89:Core/Lib/mpu6050.c ****   {
+ 520              		.loc 1 89 6 is_stmt 0 view .LVU126
+ 521 0000 30B3     		cbz	r0, .L52
+  88:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 522              		.loc 1 88 1 view .LVU127
+ 523 0002 70B5     		push	{r4, r5, r6, lr}
+ 524              	.LCFI18:
+ 525              		.cfi_def_cfa_offset 16
+ 526              		.cfi_offset 4, -16
+ 527              		.cfi_offset 5, -12
+ 528              		.cfi_offset 6, -8
+ 529              		.cfi_offset 14, -4
+ 530 0004 0446     		mov	r4, r0
+  94:Core/Lib/mpu6050.c ****   {
+ 531              		.loc 1 94 3 is_stmt 1 view .LVU128
+  94:Core/Lib/mpu6050.c ****   {
+ 532              		.loc 1 94 10 is_stmt 0 view .LVU129
+ 533 0006 90F83830 		ldrb	r3, [r0, #56]	@ zero_extendqisi2
+  94:Core/Lib/mpu6050.c ****   {
+ 534              		.loc 1 94 6 view .LVU130
+ 535 000a 0BB9     		cbnz	r3, .L61
+  96:Core/Lib/mpu6050.c ****   }
+ 536              		.loc 1 96 12 view .LVU131
+ 537 000c 0120     		movs	r0, #1
+ 538              	.LVL36:
+ 539              	.L51:
+ 130:Core/Lib/mpu6050.c **** 
+ 540              		.loc 1 130 1 view .LVU132
+ 541 000e 70BD     		pop	{r4, r5, r6, pc}
+ 542              	.LVL37:
+ 543              	.L61:
+  99:Core/Lib/mpu6050.c ****   {
+ 544              		.loc 1 99 3 is_stmt 1 view .LVU133
+  99:Core/Lib/mpu6050.c ****   {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 18
+
+
+ 545              		.loc 1 99 23 is_stmt 0 view .LVU134
+ 546 0010 0123     		movs	r3, #1
+ 547 0012 80F83830 		strb	r3, [r0, #56]
+ 548              	.LBB2:
+ 101:Core/Lib/mpu6050.c ****     if (ms < MPU6050_WAKEUP_DELAY_MS)
+ 549              		.loc 1 101 5 is_stmt 1 view .LVU135
+ 101:Core/Lib/mpu6050.c ****     if (ms < MPU6050_WAKEUP_DELAY_MS)
+ 550              		.loc 1 101 19 is_stmt 0 view .LVU136
+ 551 0016 FFF7FEFF 		bl	HAL_GetTick
+ 552              	.LVL38:
+ 101:Core/Lib/mpu6050.c ****     if (ms < MPU6050_WAKEUP_DELAY_MS)
+ 553              		.loc 1 101 38 view .LVU137
+ 554 001a E36B     		ldr	r3, [r4, #60]
+ 101:Core/Lib/mpu6050.c ****     if (ms < MPU6050_WAKEUP_DELAY_MS)
+ 555              		.loc 1 101 14 view .LVU138
+ 556 001c C01A     		subs	r0, r0, r3
+ 557              	.LVL39:
+ 102:Core/Lib/mpu6050.c ****     {
+ 558              		.loc 1 102 5 is_stmt 1 view .LVU139
+ 102:Core/Lib/mpu6050.c ****     {
+ 559              		.loc 1 102 8 is_stmt 0 view .LVU140
+ 560 001e 0928     		cmp	r0, #9
+ 561 0020 18D9     		bls	.L54
+ 107:Core/Lib/mpu6050.c ****     mpu6050_gyro_scale_t gyro_scale = mpu->pending_config.gyro_scale;
+ 562              		.loc 1 107 5 is_stmt 1 view .LVU141
+ 107:Core/Lib/mpu6050.c ****     mpu6050_gyro_scale_t gyro_scale = mpu->pending_config.gyro_scale;
+ 563              		.loc 1 107 27 is_stmt 0 view .LVU142
+ 564 0022 94F84460 		ldrb	r6, [r4, #68]	@ zero_extendqisi2
+ 565              	.LVL40:
+ 108:Core/Lib/mpu6050.c ****     uint32_t timeout = mpu->pending_config.timeout;
+ 566              		.loc 1 108 5 is_stmt 1 view .LVU143
+ 108:Core/Lib/mpu6050.c ****     uint32_t timeout = mpu->pending_config.timeout;
+ 567              		.loc 1 108 26 is_stmt 0 view .LVU144
+ 568 0026 94F84520 		ldrb	r2, [r4, #69]	@ zero_extendqisi2
+ 569              	.LVL41:
+ 109:Core/Lib/mpu6050.c **** 
+ 570              		.loc 1 109 5 is_stmt 1 view .LVU145
+ 109:Core/Lib/mpu6050.c **** 
+ 571              		.loc 1 109 14 is_stmt 0 view .LVU146
+ 572 002a A56C     		ldr	r5, [r4, #72]
+ 573              	.LVL42:
+ 112:Core/Lib/mpu6050.c ****     {
+ 574              		.loc 1 112 5 is_stmt 1 view .LVU147
+ 112:Core/Lib/mpu6050.c ****     {
+ 575              		.loc 1 112 9 is_stmt 0 view .LVU148
+ 576 002c 2B46     		mov	r3, r5
+ 577 002e D200     		lsls	r2, r2, #3
+ 578              	.LVL43:
+ 112:Core/Lib/mpu6050.c ****     {
+ 579              		.loc 1 112 9 view .LVU149
+ 580 0030 1B21     		movs	r1, #27
+ 581 0032 2046     		mov	r0, r4
+ 582              	.LVL44:
+ 112:Core/Lib/mpu6050.c ****     {
+ 583              		.loc 1 112 9 view .LVU150
+ 584 0034 FFF7FEFF 		bl	mpu6050_write_register
+ 585              	.LVL45:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 19
+
+
+ 112:Core/Lib/mpu6050.c ****     {
+ 586              		.loc 1 112 8 view .LVU151
+ 587 0038 70B9     		cbnz	r0, .L55
+ 117:Core/Lib/mpu6050.c ****     {
+ 588              		.loc 1 117 5 is_stmt 1 view .LVU152
+ 117:Core/Lib/mpu6050.c ****     {
+ 589              		.loc 1 117 9 is_stmt 0 view .LVU153
+ 590 003a 2B46     		mov	r3, r5
+ 591 003c F200     		lsls	r2, r6, #3
+ 592 003e 1C21     		movs	r1, #28
+ 593 0040 2046     		mov	r0, r4
+ 594 0042 FFF7FEFF 		bl	mpu6050_write_register
+ 595              	.LVL46:
+ 117:Core/Lib/mpu6050.c ****     {
+ 596              		.loc 1 117 8 view .LVU154
+ 597 0046 48B9     		cbnz	r0, .L56
+ 122:Core/Lib/mpu6050.c ****     return MPU6050_OK;
+ 598              		.loc 1 122 5 is_stmt 1 view .LVU155
+ 122:Core/Lib/mpu6050.c ****     return MPU6050_OK;
+ 599              		.loc 1 122 21 is_stmt 0 view .LVU156
+ 600 0048 0223     		movs	r3, #2
+ 601 004a 84F83830 		strb	r3, [r4, #56]
+ 123:Core/Lib/mpu6050.c **** 
+ 602              		.loc 1 123 5 is_stmt 1 view .LVU157
+ 123:Core/Lib/mpu6050.c **** 
+ 603              		.loc 1 123 12 is_stmt 0 view .LVU158
+ 604 004e DEE7     		b	.L51
+ 605              	.LVL47:
+ 606              	.L52:
+ 607              	.LCFI19:
+ 608              		.cfi_def_cfa_offset 0
+ 609              		.cfi_restore 4
+ 610              		.cfi_restore 5
+ 611              		.cfi_restore 6
+ 612              		.cfi_restore 14
+ 123:Core/Lib/mpu6050.c **** 
+ 613              		.loc 1 123 12 view .LVU159
+ 614              	.LBE2:
+  91:Core/Lib/mpu6050.c ****   }
+ 615              		.loc 1 91 12 view .LVU160
+ 616 0050 0620     		movs	r0, #6
+ 617              	.LVL48:
+ 130:Core/Lib/mpu6050.c **** 
+ 618              		.loc 1 130 1 view .LVU161
+ 619 0052 7047     		bx	lr
+ 620              	.LVL49:
+ 621              	.L54:
+ 622              	.LCFI20:
+ 623              		.cfi_def_cfa_offset 16
+ 624              		.cfi_offset 4, -16
+ 625              		.cfi_offset 5, -12
+ 626              		.cfi_offset 6, -8
+ 627              		.cfi_offset 14, -4
+ 628              	.LBB3:
+ 104:Core/Lib/mpu6050.c ****     }
+ 629              		.loc 1 104 14 view .LVU162
+ 630 0054 0720     		movs	r0, #7
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 20
+
+
+ 631              	.LVL50:
+ 104:Core/Lib/mpu6050.c ****     }
+ 632              		.loc 1 104 14 view .LVU163
+ 633 0056 DAE7     		b	.L51
+ 634              	.LVL51:
+ 635              	.L55:
+ 114:Core/Lib/mpu6050.c ****     }
+ 636              		.loc 1 114 14 view .LVU164
+ 637 0058 0220     		movs	r0, #2
+ 638 005a D8E7     		b	.L51
+ 639              	.L56:
+ 119:Core/Lib/mpu6050.c ****     }
+ 640              		.loc 1 119 14 view .LVU165
+ 641 005c 0220     		movs	r0, #2
+ 642 005e D6E7     		b	.L51
+ 643              	.LBE3:
+ 644              		.cfi_endproc
+ 645              	.LFE148:
+ 647              		.section	.text.mpu6050_is_ready,"ax",%progbits
+ 648              		.align	1
+ 649              		.global	mpu6050_is_ready
+ 650              		.syntax unified
+ 651              		.thumb
+ 652              		.thumb_func
+ 654              	mpu6050_is_ready:
+ 655              	.LVL52:
+ 656              	.LFB149:
+ 133:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 657              		.loc 1 133 1 is_stmt 1 view -0
+ 658              		.cfi_startproc
+ 659              		@ args = 0, pretend = 0, frame = 0
+ 660              		@ frame_needed = 0, uses_anonymous_args = 0
+ 661              		@ link register save eliminated.
+ 134:Core/Lib/mpu6050.c ****   {
+ 662              		.loc 1 134 3 view .LVU167
+ 134:Core/Lib/mpu6050.c ****   {
+ 663              		.loc 1 134 6 is_stmt 0 view .LVU168
+ 664 0000 30B1     		cbz	r0, .L64
+ 138:Core/Lib/mpu6050.c ****   
+ 665              		.loc 1 138 3 is_stmt 1 view .LVU169
+ 138:Core/Lib/mpu6050.c ****   
+ 666              		.loc 1 138 14 is_stmt 0 view .LVU170
+ 667 0002 90F83800 		ldrb	r0, [r0, #56]	@ zero_extendqisi2
+ 668              	.LVL53:
+ 138:Core/Lib/mpu6050.c ****   
+ 669              		.loc 1 138 60 view .LVU171
+ 670 0006 0228     		cmp	r0, #2
+ 671 0008 14BF     		ite	ne
+ 672 000a 0020     		movne	r0, #0
+ 673 000c 0120     		moveq	r0, #1
+ 674 000e 7047     		bx	lr
+ 675              	.LVL54:
+ 676              	.L64:
+ 136:Core/Lib/mpu6050.c ****   }
+ 677              		.loc 1 136 12 view .LVU172
+ 678 0010 0020     		movs	r0, #0
+ 679              	.LVL55:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 21
+
+
+ 140:Core/Lib/mpu6050.c **** 
+ 680              		.loc 1 140 1 view .LVU173
+ 681 0012 7047     		bx	lr
+ 682              		.cfi_endproc
+ 683              	.LFE149:
+ 685              		.section	.text.mpu6050_read_all,"ax",%progbits
+ 686              		.align	1
+ 687              		.global	mpu6050_read_all
+ 688              		.syntax unified
+ 689              		.thumb
+ 690              		.thumb_func
+ 692              	mpu6050_read_all:
+ 693              	.LVL56:
+ 694              	.LFB150:
+ 143:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 695              		.loc 1 143 1 is_stmt 1 view -0
+ 696              		.cfi_startproc
+ 697              		@ args = 0, pretend = 0, frame = 16
+ 698              		@ frame_needed = 0, uses_anonymous_args = 0
+ 144:Core/Lib/mpu6050.c ****   {
+ 699              		.loc 1 144 3 view .LVU175
+ 144:Core/Lib/mpu6050.c ****   {
+ 700              		.loc 1 144 6 is_stmt 0 view .LVU176
+ 701 0000 0028     		cmp	r0, #0
+ 702 0002 00F09A80 		beq	.L67
+ 143:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 703              		.loc 1 143 1 discriminator 1 view .LVU177
+ 704 0006 F0B5     		push	{r4, r5, r6, r7, lr}
+ 705              	.LCFI21:
+ 706              		.cfi_def_cfa_offset 20
+ 707              		.cfi_offset 4, -20
+ 708              		.cfi_offset 5, -16
+ 709              		.cfi_offset 6, -12
+ 710              		.cfi_offset 7, -8
+ 711              		.cfi_offset 14, -4
+ 712 0008 87B0     		sub	sp, sp, #28
+ 713              	.LCFI22:
+ 714              		.cfi_def_cfa_offset 48
+ 715 000a 0446     		mov	r4, r0
+ 144:Core/Lib/mpu6050.c ****   {
+ 716              		.loc 1 144 25 discriminator 1 view .LVU178
+ 717 000c 90F83850 		ldrb	r5, [r0, #56]	@ zero_extendqisi2
+ 144:Core/Lib/mpu6050.c ****   {
+ 718              		.loc 1 144 19 discriminator 1 view .LVU179
+ 719 0010 022D     		cmp	r5, #2
+ 720 0012 02D0     		beq	.L74
+ 146:Core/Lib/mpu6050.c ****   }
+ 721              		.loc 1 146 12 view .LVU180
+ 722 0014 0120     		movs	r0, #1
+ 723              	.LVL57:
+ 724              	.L66:
+ 177:Core/Lib/mpu6050.c **** 
+ 725              		.loc 1 177 1 view .LVU181
+ 726 0016 07B0     		add	sp, sp, #28
+ 727              	.LCFI23:
+ 728              		.cfi_remember_state
+ 729              		.cfi_def_cfa_offset 20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 22
+
+
+ 730              		@ sp needed
+ 731 0018 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 732              	.LVL58:
+ 733              	.L74:
+ 734              	.LCFI24:
+ 735              		.cfi_restore_state
+ 148:Core/Lib/mpu6050.c **** 
+ 736              		.loc 1 148 3 is_stmt 1 view .LVU182
+ 151:Core/Lib/mpu6050.c ****   {
+ 737              		.loc 1 151 3 view .LVU183
+ 151:Core/Lib/mpu6050.c ****   {
+ 738              		.loc 1 151 7 is_stmt 0 view .LVU184
+ 739 001a 6423     		movs	r3, #100
+ 740 001c 0093     		str	r3, [sp]
+ 741 001e 0E23     		movs	r3, #14
+ 742 0020 02AA     		add	r2, sp, #8
+ 743 0022 3B21     		movs	r1, #59
+ 744 0024 FFF7FEFF 		bl	mpu6050_read_registers
+ 745              	.LVL59:
+ 151:Core/Lib/mpu6050.c ****   {
+ 746              		.loc 1 151 6 view .LVU185
+ 747 0028 0028     		cmp	r0, #0
+ 748 002a 40F08880 		bne	.L69
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 749              		.loc 1 157 3 is_stmt 1 view .LVU186
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 750              		.loc 1 157 39 is_stmt 0 view .LVU187
+ 751 002e 9DF80860 		ldrb	r6, [sp, #8]	@ zero_extendqisi2
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 752              		.loc 1 157 43 view .LVU188
+ 753 0032 3602     		lsls	r6, r6, #8
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 754              		.loc 1 157 22 view .LVU189
+ 755 0034 36B2     		sxth	r6, r6
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 756              		.loc 1 157 57 view .LVU190
+ 757 0036 9DF80930 		ldrb	r3, [sp, #9]	@ zero_extendqisi2
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 758              		.loc 1 157 49 view .LVU191
+ 759 003a 1E43     		orrs	r6, r6, r3
+ 157:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 760              		.loc 1 157 20 view .LVU192
+ 761 003c E680     		strh	r6, [r4, #6]	@ movhi
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 762              		.loc 1 158 3 is_stmt 1 view .LVU193
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 763              		.loc 1 158 39 is_stmt 0 view .LVU194
+ 764 003e 9DF80A50 		ldrb	r5, [sp, #10]	@ zero_extendqisi2
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 765              		.loc 1 158 43 view .LVU195
+ 766 0042 2D02     		lsls	r5, r5, #8
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 767              		.loc 1 158 22 view .LVU196
+ 768 0044 2DB2     		sxth	r5, r5
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 769              		.loc 1 158 57 view .LVU197
+ 770 0046 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 23
+
+
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 771              		.loc 1 158 49 view .LVU198
+ 772 004a 1D43     		orrs	r5, r5, r3
+ 158:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 773              		.loc 1 158 20 view .LVU199
+ 774 004c 2581     		strh	r5, [r4, #8]	@ movhi
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 775              		.loc 1 159 3 is_stmt 1 view .LVU200
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 776              		.loc 1 159 39 is_stmt 0 view .LVU201
+ 777 004e 9DF80CE0 		ldrb	lr, [sp, #12]	@ zero_extendqisi2
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 778              		.loc 1 159 43 view .LVU202
+ 779 0052 4FEA0E2E 		lsl	lr, lr, #8
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 780              		.loc 1 159 22 view .LVU203
+ 781 0056 0FFA8EFE 		sxth	lr, lr
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 782              		.loc 1 159 57 view .LVU204
+ 783 005a 9DF80D30 		ldrb	r3, [sp, #13]	@ zero_extendqisi2
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 784              		.loc 1 159 49 view .LVU205
+ 785 005e 4EEA030E 		orr	lr, lr, r3
+ 159:Core/Lib/mpu6050.c ****   mpu->temp_raw = (int16_t) (buffer[6] << 8) | buffer[7];
+ 786              		.loc 1 159 20 view .LVU206
+ 787 0062 A4F80AE0 		strh	lr, [r4, #10]	@ movhi
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 788              		.loc 1 160 3 is_stmt 1 view .LVU207
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 789              		.loc 1 160 36 is_stmt 0 view .LVU208
+ 790 0066 9DF80E30 		ldrb	r3, [sp, #14]	@ zero_extendqisi2
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 791              		.loc 1 160 40 view .LVU209
+ 792 006a 1B02     		lsls	r3, r3, #8
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 793              		.loc 1 160 19 view .LVU210
+ 794 006c 1BB2     		sxth	r3, r3
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 795              		.loc 1 160 54 view .LVU211
+ 796 006e 9DF80F20 		ldrb	r2, [sp, #15]	@ zero_extendqisi2
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 797              		.loc 1 160 46 view .LVU212
+ 798 0072 1343     		orrs	r3, r3, r2
+ 160:Core/Lib/mpu6050.c ****   mpu->gyro_raw.x = (int16_t) (buffer[8] << 8) | buffer[9];
+ 799              		.loc 1 160 17 view .LVU213
+ 800 0074 6382     		strh	r3, [r4, #18]	@ movhi
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 801              		.loc 1 161 3 is_stmt 1 view .LVU214
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 802              		.loc 1 161 38 is_stmt 0 view .LVU215
+ 803 0076 9DF810C0 		ldrb	ip, [sp, #16]	@ zero_extendqisi2
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 804              		.loc 1 161 42 view .LVU216
+ 805 007a 4FEA0C2C 		lsl	ip, ip, #8
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 806              		.loc 1 161 21 view .LVU217
+ 807 007e 0FFA8CFC 		sxth	ip, ip
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 24
+
+
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 808              		.loc 1 161 56 view .LVU218
+ 809 0082 9DF81120 		ldrb	r2, [sp, #17]	@ zero_extendqisi2
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 810              		.loc 1 161 48 view .LVU219
+ 811 0086 4CEA020C 		orr	ip, ip, r2
+ 161:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[10] << 8) | buffer[11];
+ 812              		.loc 1 161 19 view .LVU220
+ 813 008a A4F80CC0 		strh	ip, [r4, #12]	@ movhi
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 814              		.loc 1 162 3 is_stmt 1 view .LVU221
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 815              		.loc 1 162 38 is_stmt 0 view .LVU222
+ 816 008e 9DF81210 		ldrb	r1, [sp, #18]	@ zero_extendqisi2
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 817              		.loc 1 162 43 view .LVU223
+ 818 0092 0902     		lsls	r1, r1, #8
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 819              		.loc 1 162 21 view .LVU224
+ 820 0094 09B2     		sxth	r1, r1
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 821              		.loc 1 162 57 view .LVU225
+ 822 0096 9DF81320 		ldrb	r2, [sp, #19]	@ zero_extendqisi2
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 823              		.loc 1 162 49 view .LVU226
+ 824 009a 1143     		orrs	r1, r1, r2
+ 162:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[12] << 8) | buffer[13];
+ 825              		.loc 1 162 19 view .LVU227
+ 826 009c E181     		strh	r1, [r4, #14]	@ movhi
+ 163:Core/Lib/mpu6050.c **** 
+ 827              		.loc 1 163 3 is_stmt 1 view .LVU228
+ 163:Core/Lib/mpu6050.c **** 
+ 828              		.loc 1 163 38 is_stmt 0 view .LVU229
+ 829 009e 9DF81420 		ldrb	r2, [sp, #20]	@ zero_extendqisi2
+ 163:Core/Lib/mpu6050.c **** 
+ 830              		.loc 1 163 43 view .LVU230
+ 831 00a2 1202     		lsls	r2, r2, #8
+ 163:Core/Lib/mpu6050.c **** 
+ 832              		.loc 1 163 21 view .LVU231
+ 833 00a4 12B2     		sxth	r2, r2
+ 163:Core/Lib/mpu6050.c **** 
+ 834              		.loc 1 163 57 view .LVU232
+ 835 00a6 9DF81570 		ldrb	r7, [sp, #21]	@ zero_extendqisi2
+ 163:Core/Lib/mpu6050.c **** 
+ 836              		.loc 1 163 49 view .LVU233
+ 837 00aa 3A43     		orrs	r2, r2, r7
+ 163:Core/Lib/mpu6050.c **** 
+ 838              		.loc 1 163 19 view .LVU234
+ 839 00ac 2282     		strh	r2, [r4, #16]	@ movhi
+ 166:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 840              		.loc 1 166 3 is_stmt 1 view .LVU235
+ 166:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 841              		.loc 1 166 25 is_stmt 0 view .LVU236
+ 842 00ae 07EE906A 		vmov	s15, r6	@ int
+ 843 00b2 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 166:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 844              		.loc 1 166 53 view .LVU237
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 25
+
+
+ 845 00b6 94ED0C7A 		vldr.32	s14, [r4, #48]
+ 166:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 846              		.loc 1 166 49 view .LVU238
+ 847 00ba C7EE876A 		vdiv.f32	s13, s15, s14
+ 166:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 848              		.loc 1 166 23 view .LVU239
+ 849 00be C4ED056A 		vstr.32	s13, [r4, #20]
+ 167:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 850              		.loc 1 167 3 is_stmt 1 view .LVU240
+ 167:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 851              		.loc 1 167 25 is_stmt 0 view .LVU241
+ 852 00c2 07EE905A 		vmov	s15, r5	@ int
+ 853 00c6 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 167:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 854              		.loc 1 167 49 view .LVU242
+ 855 00ca C7EE876A 		vdiv.f32	s13, s15, s14
+ 167:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 856              		.loc 1 167 23 view .LVU243
+ 857 00ce C4ED066A 		vstr.32	s13, [r4, #24]
+ 168:Core/Lib/mpu6050.c ****    
+ 858              		.loc 1 168 3 is_stmt 1 view .LVU244
+ 168:Core/Lib/mpu6050.c ****    
+ 859              		.loc 1 168 25 is_stmt 0 view .LVU245
+ 860 00d2 07EE90EA 		vmov	s15, lr	@ int
+ 861 00d6 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 168:Core/Lib/mpu6050.c ****    
+ 862              		.loc 1 168 49 view .LVU246
+ 863 00da C7EE876A 		vdiv.f32	s13, s15, s14
+ 168:Core/Lib/mpu6050.c ****    
+ 864              		.loc 1 168 23 view .LVU247
+ 865 00de C4ED076A 		vstr.32	s13, [r4, #28]
+ 170:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 866              		.loc 1 170 3 is_stmt 1 view .LVU248
+ 170:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 867              		.loc 1 170 24 is_stmt 0 view .LVU249
+ 868 00e2 07EE90CA 		vmov	s15, ip	@ int
+ 869 00e6 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 170:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 870              		.loc 1 170 51 view .LVU250
+ 871 00ea 94ED0D7A 		vldr.32	s14, [r4, #52]
+ 170:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 872              		.loc 1 170 47 view .LVU251
+ 873 00ee C7EE876A 		vdiv.f32	s13, s15, s14
+ 170:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 874              		.loc 1 170 22 view .LVU252
+ 875 00f2 C4ED086A 		vstr.32	s13, [r4, #32]
+ 171:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 876              		.loc 1 171 3 is_stmt 1 view .LVU253
+ 171:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 877              		.loc 1 171 24 is_stmt 0 view .LVU254
+ 878 00f6 07EE901A 		vmov	s15, r1	@ int
+ 879 00fa F8EEE77A 		vcvt.f32.s32	s15, s15
+ 171:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 880              		.loc 1 171 47 view .LVU255
+ 881 00fe C7EE876A 		vdiv.f32	s13, s15, s14
+ 171:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 882              		.loc 1 171 22 view .LVU256
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 26
+
+
+ 883 0102 C4ED096A 		vstr.32	s13, [r4, #36]
+ 172:Core/Lib/mpu6050.c **** 
+ 884              		.loc 1 172 3 is_stmt 1 view .LVU257
+ 172:Core/Lib/mpu6050.c **** 
+ 885              		.loc 1 172 24 is_stmt 0 view .LVU258
+ 886 0106 07EE902A 		vmov	s15, r2	@ int
+ 887 010a F8EEE77A 		vcvt.f32.s32	s15, s15
+ 172:Core/Lib/mpu6050.c **** 
+ 888              		.loc 1 172 47 view .LVU259
+ 889 010e C7EE876A 		vdiv.f32	s13, s15, s14
+ 172:Core/Lib/mpu6050.c **** 
+ 890              		.loc 1 172 22 view .LVU260
+ 891 0112 C4ED0A6A 		vstr.32	s13, [r4, #40]
+ 174:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 892              		.loc 1 174 3 is_stmt 1 view .LVU261
+ 174:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 893              		.loc 1 174 22 is_stmt 0 view .LVU262
+ 894 0116 0B4A     		ldr	r2, .L75
+ 895 0118 82FB0312 		smull	r1, r2, r2, r3
+ 896 011c DB17     		asrs	r3, r3, #31
+ 897 011e C3EBE213 		rsb	r3, r3, r2, asr #7
+ 898 0122 1BB2     		sxth	r3, r3
+ 899 0124 07EE903A 		vmov	s15, r3	@ int
+ 900 0128 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 174:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 901              		.loc 1 174 52 view .LVU263
+ 902 012c 9FED067A 		vldr.32	s14, .L75+4
+ 903 0130 77EE877A 		vadd.f32	s15, s15, s14
+ 174:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 904              		.loc 1 174 20 view .LVU264
+ 905 0134 C4ED0B7A 		vstr.32	s15, [r4, #44]
+ 175:Core/Lib/mpu6050.c ****   
+ 906              		.loc 1 175 3 is_stmt 1 view .LVU265
+ 175:Core/Lib/mpu6050.c ****   
+ 907              		.loc 1 175 10 is_stmt 0 view .LVU266
+ 908 0138 6DE7     		b	.L66
+ 909              	.LVL60:
+ 910              	.L67:
+ 911              	.LCFI25:
+ 912              		.cfi_def_cfa_offset 0
+ 913              		.cfi_restore 4
+ 914              		.cfi_restore 5
+ 915              		.cfi_restore 6
+ 916              		.cfi_restore 7
+ 917              		.cfi_restore 14
+ 146:Core/Lib/mpu6050.c ****   }
+ 918              		.loc 1 146 12 view .LVU267
+ 919 013a 0120     		movs	r0, #1
+ 920              	.LVL61:
+ 177:Core/Lib/mpu6050.c **** 
+ 921              		.loc 1 177 1 view .LVU268
+ 922 013c 7047     		bx	lr
+ 923              	.LVL62:
+ 924              	.L69:
+ 925              	.LCFI26:
+ 926              		.cfi_def_cfa_offset 48
+ 927              		.cfi_offset 4, -20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 27
+
+
+ 928              		.cfi_offset 5, -16
+ 929              		.cfi_offset 6, -12
+ 930              		.cfi_offset 7, -8
+ 931              		.cfi_offset 14, -4
+ 153:Core/Lib/mpu6050.c ****   }
+ 932              		.loc 1 153 12 view .LVU269
+ 933 013e 2846     		mov	r0, r5
+ 934 0140 69E7     		b	.L66
+ 935              	.L76:
+ 936 0142 00BF     		.align	2
+ 937              	.L75:
+ 938 0144 61606060 		.word	1616928865
+ 939 0148 B81E1242 		.word	1108483768
+ 940              		.cfi_endproc
+ 941              	.LFE150:
+ 943              		.section	.text.mpu6050_read_accel,"ax",%progbits
+ 944              		.align	1
+ 945              		.global	mpu6050_read_accel
+ 946              		.syntax unified
+ 947              		.thumb
+ 948              		.thumb_func
+ 950              	mpu6050_read_accel:
+ 951              	.LVL63:
+ 952              	.LFB151:
+ 180:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 953              		.loc 1 180 1 is_stmt 1 view -0
+ 954              		.cfi_startproc
+ 955              		@ args = 0, pretend = 0, frame = 8
+ 956              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181:Core/Lib/mpu6050.c ****   {
+ 957              		.loc 1 181 3 view .LVU271
+ 181:Core/Lib/mpu6050.c ****   {
+ 958              		.loc 1 181 6 is_stmt 0 view .LVU272
+ 959 0000 0028     		cmp	r0, #0
+ 960 0002 44D0     		beq	.L79
+ 180:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 961              		.loc 1 180 1 discriminator 1 view .LVU273
+ 962 0004 30B5     		push	{r4, r5, lr}
+ 963              	.LCFI27:
+ 964              		.cfi_def_cfa_offset 12
+ 965              		.cfi_offset 4, -12
+ 966              		.cfi_offset 5, -8
+ 967              		.cfi_offset 14, -4
+ 968 0006 85B0     		sub	sp, sp, #20
+ 969              	.LCFI28:
+ 970              		.cfi_def_cfa_offset 32
+ 971 0008 0446     		mov	r4, r0
+ 181:Core/Lib/mpu6050.c ****   {
+ 972              		.loc 1 181 25 discriminator 1 view .LVU274
+ 973 000a 90F83850 		ldrb	r5, [r0, #56]	@ zero_extendqisi2
+ 181:Core/Lib/mpu6050.c ****   {
+ 974              		.loc 1 181 19 discriminator 1 view .LVU275
+ 975 000e 022D     		cmp	r5, #2
+ 976 0010 02D0     		beq	.L86
+ 183:Core/Lib/mpu6050.c ****   }
+ 977              		.loc 1 183 12 view .LVU276
+ 978 0012 0120     		movs	r0, #1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 28
+
+
+ 979              	.LVL64:
+ 980              	.L78:
+ 201:Core/Lib/mpu6050.c **** 
+ 981              		.loc 1 201 1 view .LVU277
+ 982 0014 05B0     		add	sp, sp, #20
+ 983              	.LCFI29:
+ 984              		.cfi_remember_state
+ 985              		.cfi_def_cfa_offset 12
+ 986              		@ sp needed
+ 987 0016 30BD     		pop	{r4, r5, pc}
+ 988              	.LVL65:
+ 989              	.L86:
+ 990              	.LCFI30:
+ 991              		.cfi_restore_state
+ 185:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_ACCEL_XOUT_H, buffer, 6, s_default_timeout) != MPU605
+ 992              		.loc 1 185 3 is_stmt 1 view .LVU278
+ 186:Core/Lib/mpu6050.c ****   {
+ 993              		.loc 1 186 3 view .LVU279
+ 186:Core/Lib/mpu6050.c ****   {
+ 994              		.loc 1 186 7 is_stmt 0 view .LVU280
+ 995 0018 6423     		movs	r3, #100
+ 996 001a 0093     		str	r3, [sp]
+ 997 001c 0623     		movs	r3, #6
+ 998 001e 02AA     		add	r2, sp, #8
+ 999 0020 3B21     		movs	r1, #59
+ 1000 0022 FFF7FEFF 		bl	mpu6050_read_registers
+ 1001              	.LVL66:
+ 186:Core/Lib/mpu6050.c ****   {
+ 1002              		.loc 1 186 6 view .LVU281
+ 1003 0026 A0BB     		cbnz	r0, .L81
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1004              		.loc 1 190 3 is_stmt 1 view .LVU282
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1005              		.loc 1 190 39 is_stmt 0 view .LVU283
+ 1006 0028 9DF80810 		ldrb	r1, [sp, #8]	@ zero_extendqisi2
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1007              		.loc 1 190 43 view .LVU284
+ 1008 002c 0902     		lsls	r1, r1, #8
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1009              		.loc 1 190 22 view .LVU285
+ 1010 002e 09B2     		sxth	r1, r1
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1011              		.loc 1 190 57 view .LVU286
+ 1012 0030 9DF80930 		ldrb	r3, [sp, #9]	@ zero_extendqisi2
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1013              		.loc 1 190 49 view .LVU287
+ 1014 0034 1943     		orrs	r1, r1, r3
+ 190:Core/Lib/mpu6050.c ****   mpu->accel_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1015              		.loc 1 190 20 view .LVU288
+ 1016 0036 E180     		strh	r1, [r4, #6]	@ movhi
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1017              		.loc 1 191 3 is_stmt 1 view .LVU289
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1018              		.loc 1 191 39 is_stmt 0 view .LVU290
+ 1019 0038 9DF80A20 		ldrb	r2, [sp, #10]	@ zero_extendqisi2
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1020              		.loc 1 191 43 view .LVU291
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 29
+
+
+ 1021 003c 1202     		lsls	r2, r2, #8
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1022              		.loc 1 191 22 view .LVU292
+ 1023 003e 12B2     		sxth	r2, r2
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1024              		.loc 1 191 57 view .LVU293
+ 1025 0040 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1026              		.loc 1 191 49 view .LVU294
+ 1027 0044 1A43     		orrs	r2, r2, r3
+ 191:Core/Lib/mpu6050.c ****   mpu->accel_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1028              		.loc 1 191 20 view .LVU295
+ 1029 0046 2281     		strh	r2, [r4, #8]	@ movhi
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1030              		.loc 1 192 3 is_stmt 1 view .LVU296
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1031              		.loc 1 192 39 is_stmt 0 view .LVU297
+ 1032 0048 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1033              		.loc 1 192 43 view .LVU298
+ 1034 004c 1B02     		lsls	r3, r3, #8
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1035              		.loc 1 192 22 view .LVU299
+ 1036 004e 1BB2     		sxth	r3, r3
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1037              		.loc 1 192 57 view .LVU300
+ 1038 0050 9DF80D50 		ldrb	r5, [sp, #13]	@ zero_extendqisi2
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1039              		.loc 1 192 49 view .LVU301
+ 1040 0054 2B43     		orrs	r3, r3, r5
+ 192:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1041              		.loc 1 192 20 view .LVU302
+ 1042 0056 6381     		strh	r3, [r4, #10]	@ movhi
+ 194:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 1043              		.loc 1 194 3 is_stmt 1 view .LVU303
+ 194:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 1044              		.loc 1 194 25 is_stmt 0 view .LVU304
+ 1045 0058 07EE901A 		vmov	s15, r1	@ int
+ 1046 005c F8EEE77A 		vcvt.f32.s32	s15, s15
+ 194:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 1047              		.loc 1 194 53 view .LVU305
+ 1048 0060 94ED0C7A 		vldr.32	s14, [r4, #48]
+ 194:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 1049              		.loc 1 194 49 view .LVU306
+ 1050 0064 C7EE876A 		vdiv.f32	s13, s15, s14
+ 194:Core/Lib/mpu6050.c ****   mpu->accel_scaled.y = (float) mpu->accel_raw.y/mpu->accel_sensitivity;
+ 1051              		.loc 1 194 23 view .LVU307
+ 1052 0068 C4ED056A 		vstr.32	s13, [r4, #20]
+ 195:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 1053              		.loc 1 195 3 is_stmt 1 view .LVU308
+ 195:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 1054              		.loc 1 195 25 is_stmt 0 view .LVU309
+ 1055 006c 07EE902A 		vmov	s15, r2	@ int
+ 1056 0070 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 195:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 1057              		.loc 1 195 49 view .LVU310
+ 1058 0074 C7EE876A 		vdiv.f32	s13, s15, s14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 30
+
+
+ 195:Core/Lib/mpu6050.c ****   mpu->accel_scaled.z = (float) mpu->accel_raw.z/mpu->accel_sensitivity;
+ 1059              		.loc 1 195 23 view .LVU311
+ 1060 0078 C4ED066A 		vstr.32	s13, [r4, #24]
+ 196:Core/Lib/mpu6050.c ****   
+ 1061              		.loc 1 196 3 is_stmt 1 view .LVU312
+ 196:Core/Lib/mpu6050.c ****   
+ 1062              		.loc 1 196 25 is_stmt 0 view .LVU313
+ 1063 007c 07EE903A 		vmov	s15, r3	@ int
+ 1064 0080 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 196:Core/Lib/mpu6050.c ****   
+ 1065              		.loc 1 196 49 view .LVU314
+ 1066 0084 C7EE876A 		vdiv.f32	s13, s15, s14
+ 196:Core/Lib/mpu6050.c ****   
+ 1067              		.loc 1 196 23 view .LVU315
+ 1068 0088 C4ED076A 		vstr.32	s13, [r4, #28]
+ 198:Core/Lib/mpu6050.c ****   
+ 1069              		.loc 1 198 3 is_stmt 1 view .LVU316
+ 198:Core/Lib/mpu6050.c ****   
+ 1070              		.loc 1 198 10 is_stmt 0 view .LVU317
+ 1071 008c C2E7     		b	.L78
+ 1072              	.LVL67:
+ 1073              	.L79:
+ 1074              	.LCFI31:
+ 1075              		.cfi_def_cfa_offset 0
+ 1076              		.cfi_restore 4
+ 1077              		.cfi_restore 5
+ 1078              		.cfi_restore 14
+ 183:Core/Lib/mpu6050.c ****   }
+ 1079              		.loc 1 183 12 view .LVU318
+ 1080 008e 0120     		movs	r0, #1
+ 1081              	.LVL68:
+ 201:Core/Lib/mpu6050.c **** 
+ 1082              		.loc 1 201 1 view .LVU319
+ 1083 0090 7047     		bx	lr
+ 1084              	.LVL69:
+ 1085              	.L81:
+ 1086              	.LCFI32:
+ 1087              		.cfi_def_cfa_offset 32
+ 1088              		.cfi_offset 4, -12
+ 1089              		.cfi_offset 5, -8
+ 1090              		.cfi_offset 14, -4
+ 188:Core/Lib/mpu6050.c ****   }
+ 1091              		.loc 1 188 12 view .LVU320
+ 1092 0092 2846     		mov	r0, r5
+ 1093 0094 BEE7     		b	.L78
+ 1094              		.cfi_endproc
+ 1095              	.LFE151:
+ 1097              		.section	.text.mpu6050_read_gyro,"ax",%progbits
+ 1098              		.align	1
+ 1099              		.global	mpu6050_read_gyro
+ 1100              		.syntax unified
+ 1101              		.thumb
+ 1102              		.thumb_func
+ 1104              	mpu6050_read_gyro:
+ 1105              	.LVL70:
+ 1106              	.LFB152:
+ 204:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 31
+
+
+ 1107              		.loc 1 204 1 is_stmt 1 view -0
+ 1108              		.cfi_startproc
+ 1109              		@ args = 0, pretend = 0, frame = 8
+ 1110              		@ frame_needed = 0, uses_anonymous_args = 0
+ 205:Core/Lib/mpu6050.c ****   {
+ 1111              		.loc 1 205 3 view .LVU322
+ 205:Core/Lib/mpu6050.c ****   {
+ 1112              		.loc 1 205 6 is_stmt 0 view .LVU323
+ 1113 0000 0028     		cmp	r0, #0
+ 1114 0002 44D0     		beq	.L89
+ 204:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 1115              		.loc 1 204 1 discriminator 1 view .LVU324
+ 1116 0004 30B5     		push	{r4, r5, lr}
+ 1117              	.LCFI33:
+ 1118              		.cfi_def_cfa_offset 12
+ 1119              		.cfi_offset 4, -12
+ 1120              		.cfi_offset 5, -8
+ 1121              		.cfi_offset 14, -4
+ 1122 0006 85B0     		sub	sp, sp, #20
+ 1123              	.LCFI34:
+ 1124              		.cfi_def_cfa_offset 32
+ 1125 0008 0446     		mov	r4, r0
+ 205:Core/Lib/mpu6050.c ****   {
+ 1126              		.loc 1 205 25 discriminator 1 view .LVU325
+ 1127 000a 90F83850 		ldrb	r5, [r0, #56]	@ zero_extendqisi2
+ 205:Core/Lib/mpu6050.c ****   {
+ 1128              		.loc 1 205 19 discriminator 1 view .LVU326
+ 1129 000e 022D     		cmp	r5, #2
+ 1130 0010 02D0     		beq	.L96
+ 207:Core/Lib/mpu6050.c ****   }
+ 1131              		.loc 1 207 12 view .LVU327
+ 1132 0012 0120     		movs	r0, #1
+ 1133              	.LVL71:
+ 1134              	.L88:
+ 223:Core/Lib/mpu6050.c **** 
+ 1135              		.loc 1 223 1 view .LVU328
+ 1136 0014 05B0     		add	sp, sp, #20
+ 1137              	.LCFI35:
+ 1138              		.cfi_remember_state
+ 1139              		.cfi_def_cfa_offset 12
+ 1140              		@ sp needed
+ 1141 0016 30BD     		pop	{r4, r5, pc}
+ 1142              	.LVL72:
+ 1143              	.L96:
+ 1144              	.LCFI36:
+ 1145              		.cfi_restore_state
+ 209:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_GYRO_XOUT_H, buffer, 6, s_default_timeout) != MPU6050
+ 1146              		.loc 1 209 3 is_stmt 1 view .LVU329
+ 210:Core/Lib/mpu6050.c ****   {
+ 1147              		.loc 1 210 3 view .LVU330
+ 210:Core/Lib/mpu6050.c ****   {
+ 1148              		.loc 1 210 7 is_stmt 0 view .LVU331
+ 1149 0018 6423     		movs	r3, #100
+ 1150 001a 0093     		str	r3, [sp]
+ 1151 001c 0623     		movs	r3, #6
+ 1152 001e 02AA     		add	r2, sp, #8
+ 1153 0020 4321     		movs	r1, #67
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 32
+
+
+ 1154 0022 FFF7FEFF 		bl	mpu6050_read_registers
+ 1155              	.LVL73:
+ 210:Core/Lib/mpu6050.c ****   {
+ 1156              		.loc 1 210 6 view .LVU332
+ 1157 0026 A0BB     		cbnz	r0, .L91
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1158              		.loc 1 214 3 is_stmt 1 view .LVU333
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1159              		.loc 1 214 38 is_stmt 0 view .LVU334
+ 1160 0028 9DF80810 		ldrb	r1, [sp, #8]	@ zero_extendqisi2
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1161              		.loc 1 214 42 view .LVU335
+ 1162 002c 0902     		lsls	r1, r1, #8
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1163              		.loc 1 214 21 view .LVU336
+ 1164 002e 09B2     		sxth	r1, r1
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1165              		.loc 1 214 56 view .LVU337
+ 1166 0030 9DF80930 		ldrb	r3, [sp, #9]	@ zero_extendqisi2
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1167              		.loc 1 214 48 view .LVU338
+ 1168 0034 1943     		orrs	r1, r1, r3
+ 214:Core/Lib/mpu6050.c ****   mpu->gyro_raw.y = (int16_t) (buffer[2] << 8) | buffer[3];
+ 1169              		.loc 1 214 19 view .LVU339
+ 1170 0036 A181     		strh	r1, [r4, #12]	@ movhi
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1171              		.loc 1 215 3 is_stmt 1 view .LVU340
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1172              		.loc 1 215 38 is_stmt 0 view .LVU341
+ 1173 0038 9DF80A20 		ldrb	r2, [sp, #10]	@ zero_extendqisi2
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1174              		.loc 1 215 42 view .LVU342
+ 1175 003c 1202     		lsls	r2, r2, #8
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1176              		.loc 1 215 21 view .LVU343
+ 1177 003e 12B2     		sxth	r2, r2
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1178              		.loc 1 215 56 view .LVU344
+ 1179 0040 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1180              		.loc 1 215 48 view .LVU345
+ 1181 0044 1A43     		orrs	r2, r2, r3
+ 215:Core/Lib/mpu6050.c ****   mpu->gyro_raw.z = (int16_t) (buffer[4] << 8) | buffer[5];
+ 1182              		.loc 1 215 19 view .LVU346
+ 1183 0046 E281     		strh	r2, [r4, #14]	@ movhi
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1184              		.loc 1 216 3 is_stmt 1 view .LVU347
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1185              		.loc 1 216 38 is_stmt 0 view .LVU348
+ 1186 0048 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1187              		.loc 1 216 42 view .LVU349
+ 1188 004c 1B02     		lsls	r3, r3, #8
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1189              		.loc 1 216 21 view .LVU350
+ 1190 004e 1BB2     		sxth	r3, r3
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 33
+
+
+ 1191              		.loc 1 216 56 view .LVU351
+ 1192 0050 9DF80D50 		ldrb	r5, [sp, #13]	@ zero_extendqisi2
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1193              		.loc 1 216 48 view .LVU352
+ 1194 0054 2B43     		orrs	r3, r3, r5
+ 216:Core/Lib/mpu6050.c ****   //convert to physical unit
+ 1195              		.loc 1 216 19 view .LVU353
+ 1196 0056 2382     		strh	r3, [r4, #16]	@ movhi
+ 218:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 1197              		.loc 1 218 3 is_stmt 1 view .LVU354
+ 218:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 1198              		.loc 1 218 24 is_stmt 0 view .LVU355
+ 1199 0058 07EE901A 		vmov	s15, r1	@ int
+ 1200 005c F8EEE77A 		vcvt.f32.s32	s15, s15
+ 218:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 1201              		.loc 1 218 51 view .LVU356
+ 1202 0060 94ED0D7A 		vldr.32	s14, [r4, #52]
+ 218:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 1203              		.loc 1 218 47 view .LVU357
+ 1204 0064 C7EE876A 		vdiv.f32	s13, s15, s14
+ 218:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.y = (float) mpu->gyro_raw.y/mpu->gyro_sensitivity;
+ 1205              		.loc 1 218 22 view .LVU358
+ 1206 0068 C4ED086A 		vstr.32	s13, [r4, #32]
+ 219:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 1207              		.loc 1 219 3 is_stmt 1 view .LVU359
+ 219:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 1208              		.loc 1 219 24 is_stmt 0 view .LVU360
+ 1209 006c 07EE902A 		vmov	s15, r2	@ int
+ 1210 0070 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 219:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 1211              		.loc 1 219 47 view .LVU361
+ 1212 0074 C7EE876A 		vdiv.f32	s13, s15, s14
+ 219:Core/Lib/mpu6050.c ****   mpu->gyro_scaled.z = (float) mpu->gyro_raw.z/mpu->gyro_sensitivity;
+ 1213              		.loc 1 219 22 view .LVU362
+ 1214 0078 C4ED096A 		vstr.32	s13, [r4, #36]
+ 220:Core/Lib/mpu6050.c ****   
+ 1215              		.loc 1 220 3 is_stmt 1 view .LVU363
+ 220:Core/Lib/mpu6050.c ****   
+ 1216              		.loc 1 220 24 is_stmt 0 view .LVU364
+ 1217 007c 07EE903A 		vmov	s15, r3	@ int
+ 1218 0080 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 220:Core/Lib/mpu6050.c ****   
+ 1219              		.loc 1 220 47 view .LVU365
+ 1220 0084 C7EE876A 		vdiv.f32	s13, s15, s14
+ 220:Core/Lib/mpu6050.c ****   
+ 1221              		.loc 1 220 22 view .LVU366
+ 1222 0088 C4ED0A6A 		vstr.32	s13, [r4, #40]
+ 222:Core/Lib/mpu6050.c **** }
+ 1223              		.loc 1 222 3 is_stmt 1 view .LVU367
+ 222:Core/Lib/mpu6050.c **** }
+ 1224              		.loc 1 222 10 is_stmt 0 view .LVU368
+ 1225 008c C2E7     		b	.L88
+ 1226              	.LVL74:
+ 1227              	.L89:
+ 1228              	.LCFI37:
+ 1229              		.cfi_def_cfa_offset 0
+ 1230              		.cfi_restore 4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 34
+
+
+ 1231              		.cfi_restore 5
+ 1232              		.cfi_restore 14
+ 207:Core/Lib/mpu6050.c ****   }
+ 1233              		.loc 1 207 12 view .LVU369
+ 1234 008e 0120     		movs	r0, #1
+ 1235              	.LVL75:
+ 223:Core/Lib/mpu6050.c **** 
+ 1236              		.loc 1 223 1 view .LVU370
+ 1237 0090 7047     		bx	lr
+ 1238              	.LVL76:
+ 1239              	.L91:
+ 1240              	.LCFI38:
+ 1241              		.cfi_def_cfa_offset 32
+ 1242              		.cfi_offset 4, -12
+ 1243              		.cfi_offset 5, -8
+ 1244              		.cfi_offset 14, -4
+ 212:Core/Lib/mpu6050.c ****   }
+ 1245              		.loc 1 212 12 view .LVU371
+ 1246 0092 2846     		mov	r0, r5
+ 1247 0094 BEE7     		b	.L88
+ 1248              		.cfi_endproc
+ 1249              	.LFE152:
+ 1251              		.section	.text.mpu6050_read_temp,"ax",%progbits
+ 1252              		.align	1
+ 1253              		.global	mpu6050_read_temp
+ 1254              		.syntax unified
+ 1255              		.thumb
+ 1256              		.thumb_func
+ 1258              	mpu6050_read_temp:
+ 1259              	.LVL77:
+ 1260              	.LFB153:
+ 226:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 1261              		.loc 1 226 1 is_stmt 1 view -0
+ 1262              		.cfi_startproc
+ 1263              		@ args = 0, pretend = 0, frame = 8
+ 1264              		@ frame_needed = 0, uses_anonymous_args = 0
+ 227:Core/Lib/mpu6050.c ****   {
+ 1265              		.loc 1 227 3 view .LVU373
+ 227:Core/Lib/mpu6050.c ****   {
+ 1266              		.loc 1 227 6 is_stmt 0 view .LVU374
+ 1267 0000 58B3     		cbz	r0, .L99
+ 226:Core/Lib/mpu6050.c ****   if (mpu == NULL || mpu->init_state != MPU6050_INIT_STATE_READY)
+ 1268              		.loc 1 226 1 discriminator 1 view .LVU375
+ 1269 0002 30B5     		push	{r4, r5, lr}
+ 1270              	.LCFI39:
+ 1271              		.cfi_def_cfa_offset 12
+ 1272              		.cfi_offset 4, -12
+ 1273              		.cfi_offset 5, -8
+ 1274              		.cfi_offset 14, -4
+ 1275 0004 85B0     		sub	sp, sp, #20
+ 1276              	.LCFI40:
+ 1277              		.cfi_def_cfa_offset 32
+ 1278 0006 0446     		mov	r4, r0
+ 227:Core/Lib/mpu6050.c ****   {
+ 1279              		.loc 1 227 25 discriminator 1 view .LVU376
+ 1280 0008 90F83850 		ldrb	r5, [r0, #56]	@ zero_extendqisi2
+ 227:Core/Lib/mpu6050.c ****   {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 35
+
+
+ 1281              		.loc 1 227 19 discriminator 1 view .LVU377
+ 1282 000c 022D     		cmp	r5, #2
+ 1283 000e 02D0     		beq	.L106
+ 229:Core/Lib/mpu6050.c ****   }
+ 1284              		.loc 1 229 12 view .LVU378
+ 1285 0010 0120     		movs	r0, #1
+ 1286              	.LVL78:
+ 1287              	.L98:
+ 239:Core/Lib/mpu6050.c **** 
+ 1288              		.loc 1 239 1 view .LVU379
+ 1289 0012 05B0     		add	sp, sp, #20
+ 1290              	.LCFI41:
+ 1291              		.cfi_remember_state
+ 1292              		.cfi_def_cfa_offset 12
+ 1293              		@ sp needed
+ 1294 0014 30BD     		pop	{r4, r5, pc}
+ 1295              	.LVL79:
+ 1296              	.L106:
+ 1297              	.LCFI42:
+ 1298              		.cfi_restore_state
+ 231:Core/Lib/mpu6050.c ****   if (mpu6050_read_registers(mpu, MPU6050_REG_TEMP_OUT_H, buffer, 6, s_default_timeout) != MPU6050_
+ 1299              		.loc 1 231 3 is_stmt 1 view .LVU380
+ 232:Core/Lib/mpu6050.c ****   {
+ 1300              		.loc 1 232 3 view .LVU381
+ 232:Core/Lib/mpu6050.c ****   {
+ 1301              		.loc 1 232 7 is_stmt 0 view .LVU382
+ 1302 0016 6423     		movs	r3, #100
+ 1303 0018 0093     		str	r3, [sp]
+ 1304 001a 0623     		movs	r3, #6
+ 1305 001c 03AA     		add	r2, sp, #12
+ 1306 001e 4121     		movs	r1, #65
+ 1307 0020 FFF7FEFF 		bl	mpu6050_read_registers
+ 1308              	.LVL80:
+ 232:Core/Lib/mpu6050.c ****   {
+ 1309              		.loc 1 232 6 view .LVU383
+ 1310 0024 D8B9     		cbnz	r0, .L101
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1311              		.loc 1 236 3 is_stmt 1 view .LVU384
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1312              		.loc 1 236 36 is_stmt 0 view .LVU385
+ 1313 0026 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1314              		.loc 1 236 40 view .LVU386
+ 1315 002a 1B02     		lsls	r3, r3, #8
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1316              		.loc 1 236 19 view .LVU387
+ 1317 002c 1BB2     		sxth	r3, r3
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1318              		.loc 1 236 54 view .LVU388
+ 1319 002e 9DF80D20 		ldrb	r2, [sp, #13]	@ zero_extendqisi2
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1320              		.loc 1 236 46 view .LVU389
+ 1321 0032 1343     		orrs	r3, r3, r2
+ 236:Core/Lib/mpu6050.c ****   mpu->temp_scaled = (float) (mpu->temp_raw / 340) + 36.53f;
+ 1322              		.loc 1 236 17 view .LVU390
+ 1323 0034 6382     		strh	r3, [r4, #18]	@ movhi
+ 237:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 36
+
+
+ 1324              		.loc 1 237 3 is_stmt 1 view .LVU391
+ 237:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 1325              		.loc 1 237 22 is_stmt 0 view .LVU392
+ 1326 0036 0B4A     		ldr	r2, .L107
+ 1327 0038 82FB0312 		smull	r1, r2, r2, r3
+ 1328 003c DB17     		asrs	r3, r3, #31
+ 1329 003e C3EBE213 		rsb	r3, r3, r2, asr #7
+ 1330 0042 1BB2     		sxth	r3, r3
+ 1331 0044 07EE903A 		vmov	s15, r3	@ int
+ 1332 0048 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 237:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 1333              		.loc 1 237 52 view .LVU393
+ 1334 004c 9FED067A 		vldr.32	s14, .L107+4
+ 1335 0050 77EE877A 		vadd.f32	s15, s15, s14
+ 237:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 1336              		.loc 1 237 20 view .LVU394
+ 1337 0054 C4ED0B7A 		vstr.32	s15, [r4, #44]
+ 238:Core/Lib/mpu6050.c **** }
+ 1338              		.loc 1 238 3 is_stmt 1 view .LVU395
+ 238:Core/Lib/mpu6050.c **** }
+ 1339              		.loc 1 238 10 is_stmt 0 view .LVU396
+ 1340 0058 DBE7     		b	.L98
+ 1341              	.LVL81:
+ 1342              	.L99:
+ 1343              	.LCFI43:
+ 1344              		.cfi_def_cfa_offset 0
+ 1345              		.cfi_restore 4
+ 1346              		.cfi_restore 5
+ 1347              		.cfi_restore 14
+ 229:Core/Lib/mpu6050.c ****   }
+ 1348              		.loc 1 229 12 view .LVU397
+ 1349 005a 0120     		movs	r0, #1
+ 1350              	.LVL82:
+ 239:Core/Lib/mpu6050.c **** 
+ 1351              		.loc 1 239 1 view .LVU398
+ 1352 005c 7047     		bx	lr
+ 1353              	.LVL83:
+ 1354              	.L101:
+ 1355              	.LCFI44:
+ 1356              		.cfi_def_cfa_offset 32
+ 1357              		.cfi_offset 4, -12
+ 1358              		.cfi_offset 5, -8
+ 1359              		.cfi_offset 14, -4
+ 234:Core/Lib/mpu6050.c ****   }
+ 1360              		.loc 1 234 12 view .LVU399
+ 1361 005e 2846     		mov	r0, r5
+ 1362 0060 D7E7     		b	.L98
+ 1363              	.L108:
+ 1364 0062 00BF     		.align	2
+ 1365              	.L107:
+ 1366 0064 61606060 		.word	1616928865
+ 1367 0068 B81E1242 		.word	1108483768
+ 1368              		.cfi_endproc
+ 1369              	.LFE153:
+ 1371              		.section	.text.mpu6050_reset,"ax",%progbits
+ 1372              		.align	1
+ 1373              		.global	mpu6050_reset
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 37
+
+
+ 1374              		.syntax unified
+ 1375              		.thumb
+ 1376              		.thumb_func
+ 1378              	mpu6050_reset:
+ 1379              	.LVL84:
+ 1380              	.LFB154:
+ 242:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 1381              		.loc 1 242 1 is_stmt 1 view -0
+ 1382              		.cfi_startproc
+ 1383              		@ args = 0, pretend = 0, frame = 0
+ 1384              		@ frame_needed = 0, uses_anonymous_args = 0
+ 243:Core/Lib/mpu6050.c ****   {
+ 1385              		.loc 1 243 3 view .LVU401
+ 243:Core/Lib/mpu6050.c ****   {
+ 1386              		.loc 1 243 6 is_stmt 0 view .LVU402
+ 1387 0000 50B1     		cbz	r0, .L111
+ 242:Core/Lib/mpu6050.c ****   if (mpu == NULL)
+ 1388              		.loc 1 242 1 view .LVU403
+ 1389 0002 10B5     		push	{r4, lr}
+ 1390              	.LCFI45:
+ 1391              		.cfi_def_cfa_offset 8
+ 1392              		.cfi_offset 4, -8
+ 1393              		.cfi_offset 14, -4
+ 1394 0004 0446     		mov	r4, r0
+ 249:Core/Lib/mpu6050.c ****   {
+ 1395              		.loc 1 249 3 is_stmt 1 view .LVU404
+ 249:Core/Lib/mpu6050.c ****   {
+ 1396              		.loc 1 249 7 is_stmt 0 view .LVU405
+ 1397 0006 6423     		movs	r3, #100
+ 1398 0008 8022     		movs	r2, #128
+ 1399 000a 6B21     		movs	r1, #107
+ 1400 000c FFF7FEFF 		bl	mpu6050_write_register
+ 1401              	.LVL85:
+ 249:Core/Lib/mpu6050.c ****   {
+ 1402              		.loc 1 249 6 view .LVU406
+ 1403 0010 20B9     		cbnz	r0, .L112
+ 253:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 1404              		.loc 1 253 3 is_stmt 1 view .LVU407
+ 253:Core/Lib/mpu6050.c ****   return MPU6050_OK;
+ 1405              		.loc 1 253 19 is_stmt 0 view .LVU408
+ 1406 0012 84F83800 		strb	r0, [r4, #56]
+ 254:Core/Lib/mpu6050.c ****   
+ 1407              		.loc 1 254 3 is_stmt 1 view .LVU409
+ 1408              	.L110:
+ 257:Core/Lib/mpu6050.c **** 
+ 1409              		.loc 1 257 1 is_stmt 0 view .LVU410
+ 1410 0016 10BD     		pop	{r4, pc}
+ 1411              	.LVL86:
+ 1412              	.L111:
+ 1413              	.LCFI46:
+ 1414              		.cfi_def_cfa_offset 0
+ 1415              		.cfi_restore 4
+ 1416              		.cfi_restore 14
+ 245:Core/Lib/mpu6050.c ****   }
+ 1417              		.loc 1 245 12 view .LVU411
+ 1418 0018 0620     		movs	r0, #6
+ 1419              	.LVL87:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 38
+
+
+ 257:Core/Lib/mpu6050.c **** 
+ 1420              		.loc 1 257 1 view .LVU412
+ 1421 001a 7047     		bx	lr
+ 1422              	.LVL88:
+ 1423              	.L112:
+ 1424              	.LCFI47:
+ 1425              		.cfi_def_cfa_offset 8
+ 1426              		.cfi_offset 4, -8
+ 1427              		.cfi_offset 14, -4
+ 251:Core/Lib/mpu6050.c ****   }
+ 1428              		.loc 1 251 12 view .LVU413
+ 1429 001c 0220     		movs	r0, #2
+ 1430 001e FAE7     		b	.L110
+ 1431              		.cfi_endproc
+ 1432              	.LFE154:
+ 1434              		.text
+ 1435              	.Letext0:
+ 1436              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1437              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1438              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1439              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1440              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1441              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 1442              		.file 8 "Core/Lib/axis.h"
+ 1443              		.file 9 "Core/Lib/mpu6050.h"
+ 1444              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccylRY19.s 			page 39
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 mpu6050.c
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:19     .text.mpu6050_update_sensitivity:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:24     .text.mpu6050_update_sensitivity:00000000 mpu6050_update_sensitivity
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:38     .text.mpu6050_update_sensitivity:00000008 $d
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:42     .text.mpu6050_update_sensitivity:0000000c $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:81     .text.mpu6050_update_sensitivity:00000038 $d
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:85     .text.mpu6050_update_sensitivity:0000003c $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:125    .text.mpu6050_update_sensitivity:0000005c $d
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:133    .text.mpu6050_read_register:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:138    .text.mpu6050_read_register:00000000 mpu6050_read_register
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:194    .text.mpu6050_read_registers:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:199    .text.mpu6050_read_registers:00000000 mpu6050_read_registers
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:258    .text.mpu6050_write_register:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:263    .text.mpu6050_write_register:00000000 mpu6050_write_register
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:319    .text.mpu6050_init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:325    .text.mpu6050_init:00000000 mpu6050_init
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:506    .text.mpu6050_init_process:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:512    .text.mpu6050_init_process:00000000 mpu6050_init_process
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:648    .text.mpu6050_is_ready:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:654    .text.mpu6050_is_ready:00000000 mpu6050_is_ready
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:686    .text.mpu6050_read_all:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:692    .text.mpu6050_read_all:00000000 mpu6050_read_all
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:938    .text.mpu6050_read_all:00000144 $d
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:944    .text.mpu6050_read_accel:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:950    .text.mpu6050_read_accel:00000000 mpu6050_read_accel
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1098   .text.mpu6050_read_gyro:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1104   .text.mpu6050_read_gyro:00000000 mpu6050_read_gyro
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1252   .text.mpu6050_read_temp:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1258   .text.mpu6050_read_temp:00000000 mpu6050_read_temp
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1366   .text.mpu6050_read_temp:00000064 $d
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1372   .text.mpu6050_reset:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccylRY19.s:1378   .text.mpu6050_reset:00000000 mpu6050_reset
+
+UNDEFINED SYMBOLS
+HAL_I2C_Mem_Read
+HAL_I2C_Mem_Write
+HAL_I2C_IsDeviceReady
+HAL_GetTick
