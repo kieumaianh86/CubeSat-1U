@@ -267,7 +267,7 @@ static mpu6050_status_t mpu6050_read_register(mpu6050_handle_t *mpu, uint8_t reg
 
 static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, uint32_t timeout)
 {
-  if (HAL_I2C_Mem_Write(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, data, 1, timeout ) != HAL_OK)
+  if (HAL_I2C_Mem_Write(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, timeout ) != HAL_OK)
   {
     return MPU6050_I2C_ERROR;
   }
