@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
   29:Core/Lib/neo8m.c ****   gps->uart = config->huart;
   30:Core/Lib/neo8m.c ****   gps->rx_index = 0;
   31:Core/Lib/neo8m.c ****   gps->initialized = true;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 2
 
 
   32:Core/Lib/neo8m.c ****   gps->last_update = 0;
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
   86:Core/Lib/neo8m.c **** const neo8m_data_t* neo8m_get_data(const neo8m_handle_t *gps)
   87:Core/Lib/neo8m.c **** {
   88:Core/Lib/neo8m.c ****   return &gps->data;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 3
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 3
 
 
   89:Core/Lib/neo8m.c **** }
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  143:Core/Lib/neo8m.c **** float neo8m_calculate_bearing(double lat1, double lon1, double lat2, double lon2)
  144:Core/Lib/neo8m.c **** {
  145:Core/Lib/neo8m.c ****   lat1 *= DEG_TO_RAD;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 4
 
 
  146:Core/Lib/neo8m.c ****   lat2 *= DEG_TO_RAD;
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  200:Core/Lib/neo8m.c ****   char alt_str[16] = {0};
  201:Core/Lib/neo8m.c **** 
  202:Core/Lib/neo8m.c ****   while (token != NULL)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 5
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 5
 
 
  203:Core/Lib/neo8m.c ****   {
@@ -298,7 +298,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  257:Core/Lib/neo8m.c ****   char lat_dir = 'N';
  258:Core/Lib/neo8m.c ****   char lon_str[16] = {0};
  259:Core/Lib/neo8m.c ****   char lon_dir = 'E';
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 6
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 6
 
 
  260:Core/Lib/neo8m.c ****   char speed_str[16] = {0};
@@ -358,7 +358,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
   28              		.loc 1 313 1 view -0
   29              		.cfi_startproc
   30              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 7
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 7
 
 
   31              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -418,7 +418,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
   70              		.loc 1 322 1 is_stmt 0 view .LVU16
   71 0016 7047     		bx	lr
   72              		.cfi_endproc
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 8
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 8
 
 
   73              	.LFE156:
@@ -478,7 +478,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  119 001a 681C     		adds	r0, r5, #1
  120 001c FFF7FEFF 		bl	strtol
  121              	.LVL11:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 9
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 9
 
 
  122              		.loc 1 332 11 view .LVU28
@@ -538,7 +538,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  353:Core/Lib/neo8m.c ****   }
  354:Core/Lib/neo8m.c ****   // Extract minutes
  355:Core/Lib/neo8m.c ****     double min = value - (degrees * 100);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 10
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 10
 
 
  356:Core/Lib/neo8m.c ****     
@@ -598,7 +598,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  168              	.LCFI2:
  169              		.cfi_def_cfa_offset 24
  170 0004 0446     		mov	r4, r0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 11
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 11
 
 
  171 0006 0D46     		mov	r5, r1
@@ -658,7 +658,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  403:Core/Lib/neo8m.c ****   buf[2] = '\0';
  202              		.loc 1 403 10 is_stmt 0 view .LVU48
  203 0020 0023     		movs	r3, #0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 12
 
 
  204 0022 8DF80630 		strb	r3, [sp, #6]
@@ -718,7 +718,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  241 0054 00F5FA60 		add	r0, r0, #2000
  412:Core/Lib/neo8m.c ****   date->year = 2000 + atoi(buf);
  242              		.loc 1 412 14 view .LVU66
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 13
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 13
 
 
  243 0058 6880     		strh	r0, [r5, #2]	@ movhi
@@ -778,7 +778,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  292              		.loc 1 375 3 is_stmt 1 view .LVU73
  376:Core/Lib/neo8m.c ****   buf[0] = time_str[0];
  293              		.loc 1 376 3 view .LVU74
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 14
 
 
  376:Core/Lib/neo8m.c ****   buf[0] = time_str[0];
@@ -838,7 +838,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  330 0042 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
  331 0044 8DF80430 		strb	r3, [sp, #4]
  386:Core/Lib/neo8m.c ****   buf[1] = time_str[5];
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 15
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 15
 
 
  332              		.loc 1 386 3 is_stmt 1 view .LVU93
@@ -898,7 +898,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  374              		.align	1
  375              		.syntax unified
  376              		.thumb
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 16
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 16
 
 
  377              		.thumb_func
@@ -958,7 +958,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  420 0022 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
  421 0026 1FDB     		blt	.L28
  350:Core/Lib/neo8m.c ****     degrees = (int) (value/100);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 17
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 17
 
 
  422              		.loc 1 350 5 is_stmt 1 view .LVU118
@@ -1018,7 +1018,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  362:Core/Lib/neo8m.c ****         result = -result;
  462              		.loc 1 362 16 view .LVU133
  463 0066 D4E7     		b	.L21
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 18
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 18
 
 
  464              	.LVL41:
@@ -1078,7 +1078,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  514              		.cfi_offset 8, -12
  515              		.cfi_offset 9, -8
  516              		.cfi_offset 14, -4
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 19
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 19
 
 
  517 0004 A9B0     		sub	sp, sp, #164
@@ -1138,7 +1138,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  557              		.loc 1 196 3 is_stmt 1 view .LVU153
  558              	.LVL48:
  197:Core/Lib/neo8m.c ****   uint8_t fix_quality = 0;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 20
 
 
  559              		.loc 1 197 3 view .LVU154
@@ -1198,7 +1198,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  597 0058 0020     		movs	r0, #0
  598 005a FFF7FEFF 		bl	strtok
  599              	.LVL52:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 21
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 21
 
 
  220:Core/Lib/neo8m.c ****     field++;
@@ -1258,7 +1258,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  208:Core/Lib/neo8m.c ****     case 3: lat_dir = token[0]; break;
  644              		.loc 1 208 21 is_stmt 0 view .LVU181
  645 00a4 90F80090 		ldrb	r9, [r0]	@ zero_extendqisi2
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 22
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 22
 
 
  646              	.LVL58:
@@ -1318,7 +1318,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  684              		.loc 1 212 13 is_stmt 1 view .LVU197
  212:Core/Lib/neo8m.c ****     case 7: satellites = atoi(token); break;
  685              		.loc 1 212 26 is_stmt 0 view .LVU198
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 23
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 23
 
 
  686 00c4 FFF7FEFF 		bl	atoi
@@ -1378,7 +1378,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  726              		.loc 1 223 7 view .LVU212
  727 00e6 FFF7FEFF 		bl	strlen
  728              	.LVL76:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 24
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 24
 
 
  223:Core/Lib/neo8m.c ****   if (strlen(time_str) >= 6)
@@ -1438,7 +1438,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  238:Core/Lib/neo8m.c ****     gps->data.fix = (fix_quality == 1) ? NEO8M_FIX_3D : NEO8M_FIX_2D;
  766              		.loc 1 238 55 is_stmt 0 view .LVU230
  767 011c 012E     		cmp	r6, #1
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 25
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 25
 
 
  768 011e 1CD0     		beq	.L57
@@ -1498,7 +1498,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  811              	.LVL82:
  230:Core/Lib/neo8m.c ****     gps->data.longitude = neo8m_parse_coordinate(lon_str, lon_dir);
  812              		.loc 1 230 25 view .LVU242
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 26
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 26
 
 
  813 0154 85ED440B 		vstr.64	d0, [r5, #272]
@@ -1558,7 +1558,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  249:Core/Lib/neo8m.c ****   char buffer[NMEA_MAX_LENGTH];
  862              		.loc 1 249 3 is_stmt 1 view .LVU250
  250:Core/Lib/neo8m.c ****   strncpy(buffer, sentence, sizeof(buffer) - 1);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 27
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 27
 
 
  863              		.loc 1 250 3 view .LVU251
@@ -1618,7 +1618,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  260:Core/Lib/neo8m.c ****   char speed_str[16] = {0};
  904              		.loc 1 260 3 view .LVU265
  260:Core/Lib/neo8m.c ****   char speed_str[16] = {0};
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 28
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 28
 
 
  905              		.loc 1 260 8 is_stmt 0 view .LVU266
@@ -1678,7 +1678,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  945 0060 0020     		movs	r0, #0
  946 0062 FFF7FEFF 		bl	strtok
  947              	.LVL94:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 29
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 29
 
 
  948 0066 0146     		mov	r1, r0
@@ -1738,7 +1738,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  992              	.LVL99:
  270:Core/Lib/neo8m.c ****     case 3: strncpy(lat_str, token, sizeof(lat_str) - 1); break;
  993              		.loc 1 270 59 is_stmt 1 view .LVU291
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 30
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 30
 
 
  270:Core/Lib/neo8m.c ****     case 3: strncpy(lat_str, token, sizeof(lat_str) - 1); break;
@@ -1798,7 +1798,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  274:Core/Lib/neo8m.c ****     case 7: strncpy(speed_str, token, sizeof(speed_str) - 1); break;
  1033              		.loc 1 274 63 is_stmt 1 view .LVU307
  274:Core/Lib/neo8m.c ****     case 7: strncpy(speed_str, token, sizeof(speed_str) - 1); break;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 31
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 31
 
 
  1034              		.loc 1 274 5 is_stmt 0 view .LVU308
@@ -1858,7 +1858,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1076 00e8 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
  1077              	.LVL116:
  1078              	.L81:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 32
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 32
 
 
  1079              	.LCFI17:
@@ -1918,7 +1918,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1118 0116 20EE070B 		vmul.f64	d0, d0, d7
  1119 011a B7EEC00B 		vcvt.f32.f64	s0, d0
  302:Core/Lib/neo8m.c ****     gps->data.speed = atof(speed_str) * 1.852f;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 33
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 33
 
 
  1120              		.loc 1 302 21 view .LVU336
@@ -1978,7 +1978,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  299:Core/Lib/neo8m.c ****       gps->data.longitude = neo8m_parse_coordinate(lon_str, lon_dir);
  1161              		.loc 1 299 29 is_stmt 0 view .LVU350
  1162 015c 3946     		mov	r1, r7
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 34
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 34
 
 
  1163 015e 0DA8     		add	r0, sp, #52
@@ -2038,7 +2038,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1211              		.cfi_offset 14, -4
  165:Core/Lib/neo8m.c ****   if (nmea[0] != '$') return false;
  1212              		.loc 1 165 3 is_stmt 1 view .LVU354
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 35
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 35
 
 
  165:Core/Lib/neo8m.c ****   if (nmea[0] != '$') return false;
@@ -2098,7 +2098,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1253 002c 20B1     		cbz	r0, .L90
  1254              	.L89:
  176:Core/Lib/neo8m.c ****     return neo8m_parse_gga(gps, nmea);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 36
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 36
 
 
  1255              		.loc 1 176 5 is_stmt 1 view .LVU369
@@ -2158,7 +2158,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1301              		.align	1
  1302              		.global	neo8m_init
  1303              		.syntax unified
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 37
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 37
 
 
  1304              		.thumb
@@ -2218,7 +2218,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1343              		.loc 1 36 3 view .LVU394
  1344 001e 4FF48072 		mov	r2, #256
  1345 0022 2146     		mov	r1, r4
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 38
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 38
 
 
  1346              	.LVL138:
@@ -2278,7 +2278,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1392              		@ frame_needed = 0, uses_anonymous_args = 0
   44:Core/Lib/neo8m.c ****   if (!gps->initialized)
  1393              		.loc 1 44 3 view .LVU405
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 39
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 39
 
 
   44:Core/Lib/neo8m.c ****   if (!gps->initialized)
@@ -2338,7 +2338,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1433 0026 0023     		movs	r3, #0
  1434 0028 A0F80431 		strh	r3, [r0, #260]	@ movhi
   53:Core/Lib/neo8m.c ****     return NEO8M_BUFFER_FULL;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 40
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 40
 
 
  1435              		.loc 1 53 5 is_stmt 1 view .LVU421
@@ -2398,7 +2398,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1475              	.L109:
   69:Core/Lib/neo8m.c ****   gps->rx_index = 0;
  1476              		.loc 1 69 3 is_stmt 1 view .LVU436
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 41
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 41
 
 
   69:Core/Lib/neo8m.c ****   gps->rx_index = 0;
@@ -2458,7 +2458,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1524              		.loc 1 77 1 is_stmt 1 view -0
  1525              		.cfi_startproc
  1526              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 42
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 42
 
 
  1527              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -2518,7 +2518,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1569              		.syntax unified
  1570              		.thumb
  1571              		.thumb_func
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 43
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 43
 
 
  1573              	neo8m_get_data:
@@ -2578,7 +2578,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  106:Core/Lib/neo8m.c **** }
  1619              		.loc 1 106 1 view .LVU469
  1620 000a 08BD     		pop	{r3, pc}
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 44
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 44
 
 
  1621              	.LVL168:
@@ -2638,7 +2638,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1666              		.loc 1 112 12 view .LVU480
  1667 0008 0120     		movs	r0, #1
  1668              	.LVL172:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 45
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 45
 
 
  1669              	.L135:
@@ -2698,7 +2698,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  124:Core/Lib/neo8m.c ****   if (!gps->initialized)
  1716              		.loc 1 124 3 is_stmt 1 view .LVU490
  124:Core/Lib/neo8m.c ****   if (!gps->initialized)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 46
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 46
 
 
  1717              		.loc 1 124 11 is_stmt 0 view .LVU491
@@ -2758,7 +2758,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1763              	.LCFI27:
  1764              		.cfi_def_cfa_offset 8
  1765              		.cfi_offset 3, -8
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 47
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 47
 
 
  1766              		.cfi_offset 14, -4
@@ -2818,7 +2818,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1809 0036 FFF7FEFF 		bl	sin
  1810              	.LVL189:
  137:Core/Lib/neo8m.c ****   double a = sin(dlat/2) * sin(dlat/2) + sin(dlon/2) * sin(dlon/2) * cos(lat1) * cos(lat2);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 48
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 48
 
 
  1811              		.loc 1 137 54 view .LVU513
@@ -2878,7 +2878,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1854 0092 BDEC0A8B 		vldm	sp!, {d8-d12}
  1855              	.LCFI29:
  1856              		.cfi_restore 88
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 49
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 49
 
 
  1857              		.cfi_restore 89
@@ -2938,7 +2938,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1910              		.cfi_offset 85, -36
  1911              		.cfi_offset 86, -32
  1912              		.cfi_offset 87, -28
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 50
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 50
 
 
  1913              		.cfi_offset 88, -24
@@ -2998,7 +2998,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1953 003e B0EE40DB 		vmov.f64	d13, d0
  150:Core/Lib/neo8m.c ****   double x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dlon);
  1954              		.loc 1 150 26 view .LVU542
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 51
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 51
 
 
  1955 0042 B0EE4C0B 		vmov.f64	d0, d12
@@ -3058,7 +3058,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  1997              		.cfi_restore 88
  1998              		.cfi_restore 89
  1999              		.cfi_restore 86
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 52
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 52
 
 
  2000              		.cfi_restore 87
@@ -3113,58 +3113,58 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 1
  2045              		.file 11 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
  2046              		.file 12 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
  2047              		.file 13 "<built-in>"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 53
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 53
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 neo8m.c
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:19     .text.neo8m_calculate_check_sum:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:24     .text.neo8m_calculate_check_sum:00000000 neo8m_calculate_check_sum
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:76     .text.neo8m_verify_check_sum:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:81     .text.neo8m_verify_check_sum:00000000 neo8m_verify_check_sum
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:148    .text.neo8m_parse_date:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:153    .text.neo8m_parse_date:00000000 neo8m_parse_date
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:249    .text.neo8m_parse_time:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:254    .text.neo8m_parse_time:00000000 neo8m_parse_time
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:368    .text.neo8m_parse_time:00000080 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:374    .text.neo8m_parse_coordinate:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:379    .text.neo8m_parse_coordinate:00000000 neo8m_parse_coordinate
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:478    .text.neo8m_parse_coordinate:00000078 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:490    .rodata.neo8m_parse_gga.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:494    .text.neo8m_parse_gga:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:499    .text.neo8m_parse_gga:00000000 neo8m_parse_gga
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:619    .text.neo8m_parse_gga:00000074 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:628    .text.neo8m_parse_gga:00000098 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:831    .text.neo8m_parse_gga:0000016c $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:836    .text.neo8m_parse_rmc:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:841    .text.neo8m_parse_rmc:00000000 neo8m_parse_rmc
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:967    .text.neo8m_parse_rmc:0000007c $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:976    .text.neo8m_parse_rmc:000000a0 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1172   .text.neo8m_parse_rmc:00000170 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1179   .rodata.neo8m_parse_nmea.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1192   .text.neo8m_parse_nmea:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1197   .text.neo8m_parse_nmea:00000000 neo8m_parse_nmea
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1293   .text.neo8m_parse_nmea:0000005c $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1301   .text.neo8m_init:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1307   .text.neo8m_init:00000000 neo8m_init
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1380   .text.neo8m_process:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1386   .text.neo8m_process:00000000 neo8m_process
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1515   .text.neo8m_has_fix:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1521   .text.neo8m_has_fix:00000000 neo8m_has_fix
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1567   .text.neo8m_get_data:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1573   .text.neo8m_get_data:00000000 neo8m_get_data
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1591   .text.neo8m_start_receive_it:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1597   .text.neo8m_start_receive_it:00000000 neo8m_start_receive_it
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1642   .text.neo8m_start_receive_dma:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1648   .text.neo8m_start_receive_dma:00000000 neo8m_start_receive_dma
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1694   .text.neo8m_is_data_fresh:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1700   .text.neo8m_is_data_fresh:00000000 neo8m_is_data_fresh
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1748   .text.neo8m_calculate_distance:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1754   .text.neo8m_calculate_distance:00000000 neo8m_calculate_distance
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1873   .text.neo8m_calculate_distance:00000098 $d
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1883   .text.neo8m_calculate_bearing:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:1889   .text.neo8m_calculate_bearing:00000000 neo8m_calculate_bearing
-C:\Users\admin\AppData\Local\Temp\cc61nZWD.s:2026   .text.neo8m_calculate_bearing:00000098 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:19     .text.neo8m_calculate_check_sum:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:24     .text.neo8m_calculate_check_sum:00000000 neo8m_calculate_check_sum
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:76     .text.neo8m_verify_check_sum:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:81     .text.neo8m_verify_check_sum:00000000 neo8m_verify_check_sum
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:148    .text.neo8m_parse_date:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:153    .text.neo8m_parse_date:00000000 neo8m_parse_date
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:249    .text.neo8m_parse_time:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:254    .text.neo8m_parse_time:00000000 neo8m_parse_time
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:368    .text.neo8m_parse_time:00000080 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:374    .text.neo8m_parse_coordinate:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:379    .text.neo8m_parse_coordinate:00000000 neo8m_parse_coordinate
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:478    .text.neo8m_parse_coordinate:00000078 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:490    .rodata.neo8m_parse_gga.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:494    .text.neo8m_parse_gga:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:499    .text.neo8m_parse_gga:00000000 neo8m_parse_gga
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:619    .text.neo8m_parse_gga:00000074 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:628    .text.neo8m_parse_gga:00000098 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:831    .text.neo8m_parse_gga:0000016c $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:836    .text.neo8m_parse_rmc:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:841    .text.neo8m_parse_rmc:00000000 neo8m_parse_rmc
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:967    .text.neo8m_parse_rmc:0000007c $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:976    .text.neo8m_parse_rmc:000000a0 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1172   .text.neo8m_parse_rmc:00000170 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1179   .rodata.neo8m_parse_nmea.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1192   .text.neo8m_parse_nmea:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1197   .text.neo8m_parse_nmea:00000000 neo8m_parse_nmea
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1293   .text.neo8m_parse_nmea:0000005c $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1301   .text.neo8m_init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1307   .text.neo8m_init:00000000 neo8m_init
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1380   .text.neo8m_process:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1386   .text.neo8m_process:00000000 neo8m_process
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1515   .text.neo8m_has_fix:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1521   .text.neo8m_has_fix:00000000 neo8m_has_fix
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1567   .text.neo8m_get_data:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1573   .text.neo8m_get_data:00000000 neo8m_get_data
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1591   .text.neo8m_start_receive_it:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1597   .text.neo8m_start_receive_it:00000000 neo8m_start_receive_it
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1642   .text.neo8m_start_receive_dma:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1648   .text.neo8m_start_receive_dma:00000000 neo8m_start_receive_dma
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1694   .text.neo8m_is_data_fresh:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1700   .text.neo8m_is_data_fresh:00000000 neo8m_is_data_fresh
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1748   .text.neo8m_calculate_distance:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1754   .text.neo8m_calculate_distance:00000000 neo8m_calculate_distance
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1873   .text.neo8m_calculate_distance:00000098 $d
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1883   .text.neo8m_calculate_bearing:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:1889   .text.neo8m_calculate_bearing:00000000 neo8m_calculate_bearing
+C:\Users\admin\AppData\Local\Temp\cccD9GHi.s:2026   .text.neo8m_calculate_bearing:00000098 $d
 
 UNDEFINED SYMBOLS
 strchr
@@ -3173,7 +3173,7 @@ strlen
 atoi
 atof
 strncpy
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc61nZWD.s 			page 54
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccD9GHi.s 			page 54
 
 
 strtok

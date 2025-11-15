@@ -43,6 +43,9 @@ Core/Src/stm32h7xx_hal_msp.c \
 Core/Lib/mpu6050.c\
 Core/Lib/hmc5883l.c\
 Core/Lib/neo8m.c\
+\
+Core/Hardware/hardware.c\
+\
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
@@ -135,6 +138,7 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -ICore/Inc \
 -ICore/Lib\
+-ICore/Hardware\
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
 -IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
