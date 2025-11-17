@@ -41,6 +41,8 @@ Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
 \
 Core/Lib/mpu6050.c\
+Core/Lib/hmc5883l.c\
+Core/Lib/neo8m.c\
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \

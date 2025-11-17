@@ -26,7 +26,7 @@ static uint32_t s_default_timeout = MPU6050_DEFAULT_TIMEOUT_MS;
 
 //private function
 static mpu6050_status_t mpu6050_read_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, uint32_t timeout);
-static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, uint32_t timeput);
+static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t data, uint32_t timeout);
 static mpu6050_status_t mpu6050_read_registers(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, uint8_t length, uint32_t timeout);
 static void mpu6050_update_sensitivity(mpu6050_handle_t *mpu, mpu6050_accel_scale_t accel_scale, mpu6050_gyro_scale_t gyro_scale );
 
@@ -96,7 +96,7 @@ mpu6050_status_t mpu6050_init_process(mpu6050_handle_t *mpu)
     return MPU6050_ERROR;
   }
 
-  if (mpu->init_state = MPU6050_INIT_STATE_WAKING_UP)
+  if (mpu->init_state == MPU6050_INIT_STATE_WAKING_UP)
   {
     uint32_t ms = HAL_GetTick() - mpu->wakeup_timestamp;
     if (ms < MPU6050_WAKEUP_DELAY_MS)
@@ -109,7 +109,7 @@ mpu6050_status_t mpu6050_init_process(mpu6050_handle_t *mpu)
     uint32_t timeout = mpu->pending_config.timeout;
 
     //config gyro
-    if (mpu6050_write_register(mpu, MPU6050_REG_GYRO_CONFIG, (uint8_t) gyro_scale << GYRO_CONFIG_BIT_POS, timeout) != MPU6050_OK)
+    if (mpu6050_write_register(mpu, MPU6050_REG_GYRO_CONFIG, gyro_scale << GYRO_CONFIG_BIT_POS, timeout) != MPU6050_OK)
     {
       return MPU6050_I2C_ERROR;
     }
@@ -265,7 +265,7 @@ static mpu6050_status_t mpu6050_read_register(mpu6050_handle_t *mpu, uint8_t reg
   return MPU6050_OK;
 }
 
-static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t *data, uint32_t timeout)
+static mpu6050_status_t mpu6050_write_register(mpu6050_handle_t *mpu, uint8_t reg, uint8_t data, uint32_t timeout)
 {
   if (HAL_I2C_Mem_Write(mpu->i2c, mpu->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, timeout ) != HAL_OK)
   {

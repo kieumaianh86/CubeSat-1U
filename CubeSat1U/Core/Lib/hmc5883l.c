@@ -63,7 +63,7 @@ static hmc5883l_status_t hmc5883l_write_register(hmc5883l_handle_t *hmc, uint8_t
 static hmc5883l_status_t hmc5883l_read_registers(hmc5883l_handle_t *hmc, uint8_t reg, uint8_t *data, uint8_t length, uint32_t timeout);
 
 
-hmc5883l_status_t hmc5883l_init(hmc5883l_handle_t *hmc, hmc5883l_config_t *config)
+hmc5883l_status_t hmc5883l_init(hmc5883l_handle_t *hmc, const hmc5883l_config_t *config)
 {
   if (hmc == NULL || config == NULL || config->hi2c == NULL)
   {
@@ -321,7 +321,7 @@ float hmc5883l_get_heading(const hmc5883l_handle_t *hmc)
   return heading * 180.0f / M_PI;  
 }
 
-float hmc5883l_get_tilt_compensated_heading(const hmc5883l_handle_t *hmc, float pitch, float roll);
+float hmc5883l_get_tilt_compensated_heading(const hmc5883l_handle_t *hmc, float pitch, float roll)
 {
   if (hmc == NULL)
   {
@@ -359,7 +359,7 @@ static hmc5883l_status_t hmc5883l_read_register(hmc5883l_handle_t *hmc, uint8_t 
   return HMC5883L_OK;
 }
 
-static hmc5883l_status_t hmc5883l_write_register(hmc5883l_handle_t *hmc, uint8_t reg, uint8_t data, uint32_t timeout)
+static hmc5883l_status_t hmc5883l_write_register(hmc5883l_handle_t *hmc, uint8_t reg, uint8_t data, uint8_t timeout)
 { 
   if (HAL_I2C_Mem_Write(hmc->i2c, hmc->device_addr << 1, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, timeout) != HAL_OK)
   {
