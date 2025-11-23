@@ -3,6 +3,7 @@
 
 #include "stdio.h"
 #include "stm32h7xx_hal.h"
+#include "stdint.h"
 
 typedef enum {
     Address_gnd_gnd = 0x40,
@@ -86,39 +87,74 @@ typedef enum {
 
 #define ina_config_mode_mask (0x07)
 
-typedef struct {
-    I2C_HandleTypeDef *ina219_i2c;
-    uint8_t Address;
-    battery_state check;
-} ina219_t;
+typedef union {
+    uint16_t data;
+    uint8_t bytes[2];
+}reg16_t;
+
+typedef enum {
+    INA219_OK,
+    INA219_ERROR,
+    INA219_I2C_ERROR,
+    INA219_INVALID_PARAM,
+    INA219_BUS_OVER,
+    INA219_BUS_UNDER,
+    INA219_SHUNT_OVER
+} INA219_STATUS_t;
 
 typedef enum {
     battery_START,
     battery_OK,
-    battery_LOW
+    battery_LOW,
+    battery_CRITICAL,
+    battery_EMERGENCY
 } battery_state;
 
-uint16_t ina219_ReadBusVoltage(ina219_t *ina219);
-int16_t ina219_ReadCurrent(ina219_t *ina219);
-int16_t ina219_ReadShuntVoltage(ina219_t *ina219);
-float ina219_ReadPower(ina219_t *ina219);
+typedef struct {
+    I2C_HandleTypeDef *ina219_i2c;
+    uint8_t Address;
+
+    uint16_t BusVoltage;
+    int16_t ShuntVoltage;
+    int16_t Current;
+    uint16_t Power;
+
+    battery_state check;
+} ina219_t;
 
 
-void ina219_reset(ina219_t *ina219);
-void ina219_setCalibration(ina219_t *ina219, uint16_t Calibration);
-uint16_t ina219_getConfig(ina219_t *ina219);
-void ina219_setConfig(ina219_t *ina219, uint16_t Config);
-void ina219_Config(ina219_t *ina219);
-void set_PowerMode(ina219_t *ina219, ina_config_operatingmode mode);
-uint8_t ina219_init(ina219_t *ina219, I2C_HandleTypeDef *hi2c, uint8_t address);
+INA219_STATUS_t ina219_ReadBusVoltage(ina219_t *ina219);
+INA219_STATUS_t ina219_ReadCurrent(ina219_t *ina219);
+INA219_STATUS_t ina219_ReadShuntVoltage(ina219_t *ina219);
+INA219_STATUS_t ina219_ReadPower(ina219_t *ina219);
+
+
+INA219_STATUS_t ina219_reset(ina219_t *ina219);
+INA219_STATUS_t ina219_setCalibration(ina219_t *ina219, uint16_t Calibration);
+INA219_STATUS_t ina219_getConfig(ina219_t *ina219);
+INA219_STATUS_t ina219_setConfig(ina219_t *ina219, uint16_t Config);
+INA219_STATUS_t ina219_Config(ina219_t *ina219);
+INA219_STATUS_t set_PowerMode(ina219_t *ina219, ina_config_operatingmode mode);
+INA219_STATUS_t ina219_init(ina219_t *ina219, I2C_HandleTypeDef *hi2c, uint8_t address);
 float ina219_BatteryLife(ina219_t *ina219);
-battery_state Checkbattery(ina219_t *ina219, float BatteryThresold);
+battery_state Checkbattery(ina219_t *ina219);
 
-typedef struct{
-    float current_lsb;
-    float power_lsb;
-} lsb_t;
-
-bool isFirst;
+#define RSHUNT 0.1
+#define MAX_EXPERT_CURRENT 2
+#define CURRENT_LSB 65 //CURRENT LSB = MAX EXPERT CURRENT / RSHUNT
+#define POWER_LSB 1300 //POWER LSB = 20 * CURRENT LSB
+#define SHUNTVOLTAGE_LSB 10
+#define CALIBRATION 6301 // CALIBRATION = trunc(0.04096/(CURRENT LSB * RSHUNT))
+#define BATTERY_MAX 4200
+#define BATTERY_MIN 3000
+#define BUS_THRESHOLD_OVER 4250
+#define BUS_THRESHOLD_UNDER 3000
+#define BATTERY_EMPTY 0
+#define BATTERY_FULL 100
+#define BATTERY_OK_THRESHOLD 70
+#define BATTERY_LOW_THRESHOLD 30
+#define BATTERY_CRITICAL_THRESHOLD 10
+#define MILLI_TO_MICRO 1000
+#define PERCENT 100
 
 #endif
