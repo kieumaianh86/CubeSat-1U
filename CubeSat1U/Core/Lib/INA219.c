@@ -96,7 +96,7 @@ INA219_STATUS_t ina219_getConfig(ina219_t *ina219, uint16_t *Config) {
     return INA219_OK;
 }
 
-void ina219_setConfig(ina219_t *ina219, uint16_t Config) {
+INA219_STATUS_t ina219_setConfig(ina219_t *ina219, uint16_t Config) {
     if(!ina219) return INA219_INVALID_PARAM;
     
     if(write_16bit(ina219, ina_reg_config, Config) != INA219_OK) return INA219_I2C_ERROR;

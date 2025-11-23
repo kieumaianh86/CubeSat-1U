@@ -1,4 +1,7 @@
 {
     "C_Cpp.enabled": false,
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "stm32h7xx_hal.h": "c"
+    }
 }
