@@ -17,7 +17,7 @@ hw_status_t hardware_init(hardware_t *hw)
   hw_status_t status = HW_OK;
   //1.initialize mpu6050
   mpu6050_config_t mpu_config = {
-    .hi2c = &hi2c4,
+    .hi2c = &hi2c1,
     .device_addr = MPU6050_ADDR,
     .accel_scale = MPU6050_ACCEL_SCALE_2G,
     .gyro_scale = MPU6050_GYRO_SCALE_250DPS,
@@ -40,7 +40,7 @@ hw_status_t hardware_init(hardware_t *hw)
 
   //2. initialize hmc5883l
   hmc5883l_config_t mag_config = {
-    .hi2c = &hi2c4,
+    .hi2c = &hi2c1,
     .device_addr = HMC5883L_ADDR,
     .samples_avg = HMC5883L_SAMPLES_8,
     .data_rate = HMC5883L_RATE_15HZ,
@@ -64,7 +64,7 @@ hw_status_t hardware_init(hardware_t *hw)
 
   //3. initialize gps
   neo8m_config_t gps_config = {
-    .huart = &huart3
+    .huart = &huart2
   };
   neo8m_status_t gps_status = neo8m_init(&hw->gps, &gps_config);
   if (gps_status == NEO8M_OK)
@@ -231,6 +231,6 @@ void Hardware_UART_Printf(const char *format,...)
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
 
-  HAL_UART_Transmit(&huart2, (uint8_t *) buffer, strlen(buffer), 100);
+  HAL_UART_Transmit(&huart3, (uint8_t *) buffer, strlen(buffer), 100);
   
 }

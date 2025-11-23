@@ -27,8 +27,9 @@ typedef struct
 } hardware_t;
 
 //external peripheral handles
-extern I2C_HandleTypeDef hi2c4;
+extern I2C_HandleTypeDef hi2c1;
 extern UART_HandleTypeDef huart3, huart2;
+//extern DCMI_HandleTypeDef hdcmi;
 
 //initialization functions
 hw_status_t hardware_init(hardware_t *hw);
@@ -46,4 +47,25 @@ const hmc5883l_handle_t* hardware_get_mag(const hardware_t *hw);
 const neo8m_handle_t* hardware_get_gps(const hardware_t *hw);
 
 void Hardware_UART_Printf(const char *format, ...);
+
+//power control
+void HW_Power_GPS_On(void);
+void HW_Power_GPS_Off(void);
+
+void HW_Power_Camera_On(void);
+void HW_Power_Camera_Off(void);
+
+void HW_Power_LoRa_On(void);
+void HW_Power_LoRa_Off(void);
+
+void HW_Power_IMU_On(void);
+void HW_Power_IMU_Off(void);
+
+void HW_Power_Magnetometer_On(void);
+void HW_Power_Magnetometer_Off(void);
+
+void HW_Power_Temperature_On(void);
+void HW_Power_Temperature_Off(void);
+
+void HW_Power_All_Sensors_Off(void);
 #endif

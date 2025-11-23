@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define LORA_RXD_GPIO_Port GPIOG
 #define GPS_TX_Pin GPIO_PIN_5
 #define GPS_TX_GPIO_Port GPIOD
+#define DEBUG_TX_Pin GPIO_PIN_10
+#define DEBUG_TX_GPIO_Port GPIOC
 #define CAM_D7_Pin GPIO_PIN_7
 #define CAM_D7_GPIO_Port GPIOI
 #define CAM_D3_Pin GPIO_PIN_1
@@ -103,6 +105,8 @@ void Error_Handler(void);
 #define CAM_PWDN_GPIO_Port GPIOG
 #define CAM_RST_Pin GPIO_PIN_6
 #define CAM_RST_GPIO_Port GPIOG
+#define DEBUG_RX_Pin GPIO_PIN_11
+#define DEBUG_RX_GPIO_Port GPIOB
 #define CAM_DCLK_Pin GPIO_PIN_6
 #define CAM_DCLK_GPIO_Port GPIOA
 #define CQAM_HRFF_Pin GPIO_PIN_8

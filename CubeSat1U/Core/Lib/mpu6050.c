@@ -11,7 +11,7 @@
 #define MPU6050_REG_TEMP_OUT_H       0x41
 
 //hằng số
-#define MPU6050_WHO_AM_I_VALUE       0x68
+#define MPU6050_WHO_AM_I_VALUE       0x70 //0x68
 #define MPU6050_DEFAULT_TIMEOUT_MS   100
 #define MPU6050_WAKEUP_DELAY_MS      10      // Thời gian đợi sau wake-up
 
