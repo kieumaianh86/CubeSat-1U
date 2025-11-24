@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and data
+*.log
+data/
+GroundStation/data/
+
+# Compiled object files / linker scripts (if you don't want them)
+*.ld
