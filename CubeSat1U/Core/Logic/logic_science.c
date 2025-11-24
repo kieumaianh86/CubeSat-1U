@@ -10,10 +10,10 @@ static uint8_t flash_retry_count = 0;
 static bool cleanup_done = false; //phase cleanup
 
 // Private function declarations
-static science_error_t Science_Phase_Prep(uint32_t ms);
-static science_error_t Science_Phase_Collect(uint32_t ms);
-static science_error_t Science_Phase_Process(uint32_t ms);
-static science_error_t Science_Phase_Clean(uint32_t ms);
+static science_error_t Logic_Science_Phase_Prep(uint32_t ms);
+static science_error_t Logic_Science_Phase_Collect(uint32_t ms);
+static science_error_t Logic_Science_Phase_Process(uint32_t ms);
+static science_error_t Logic_Science_Phase_Clean(uint32_t ms);
 
 science_error_t Logic_Science_Init(void) 
 {
@@ -58,7 +58,7 @@ science_error_t Logic_Science_Process(uint32_t ms)
   switch (current_phase)
   {
   case SCIENCE_PHASE_PREP:
-    result = Science_Phase_Prep(total_timer);
+    result = Logic_Science_Phase_Prep(total_timer);
     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE1_PREP_MS)
     {
       current_phase = SCIENCE_PHASE_COLLECT;
@@ -69,7 +69,7 @@ science_error_t Logic_Science_Process(uint32_t ms)
     break;
     
   case SCIENCE_PHASE_COLLECT:
-    result = Science_Phase_Collect(total_timer);
+    result = Logic_Science_Phase_Collect(total_timer);
     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE2_PROCESS_MS)
     {
       current_phase = SCIENCE_PHASE_PROCESS;
@@ -79,7 +79,7 @@ science_error_t Logic_Science_Process(uint32_t ms)
     }
     break;
   case SCIENCE_PHASE_PROCESS:
-    result = Science_Phase_Process(total_timer);
+    result = Logic_Science_Phase_Process(total_timer);
     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE3_CLEAN_MS)
     {
       current_phase = SCIENCE_PHASE_CLEAN;
@@ -89,7 +89,7 @@ science_error_t Logic_Science_Process(uint32_t ms)
     }
     break;
   case SCIENCE_PHASE_CLEAN:
-    result = Science_Phase_Clean(total_timer);
+    result = Logic_Science_Phase_Clean(total_timer);
     if (result == SCIENCE_OK)
     {
       current_phase = SCIENCE_PHASE_COMPLETE;
@@ -106,7 +106,7 @@ science_error_t Logic_Science_Process(uint32_t ms)
   return result;
 }
 
-static science_error_t Science_Phase_Prep(uint32_t ms)
+static science_error_t Logic_Science_Phase_Prep(uint32_t ms)
 {
   static bool sensors_powered = false;
   if (!sensors_powered && ms < SCIENCE_PHASE1_PREP_MS)
@@ -135,7 +135,7 @@ static science_error_t Science_Phase_Prep(uint32_t ms)
   return SCIENCE_IN_PROGRESS;
 }
 
-static science_error_t Science_Phase_Collect(uint32_t ms)
+static science_error_t Logic_Science_Phase_Collect(uint32_t ms)
 {
   static uint32_t last_battery_read = 0;
   system_health_t* health = Logic_GetHealth();
@@ -152,7 +152,7 @@ static science_error_t Science_Phase_Collect(uint32_t ms)
   extern neo8m_handle_t gps_handle;
   extern mpu6050_handle_t mpu_handle;
   extern hmc5883l_handle_t mag_handle;
-  extern OV2640_Handle cam_handle;
+  //extern OV2640_Handle cam_handle;
   static int count_sensor_ok = 0;
   if (mpu6050_read_all(&mpu_handle) != MPU6050_OK)
   {
@@ -203,22 +203,23 @@ static science_error_t Science_Phase_Collect(uint32_t ms)
   return SCIENCE_IN_PROGRESS;
 }
 
-static science_error_t Science_Phase_Process(uint32_t ms)
+static science_error_t Logic_Science_Phase_Process(uint32_t ms)
 {
-  static uint8_t save_step = 0;
+/*   static uint8_t save_step = 0;
 
   switch (save_step)
   {
   case 0:
-    /* code */
+    
     break;
   
   default:
     break;
-  }
+  } */
 }
 
-static science_error_t Science_Phase_Clean(uint32_t ms)
+
+static science_error_t Logic_Science_Phase_Clean(uint32_t ms)
 {
   if (!cleanup_done)
   {

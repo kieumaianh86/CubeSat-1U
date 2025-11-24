@@ -1,0 +1,1167 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"packet_protocol.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.crc16_ccitt,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	crc16_ccitt:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 1 "Core/Lib/packet_protocol.c"
+   1:Core/Lib/packet_protocol.c **** #include "packet_protocol.h"
+   2:Core/Lib/packet_protocol.c **** #include "string.h"
+   3:Core/Lib/packet_protocol.c **** 
+   4:Core/Lib/packet_protocol.c **** // CRC-16-CCITT lookup table (simplified)
+   5:Core/Lib/packet_protocol.c **** static uint16_t crc16_ccitt(const uint8_t* data, uint16_t length)
+   6:Core/Lib/packet_protocol.c **** {
+  28              		.loc 1 6 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 6 1 is_stmt 0 view .LVU1
+  33 0000 00B5     		push	{lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 4
+  36              		.cfi_offset 14, -4
+  37 0002 8646     		mov	lr, r0
+   7:Core/Lib/packet_protocol.c ****     uint16_t crc = 0xFFFF;
+  38              		.loc 1 7 5 is_stmt 1 view .LVU2
+  39              	.LVL1:
+   8:Core/Lib/packet_protocol.c ****     
+   9:Core/Lib/packet_protocol.c ****     for (uint16_t i = 0; i < length; i++)
+  40              		.loc 1 9 5 view .LVU3
+  41              	.LBB2:
+  42              		.loc 1 9 10 view .LVU4
+  43              		.loc 1 9 19 is_stmt 0 view .LVU5
+  44 0004 4FF0000C 		mov	ip, #0
+  45              	.LBE2:
+   7:Core/Lib/packet_protocol.c ****     uint16_t crc = 0xFFFF;
+  46              		.loc 1 7 14 view .LVU6
+  47 0008 4FF6FF70 		movw	r0, #65535
+  48              	.LVL2:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 2
+
+
+  49              	.LBB5:
+  50              		.loc 1 9 5 view .LVU7
+  51 000c 12E0     		b	.L2
+  52              	.LVL3:
+  53              	.L4:
+  54              	.LBB3:
+  10:Core/Lib/packet_protocol.c ****     {
+  11:Core/Lib/packet_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+  12:Core/Lib/packet_protocol.c ****         for (uint8_t bit = 0; bit < 8; bit++)
+  13:Core/Lib/packet_protocol.c ****         {
+  14:Core/Lib/packet_protocol.c ****             if (crc & 0x8000)
+  15:Core/Lib/packet_protocol.c ****             {
+  16:Core/Lib/packet_protocol.c ****                 crc = (crc << 1) ^ 0x1021;
+  17:Core/Lib/packet_protocol.c ****             }
+  18:Core/Lib/packet_protocol.c ****             else
+  19:Core/Lib/packet_protocol.c ****             {
+  20:Core/Lib/packet_protocol.c ****                 crc <<= 1;
+  55              		.loc 1 20 17 is_stmt 1 view .LVU8
+  56              		.loc 1 20 21 is_stmt 0 view .LVU9
+  57 000e 4000     		lsls	r0, r0, #1
+  58              	.LVL4:
+  59              		.loc 1 20 21 view .LVU10
+  60 0010 80B2     		uxth	r0, r0
+  61              	.LVL5:
+  62              	.L5:
+  12:Core/Lib/packet_protocol.c ****         {
+  63              		.loc 1 12 40 is_stmt 1 discriminator 2 view .LVU11
+  12:Core/Lib/packet_protocol.c ****         {
+  64              		.loc 1 12 43 is_stmt 0 discriminator 2 view .LVU12
+  65 0012 0133     		adds	r3, r3, #1
+  66              	.LVL6:
+  12:Core/Lib/packet_protocol.c ****         {
+  67              		.loc 1 12 43 discriminator 2 view .LVU13
+  68 0014 DBB2     		uxtb	r3, r3
+  69              	.LVL7:
+  70              	.L3:
+  12:Core/Lib/packet_protocol.c ****         {
+  71              		.loc 1 12 31 is_stmt 1 discriminator 1 view .LVU14
+  12:Core/Lib/packet_protocol.c ****         {
+  72              		.loc 1 12 9 is_stmt 0 discriminator 1 view .LVU15
+  73 0016 072B     		cmp	r3, #7
+  74 0018 08D8     		bhi	.L9
+  14:Core/Lib/packet_protocol.c ****             {
+  75              		.loc 1 14 13 is_stmt 1 view .LVU16
+  14:Core/Lib/packet_protocol.c ****             {
+  76              		.loc 1 14 16 is_stmt 0 view .LVU17
+  77 001a 10F4004F 		tst	r0, #32768
+  78 001e F6D0     		beq	.L4
+  16:Core/Lib/packet_protocol.c ****             }
+  79              		.loc 1 16 17 is_stmt 1 view .LVU18
+  16:Core/Lib/packet_protocol.c ****             }
+  80              		.loc 1 16 34 is_stmt 0 view .LVU19
+  81 0020 41F22102 		movw	r2, #4129
+  82 0024 82EA4000 		eor	r0, r2, r0, lsl #1
+  83              	.LVL8:
+  16:Core/Lib/packet_protocol.c ****             }
+  84              		.loc 1 16 21 view .LVU20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 3
+
+
+  85 0028 80B2     		uxth	r0, r0
+  86              	.LVL9:
+  16:Core/Lib/packet_protocol.c ****             }
+  87              		.loc 1 16 21 view .LVU21
+  88 002a F2E7     		b	.L5
+  89              	.L9:
+  16:Core/Lib/packet_protocol.c ****             }
+  90              		.loc 1 16 21 view .LVU22
+  91              	.LBE3:
+   9:Core/Lib/packet_protocol.c ****     {
+  92              		.loc 1 9 38 is_stmt 1 discriminator 2 view .LVU23
+   9:Core/Lib/packet_protocol.c ****     {
+  93              		.loc 1 9 39 is_stmt 0 discriminator 2 view .LVU24
+  94 002c 0CF1010C 		add	ip, ip, #1
+  95              	.LVL10:
+   9:Core/Lib/packet_protocol.c ****     {
+  96              		.loc 1 9 39 discriminator 2 view .LVU25
+  97 0030 1FFA8CFC 		uxth	ip, ip
+  98              	.LVL11:
+  99              	.L2:
+   9:Core/Lib/packet_protocol.c ****     {
+ 100              		.loc 1 9 26 is_stmt 1 discriminator 1 view .LVU26
+   9:Core/Lib/packet_protocol.c ****     {
+ 101              		.loc 1 9 5 is_stmt 0 discriminator 1 view .LVU27
+ 102 0034 8C45     		cmp	ip, r1
+ 103 0036 05D2     		bcs	.L10
+  11:Core/Lib/packet_protocol.c ****         for (uint8_t bit = 0; bit < 8; bit++)
+ 104              		.loc 1 11 9 is_stmt 1 view .LVU28
+  11:Core/Lib/packet_protocol.c ****         for (uint8_t bit = 0; bit < 8; bit++)
+ 105              		.loc 1 11 30 is_stmt 0 view .LVU29
+ 106 0038 1EF80C30 		ldrb	r3, [lr, ip]	@ zero_extendqisi2
+  11:Core/Lib/packet_protocol.c ****         for (uint8_t bit = 0; bit < 8; bit++)
+ 107              		.loc 1 11 13 view .LVU30
+ 108 003c 80EA0320 		eor	r0, r0, r3, lsl #8
+ 109              	.LVL12:
+  12:Core/Lib/packet_protocol.c ****         {
+ 110              		.loc 1 12 9 is_stmt 1 view .LVU31
+ 111              	.LBB4:
+  12:Core/Lib/packet_protocol.c ****         {
+ 112              		.loc 1 12 14 view .LVU32
+  12:Core/Lib/packet_protocol.c ****         {
+ 113              		.loc 1 12 22 is_stmt 0 view .LVU33
+ 114 0040 0023     		movs	r3, #0
+  12:Core/Lib/packet_protocol.c ****         {
+ 115              		.loc 1 12 9 view .LVU34
+ 116 0042 E8E7     		b	.L3
+ 117              	.LVL13:
+ 118              	.L10:
+  12:Core/Lib/packet_protocol.c ****         {
+ 119              		.loc 1 12 9 view .LVU35
+ 120              	.LBE4:
+ 121              	.LBE5:
+  21:Core/Lib/packet_protocol.c ****             }
+  22:Core/Lib/packet_protocol.c ****         }
+  23:Core/Lib/packet_protocol.c ****     }
+  24:Core/Lib/packet_protocol.c ****     
+  25:Core/Lib/packet_protocol.c ****     return crc;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 4
+
+
+ 122              		.loc 1 25 5 is_stmt 1 view .LVU36
+  26:Core/Lib/packet_protocol.c **** }
+ 123              		.loc 1 26 1 is_stmt 0 view .LVU37
+ 124 0044 5DF804FB 		ldr	pc, [sp], #4
+ 125              		.cfi_endproc
+ 126              	.LFE0:
+ 128              		.section	.text.Packet_Calculate_CRC,"ax",%progbits
+ 129              		.align	1
+ 130              		.global	Packet_Calculate_CRC
+ 131              		.syntax unified
+ 132              		.thumb
+ 133              		.thumb_func
+ 135              	Packet_Calculate_CRC:
+ 136              	.LVL14:
+ 137              	.LFB1:
+  27:Core/Lib/packet_protocol.c **** 
+  28:Core/Lib/packet_protocol.c **** uint16_t Packet_Calculate_CRC(const uint8_t* data, uint16_t length)
+  29:Core/Lib/packet_protocol.c **** {
+ 138              		.loc 1 29 1 is_stmt 1 view -0
+ 139              		.cfi_startproc
+ 140              		@ args = 0, pretend = 0, frame = 0
+ 141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 142              		.loc 1 29 1 is_stmt 0 view .LVU39
+ 143 0000 08B5     		push	{r3, lr}
+ 144              	.LCFI1:
+ 145              		.cfi_def_cfa_offset 8
+ 146              		.cfi_offset 3, -8
+ 147              		.cfi_offset 14, -4
+  30:Core/Lib/packet_protocol.c ****     return crc16_ccitt(data, length);
+ 148              		.loc 1 30 5 is_stmt 1 view .LVU40
+ 149              		.loc 1 30 12 is_stmt 0 view .LVU41
+ 150 0002 FFF7FEFF 		bl	crc16_ccitt
+ 151              	.LVL15:
+  31:Core/Lib/packet_protocol.c **** }
+ 152              		.loc 1 31 1 view .LVU42
+ 153 0006 08BD     		pop	{r3, pc}
+ 154              		.cfi_endproc
+ 155              	.LFE1:
+ 157              		.section	.text.Packet_Verify_CRC,"ax",%progbits
+ 158              		.align	1
+ 159              		.global	Packet_Verify_CRC
+ 160              		.syntax unified
+ 161              		.thumb
+ 162              		.thumb_func
+ 164              	Packet_Verify_CRC:
+ 165              	.LVL16:
+ 166              	.LFB2:
+  32:Core/Lib/packet_protocol.c **** 
+  33:Core/Lib/packet_protocol.c **** bool Packet_Verify_CRC(const uint8_t* packet, uint16_t length)
+  34:Core/Lib/packet_protocol.c **** {
+ 167              		.loc 1 34 1 is_stmt 1 view -0
+ 168              		.cfi_startproc
+ 169              		@ args = 0, pretend = 0, frame = 0
+ 170              		@ frame_needed = 0, uses_anonymous_args = 0
+  35:Core/Lib/packet_protocol.c ****     if (length < 4) // Minimum: header + type + crc
+ 171              		.loc 1 35 5 view .LVU44
+ 172              		.loc 1 35 8 is_stmt 0 view .LVU45
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 5
+
+
+ 173 0000 0329     		cmp	r1, #3
+ 174 0002 10D9     		bls	.L15
+  34:Core/Lib/packet_protocol.c ****     if (length < 4) // Minimum: header + type + crc
+ 175              		.loc 1 34 1 view .LVU46
+ 176 0004 10B5     		push	{r4, lr}
+ 177              	.LCFI2:
+ 178              		.cfi_def_cfa_offset 8
+ 179              		.cfi_offset 4, -8
+ 180              		.cfi_offset 14, -4
+  36:Core/Lib/packet_protocol.c ****     {
+  37:Core/Lib/packet_protocol.c ****         return false;
+  38:Core/Lib/packet_protocol.c ****     }
+  39:Core/Lib/packet_protocol.c ****     
+  40:Core/Lib/packet_protocol.c ****     // CRC is last 2 bytes
+  41:Core/Lib/packet_protocol.c ****     uint16_t received_crc = (uint16_t)(packet[length - 2] << 8) | packet[length - 1];
+ 181              		.loc 1 41 5 is_stmt 1 view .LVU47
+ 182              		.loc 1 41 46 is_stmt 0 view .LVU48
+ 183 0006 4318     		adds	r3, r0, r1
+ 184 0008 13F8022C 		ldrb	r2, [r3, #-2]	@ zero_extendqisi2
+ 185              		.loc 1 41 73 view .LVU49
+ 186 000c 13F8014C 		ldrb	r4, [r3, #-1]	@ zero_extendqisi2
+ 187              		.loc 1 41 14 view .LVU50
+ 188 0010 44EA0224 		orr	r4, r4, r2, lsl #8
+ 189              	.LVL17:
+  42:Core/Lib/packet_protocol.c ****     uint16_t calculated_crc = Packet_Calculate_CRC(packet, length - 2);
+ 190              		.loc 1 42 5 is_stmt 1 view .LVU51
+ 191              		.loc 1 42 31 is_stmt 0 view .LVU52
+ 192 0014 0239     		subs	r1, r1, #2
+ 193              	.LVL18:
+ 194              		.loc 1 42 31 view .LVU53
+ 195 0016 89B2     		uxth	r1, r1
+ 196 0018 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 197              	.LVL19:
+  43:Core/Lib/packet_protocol.c ****     
+  44:Core/Lib/packet_protocol.c ****     return (received_crc == calculated_crc);
+ 198              		.loc 1 44 5 is_stmt 1 view .LVU54
+ 199              		.loc 1 44 26 is_stmt 0 view .LVU55
+ 200 001c 8442     		cmp	r4, r0
+ 201 001e 14BF     		ite	ne
+ 202 0020 0020     		movne	r0, #0
+ 203              	.LVL20:
+ 204              		.loc 1 44 26 view .LVU56
+ 205 0022 0120     		moveq	r0, #1
+  45:Core/Lib/packet_protocol.c **** }
+ 206              		.loc 1 45 1 view .LVU57
+ 207 0024 10BD     		pop	{r4, pc}
+ 208              	.LVL21:
+ 209              	.L15:
+ 210              	.LCFI3:
+ 211              		.cfi_def_cfa_offset 0
+ 212              		.cfi_restore 4
+ 213              		.cfi_restore 14
+  37:Core/Lib/packet_protocol.c ****     }
+ 214              		.loc 1 37 16 view .LVU58
+ 215 0026 0020     		movs	r0, #0
+ 216              	.LVL22:
+ 217              		.loc 1 45 1 view .LVU59
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 6
+
+
+ 218 0028 7047     		bx	lr
+ 219              		.cfi_endproc
+ 220              	.LFE2:
+ 222              		.section	.text.Packet_Build_Beacon,"ax",%progbits
+ 223              		.align	1
+ 224              		.global	Packet_Build_Beacon
+ 225              		.syntax unified
+ 226              		.thumb
+ 227              		.thumb_func
+ 229              	Packet_Build_Beacon:
+ 230              	.LVL23:
+ 231              	.LFB3:
+  46:Core/Lib/packet_protocol.c **** 
+  47:Core/Lib/packet_protocol.c **** uint16_t Packet_Build_Beacon(uint8_t* buffer, uint8_t sat_id, uint32_t uptime, 
+  48:Core/Lib/packet_protocol.c ****                               uint8_t battery, uint8_t state, uint8_t sensors_ok, 
+  49:Core/Lib/packet_protocol.c ****                               uint32_t flash_free)
+  50:Core/Lib/packet_protocol.c **** {
+ 232              		.loc 1 50 1 is_stmt 1 view -0
+ 233              		.cfi_startproc
+ 234              		@ args = 12, pretend = 0, frame = 0
+ 235              		@ frame_needed = 0, uses_anonymous_args = 0
+ 236              		.loc 1 50 1 is_stmt 0 view .LVU61
+ 237 0000 10B5     		push	{r4, lr}
+ 238              	.LCFI4:
+ 239              		.cfi_def_cfa_offset 8
+ 240              		.cfi_offset 4, -8
+ 241              		.cfi_offset 14, -4
+ 242 0002 0446     		mov	r4, r0
+  51:Core/Lib/packet_protocol.c ****     beacon_packet_t* pkt = (beacon_packet_t*)buffer;
+ 243              		.loc 1 51 5 is_stmt 1 view .LVU62
+ 244              	.LVL24:
+  52:Core/Lib/packet_protocol.c ****     
+  53:Core/Lib/packet_protocol.c ****     pkt->header = PACKET_HEADER;
+ 245              		.loc 1 53 5 view .LVU63
+ 246              		.loc 1 53 17 is_stmt 0 view .LVU64
+ 247 0004 4FF0AA0C 		mov	ip, #170
+ 248 0008 80F800C0 		strb	ip, [r0]
+  54:Core/Lib/packet_protocol.c ****     pkt->type = PKT_TYPE_BEACON;
+ 249              		.loc 1 54 5 is_stmt 1 view .LVU65
+ 250              		.loc 1 54 15 is_stmt 0 view .LVU66
+ 251 000c 4FF0010C 		mov	ip, #1
+ 252 0010 80F801C0 		strb	ip, [r0, #1]
+  55:Core/Lib/packet_protocol.c ****     pkt->satellite_id = sat_id;
+ 253              		.loc 1 55 5 is_stmt 1 view .LVU67
+ 254              		.loc 1 55 23 is_stmt 0 view .LVU68
+ 255 0014 8170     		strb	r1, [r0, #2]
+  56:Core/Lib/packet_protocol.c ****     pkt->uptime_sec = uptime;
+ 256              		.loc 1 56 5 is_stmt 1 view .LVU69
+ 257              		.loc 1 56 21 is_stmt 0 view .LVU70
+ 258 0016 C0F80320 		str	r2, [r0, #3]	@ unaligned
+  57:Core/Lib/packet_protocol.c ****     pkt->battery_percent = battery;
+ 259              		.loc 1 57 5 is_stmt 1 view .LVU71
+ 260              		.loc 1 57 26 is_stmt 0 view .LVU72
+ 261 001a C371     		strb	r3, [r0, #7]
+  58:Core/Lib/packet_protocol.c ****     pkt->current_state = state;
+ 262              		.loc 1 58 5 is_stmt 1 view .LVU73
+ 263              		.loc 1 58 24 is_stmt 0 view .LVU74
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 7
+
+
+ 264 001c 9DF80830 		ldrb	r3, [sp, #8]	@ zero_extendqisi2
+ 265              	.LVL25:
+ 266              		.loc 1 58 24 view .LVU75
+ 267 0020 0372     		strb	r3, [r0, #8]
+  59:Core/Lib/packet_protocol.c ****     pkt->sensors_ok = sensors_ok;
+ 268              		.loc 1 59 5 is_stmt 1 view .LVU76
+ 269              		.loc 1 59 21 is_stmt 0 view .LVU77
+ 270 0022 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 271 0026 4372     		strb	r3, [r0, #9]
+  60:Core/Lib/packet_protocol.c ****     pkt->flash_free_kb = flash_free;
+ 272              		.loc 1 60 5 is_stmt 1 view .LVU78
+ 273              		.loc 1 60 24 is_stmt 0 view .LVU79
+ 274 0028 049B     		ldr	r3, [sp, #16]
+ 275 002a C0F80A30 		str	r3, [r0, #10]	@ unaligned
+  61:Core/Lib/packet_protocol.c ****     
+  62:Core/Lib/packet_protocol.c ****     // Calculate CRC (excluding CRC field itself)
+  63:Core/Lib/packet_protocol.c ****     uint16_t crc = Packet_Calculate_CRC(buffer, sizeof(beacon_packet_t) - 2);
+ 276              		.loc 1 63 5 is_stmt 1 view .LVU80
+ 277              		.loc 1 63 20 is_stmt 0 view .LVU81
+ 278 002e 0E21     		movs	r1, #14
+ 279              	.LVL26:
+ 280              		.loc 1 63 20 view .LVU82
+ 281 0030 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 282              	.LVL27:
+  64:Core/Lib/packet_protocol.c ****     pkt->crc = crc;
+ 283              		.loc 1 64 5 is_stmt 1 view .LVU83
+ 284              		.loc 1 64 14 is_stmt 0 view .LVU84
+ 285 0034 E081     		strh	r0, [r4, #14]	@ unaligned
+  65:Core/Lib/packet_protocol.c ****     
+  66:Core/Lib/packet_protocol.c ****     return sizeof(beacon_packet_t);
+ 286              		.loc 1 66 5 is_stmt 1 view .LVU85
+  67:Core/Lib/packet_protocol.c **** }
+ 287              		.loc 1 67 1 is_stmt 0 view .LVU86
+ 288 0036 1020     		movs	r0, #16
+ 289              	.LVL28:
+ 290              		.loc 1 67 1 view .LVU87
+ 291 0038 10BD     		pop	{r4, pc}
+ 292              		.loc 1 67 1 view .LVU88
+ 293              		.cfi_endproc
+ 294              	.LFE3:
+ 296              		.section	.text.Packet_Build_Status,"ax",%progbits
+ 297              		.align	1
+ 298              		.global	Packet_Build_Status
+ 299              		.syntax unified
+ 300              		.thumb
+ 301              		.thumb_func
+ 303              	Packet_Build_Status:
+ 304              	.LVL29:
+ 305              	.LFB4:
+  68:Core/Lib/packet_protocol.c **** 
+  69:Core/Lib/packet_protocol.c **** uint16_t Packet_Build_Status(uint8_t* buffer, const status_packet_t* status)
+  70:Core/Lib/packet_protocol.c **** {
+ 306              		.loc 1 70 1 is_stmt 1 view -0
+ 307              		.cfi_startproc
+ 308              		@ args = 0, pretend = 0, frame = 0
+ 309              		@ frame_needed = 0, uses_anonymous_args = 0
+ 310              		.loc 1 70 1 is_stmt 0 view .LVU90
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 8
+
+
+ 311 0000 10B5     		push	{r4, lr}
+ 312              	.LCFI5:
+ 313              		.cfi_def_cfa_offset 8
+ 314              		.cfi_offset 4, -8
+ 315              		.cfi_offset 14, -4
+ 316 0002 0446     		mov	r4, r0
+  71:Core/Lib/packet_protocol.c ****     memcpy(buffer, status, sizeof(status_packet_t) - 2);
+ 317              		.loc 1 71 5 is_stmt 1 view .LVU91
+ 318 0004 0A68     		ldr	r2, [r1]	@ unaligned
+ 319 0006 4B68     		ldr	r3, [r1, #4]	@ unaligned
+ 320 0008 D1F808E0 		ldr	lr, [r1, #8]	@ unaligned
+ 321 000c D1F80CC0 		ldr	ip, [r1, #12]	@ unaligned
+ 322 0010 0260     		str	r2, [r0]	@ unaligned
+ 323 0012 4360     		str	r3, [r0, #4]	@ unaligned
+ 324 0014 C0F808E0 		str	lr, [r0, #8]	@ unaligned
+ 325 0018 C0F80CC0 		str	ip, [r0, #12]	@ unaligned
+ 326 001c 0A69     		ldr	r2, [r1, #16]	@ unaligned
+ 327 001e 4B69     		ldr	r3, [r1, #20]	@ unaligned
+ 328 0020 0261     		str	r2, [r0, #16]	@ unaligned
+ 329 0022 4361     		str	r3, [r0, #20]	@ unaligned
+ 330 0024 0A8B     		ldrh	r2, [r1, #24]	@ unaligned
+ 331 0026 8B7E     		ldrb	r3, [r1, #26]	@ zero_extendqisi2
+ 332 0028 0283     		strh	r2, [r0, #24]	@ unaligned
+ 333 002a 8376     		strb	r3, [r0, #26]
+  72:Core/Lib/packet_protocol.c ****     
+  73:Core/Lib/packet_protocol.c ****     status_packet_t* pkt = (status_packet_t*)buffer;
+ 334              		.loc 1 73 5 view .LVU92
+ 335              	.LVL30:
+  74:Core/Lib/packet_protocol.c ****     pkt->header = PACKET_HEADER;
+ 336              		.loc 1 74 5 view .LVU93
+ 337              		.loc 1 74 17 is_stmt 0 view .LVU94
+ 338 002c AA23     		movs	r3, #170
+ 339 002e 0370     		strb	r3, [r0]
+  75:Core/Lib/packet_protocol.c ****     pkt->type = PKT_TYPE_STATUS;
+ 340              		.loc 1 75 5 is_stmt 1 view .LVU95
+ 341              		.loc 1 75 15 is_stmt 0 view .LVU96
+ 342 0030 0223     		movs	r3, #2
+ 343 0032 4370     		strb	r3, [r0, #1]
+  76:Core/Lib/packet_protocol.c ****     
+  77:Core/Lib/packet_protocol.c ****     uint16_t crc = Packet_Calculate_CRC(buffer, sizeof(status_packet_t) - 2);
+ 344              		.loc 1 77 5 is_stmt 1 view .LVU97
+ 345              		.loc 1 77 20 is_stmt 0 view .LVU98
+ 346 0034 1B21     		movs	r1, #27
+ 347              	.LVL31:
+ 348              		.loc 1 77 20 view .LVU99
+ 349 0036 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 350              	.LVL32:
+  78:Core/Lib/packet_protocol.c ****     pkt->crc = crc;
+ 351              		.loc 1 78 5 is_stmt 1 view .LVU100
+ 352              		.loc 1 78 14 is_stmt 0 view .LVU101
+ 353 003a A4F81B00 		strh	r0, [r4, #27]	@ unaligned
+  79:Core/Lib/packet_protocol.c ****     
+  80:Core/Lib/packet_protocol.c ****     return sizeof(status_packet_t);
+ 354              		.loc 1 80 5 is_stmt 1 view .LVU102
+  81:Core/Lib/packet_protocol.c **** }
+ 355              		.loc 1 81 1 is_stmt 0 view .LVU103
+ 356 003e 1D20     		movs	r0, #29
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 9
+
+
+ 357              	.LVL33:
+ 358              		.loc 1 81 1 view .LVU104
+ 359 0040 10BD     		pop	{r4, pc}
+ 360              		.loc 1 81 1 view .LVU105
+ 361              		.cfi_endproc
+ 362              	.LFE4:
+ 364              		.section	.text.Packet_Build_Pong,"ax",%progbits
+ 365              		.align	1
+ 366              		.global	Packet_Build_Pong
+ 367              		.syntax unified
+ 368              		.thumb
+ 369              		.thumb_func
+ 371              	Packet_Build_Pong:
+ 372              	.LVL34:
+ 373              	.LFB5:
+  82:Core/Lib/packet_protocol.c **** 
+  83:Core/Lib/packet_protocol.c **** uint16_t Packet_Build_Pong(uint8_t* buffer, uint32_t timestamp)
+  84:Core/Lib/packet_protocol.c **** {
+ 374              		.loc 1 84 1 is_stmt 1 view -0
+ 375              		.cfi_startproc
+ 376              		@ args = 0, pretend = 0, frame = 0
+ 377              		@ frame_needed = 0, uses_anonymous_args = 0
+ 378              		.loc 1 84 1 is_stmt 0 view .LVU107
+ 379 0000 10B5     		push	{r4, lr}
+ 380              	.LCFI6:
+ 381              		.cfi_def_cfa_offset 8
+ 382              		.cfi_offset 4, -8
+ 383              		.cfi_offset 14, -4
+ 384 0002 0446     		mov	r4, r0
+  85:Core/Lib/packet_protocol.c ****     ping_packet_t* pkt = (ping_packet_t*)buffer;
+ 385              		.loc 1 85 5 is_stmt 1 view .LVU108
+ 386              	.LVL35:
+  86:Core/Lib/packet_protocol.c ****     
+  87:Core/Lib/packet_protocol.c ****     pkt->header = PACKET_HEADER;
+ 387              		.loc 1 87 5 view .LVU109
+ 388              		.loc 1 87 17 is_stmt 0 view .LVU110
+ 389 0004 AA23     		movs	r3, #170
+ 390 0006 0370     		strb	r3, [r0]
+  88:Core/Lib/packet_protocol.c ****     pkt->type = PKT_TYPE_PONG;
+ 391              		.loc 1 88 5 is_stmt 1 view .LVU111
+ 392              		.loc 1 88 15 is_stmt 0 view .LVU112
+ 393 0008 1123     		movs	r3, #17
+ 394 000a 4370     		strb	r3, [r0, #1]
+  89:Core/Lib/packet_protocol.c ****     pkt->timestamp = timestamp;
+ 395              		.loc 1 89 5 is_stmt 1 view .LVU113
+ 396              		.loc 1 89 20 is_stmt 0 view .LVU114
+ 397 000c C0F80210 		str	r1, [r0, #2]	@ unaligned
+  90:Core/Lib/packet_protocol.c ****     
+  91:Core/Lib/packet_protocol.c ****     uint16_t crc = Packet_Calculate_CRC(buffer, sizeof(ping_packet_t) - 2);
+ 398              		.loc 1 91 5 is_stmt 1 view .LVU115
+ 399              		.loc 1 91 20 is_stmt 0 view .LVU116
+ 400 0010 0621     		movs	r1, #6
+ 401              	.LVL36:
+ 402              		.loc 1 91 20 view .LVU117
+ 403 0012 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 404              	.LVL37:
+  92:Core/Lib/packet_protocol.c ****     pkt->crc = crc;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 10
+
+
+ 405              		.loc 1 92 5 is_stmt 1 view .LVU118
+ 406              		.loc 1 92 14 is_stmt 0 view .LVU119
+ 407 0016 E080     		strh	r0, [r4, #6]	@ unaligned
+  93:Core/Lib/packet_protocol.c ****     
+  94:Core/Lib/packet_protocol.c ****     return sizeof(ping_packet_t);
+ 408              		.loc 1 94 5 is_stmt 1 view .LVU120
+  95:Core/Lib/packet_protocol.c **** }
+ 409              		.loc 1 95 1 is_stmt 0 view .LVU121
+ 410 0018 0820     		movs	r0, #8
+ 411              	.LVL38:
+ 412              		.loc 1 95 1 view .LVU122
+ 413 001a 10BD     		pop	{r4, pc}
+ 414              		.loc 1 95 1 view .LVU123
+ 415              		.cfi_endproc
+ 416              	.LFE5:
+ 418              		.section	.text.Packet_Build_ACK,"ax",%progbits
+ 419              		.align	1
+ 420              		.global	Packet_Build_ACK
+ 421              		.syntax unified
+ 422              		.thumb
+ 423              		.thumb_func
+ 425              	Packet_Build_ACK:
+ 426              	.LVL39:
+ 427              	.LFB6:
+  96:Core/Lib/packet_protocol.c **** 
+  97:Core/Lib/packet_protocol.c **** uint16_t Packet_Build_ACK(uint8_t* buffer, uint16_t seq_num)
+  98:Core/Lib/packet_protocol.c **** {
+ 428              		.loc 1 98 1 is_stmt 1 view -0
+ 429              		.cfi_startproc
+ 430              		@ args = 0, pretend = 0, frame = 0
+ 431              		@ frame_needed = 0, uses_anonymous_args = 0
+ 432              		.loc 1 98 1 is_stmt 0 view .LVU125
+ 433 0000 10B5     		push	{r4, lr}
+ 434              	.LCFI7:
+ 435              		.cfi_def_cfa_offset 8
+ 436              		.cfi_offset 4, -8
+ 437              		.cfi_offset 14, -4
+ 438 0002 0446     		mov	r4, r0
+  99:Core/Lib/packet_protocol.c ****     ack_packet_t* pkt = (ack_packet_t*)buffer;
+ 439              		.loc 1 99 5 is_stmt 1 view .LVU126
+ 440              	.LVL40:
+ 100:Core/Lib/packet_protocol.c ****     
+ 101:Core/Lib/packet_protocol.c ****     pkt->header = PACKET_HEADER;
+ 441              		.loc 1 101 5 view .LVU127
+ 442              		.loc 1 101 17 is_stmt 0 view .LVU128
+ 443 0004 AA23     		movs	r3, #170
+ 444 0006 0370     		strb	r3, [r0]
+ 102:Core/Lib/packet_protocol.c ****     pkt->type = PKT_TYPE_ACK;
+ 445              		.loc 1 102 5 is_stmt 1 view .LVU129
+ 446              		.loc 1 102 15 is_stmt 0 view .LVU130
+ 447 0008 0423     		movs	r3, #4
+ 448 000a 4370     		strb	r3, [r0, #1]
+ 103:Core/Lib/packet_protocol.c ****     pkt->acked_seq = seq_num;
+ 449              		.loc 1 103 5 is_stmt 1 view .LVU131
+ 450              		.loc 1 103 20 is_stmt 0 view .LVU132
+ 451 000c 4180     		strh	r1, [r0, #2]	@ unaligned
+ 104:Core/Lib/packet_protocol.c ****     
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 11
+
+
+ 105:Core/Lib/packet_protocol.c ****     uint16_t crc = Packet_Calculate_CRC(buffer, sizeof(ack_packet_t) - 2);
+ 452              		.loc 1 105 5 is_stmt 1 view .LVU133
+ 453              		.loc 1 105 20 is_stmt 0 view .LVU134
+ 454 000e 1946     		mov	r1, r3
+ 455              	.LVL41:
+ 456              		.loc 1 105 20 view .LVU135
+ 457 0010 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 458              	.LVL42:
+ 106:Core/Lib/packet_protocol.c ****     pkt->crc = crc;
+ 459              		.loc 1 106 5 is_stmt 1 view .LVU136
+ 460              		.loc 1 106 14 is_stmt 0 view .LVU137
+ 461 0014 A080     		strh	r0, [r4, #4]	@ unaligned
+ 107:Core/Lib/packet_protocol.c ****     
+ 108:Core/Lib/packet_protocol.c ****     return sizeof(ack_packet_t);
+ 462              		.loc 1 108 5 is_stmt 1 view .LVU138
+ 109:Core/Lib/packet_protocol.c **** }
+ 463              		.loc 1 109 1 is_stmt 0 view .LVU139
+ 464 0016 0620     		movs	r0, #6
+ 465              	.LVL43:
+ 466              		.loc 1 109 1 view .LVU140
+ 467 0018 10BD     		pop	{r4, pc}
+ 468              		.loc 1 109 1 view .LVU141
+ 469              		.cfi_endproc
+ 470              	.LFE6:
+ 472              		.section	.text.Packet_Build_End,"ax",%progbits
+ 473              		.align	1
+ 474              		.global	Packet_Build_End
+ 475              		.syntax unified
+ 476              		.thumb
+ 477              		.thumb_func
+ 479              	Packet_Build_End:
+ 480              	.LVL44:
+ 481              	.LFB7:
+ 110:Core/Lib/packet_protocol.c **** 
+ 111:Core/Lib/packet_protocol.c **** uint16_t Packet_Build_End(uint8_t* buffer, uint16_t total_sent)
+ 112:Core/Lib/packet_protocol.c **** {
+ 482              		.loc 1 112 1 is_stmt 1 view -0
+ 483              		.cfi_startproc
+ 484              		@ args = 0, pretend = 0, frame = 0
+ 485              		@ frame_needed = 0, uses_anonymous_args = 0
+ 486              		.loc 1 112 1 is_stmt 0 view .LVU143
+ 487 0000 38B5     		push	{r3, r4, r5, lr}
+ 488              	.LCFI8:
+ 489              		.cfi_def_cfa_offset 16
+ 490              		.cfi_offset 3, -16
+ 491              		.cfi_offset 4, -12
+ 492              		.cfi_offset 5, -8
+ 493              		.cfi_offset 14, -4
+ 494 0002 0446     		mov	r4, r0
+ 113:Core/Lib/packet_protocol.c ****     end_packet_t* pkt = (end_packet_t*)buffer;
+ 495              		.loc 1 113 5 is_stmt 1 view .LVU144
+ 496              	.LVL45:
+ 114:Core/Lib/packet_protocol.c ****     
+ 115:Core/Lib/packet_protocol.c ****     pkt->header = PACKET_HEADER;
+ 497              		.loc 1 115 5 view .LVU145
+ 498              		.loc 1 115 17 is_stmt 0 view .LVU146
+ 499 0004 AA23     		movs	r3, #170
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 12
+
+
+ 500 0006 0370     		strb	r3, [r0]
+ 116:Core/Lib/packet_protocol.c ****     pkt->type = PKT_TYPE_END;
+ 501              		.loc 1 116 5 is_stmt 1 view .LVU147
+ 502              		.loc 1 116 15 is_stmt 0 view .LVU148
+ 503 0008 0625     		movs	r5, #6
+ 504 000a 4570     		strb	r5, [r0, #1]
+ 117:Core/Lib/packet_protocol.c ****     pkt->total_sent = total_sent;
+ 505              		.loc 1 117 5 is_stmt 1 view .LVU149
+ 506              		.loc 1 117 21 is_stmt 0 view .LVU150
+ 507 000c 4180     		strh	r1, [r0, #2]	@ unaligned
+ 118:Core/Lib/packet_protocol.c ****     
+ 119:Core/Lib/packet_protocol.c ****     uint16_t crc = Packet_Calculate_CRC(buffer, sizeof(end_packet_t) - 2);
+ 508              		.loc 1 119 5 is_stmt 1 view .LVU151
+ 509              		.loc 1 119 20 is_stmt 0 view .LVU152
+ 510 000e 0421     		movs	r1, #4
+ 511              	.LVL46:
+ 512              		.loc 1 119 20 view .LVU153
+ 513 0010 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 514              	.LVL47:
+ 120:Core/Lib/packet_protocol.c ****     pkt->crc = crc;
+ 515              		.loc 1 120 5 is_stmt 1 view .LVU154
+ 516              		.loc 1 120 14 is_stmt 0 view .LVU155
+ 517 0014 A080     		strh	r0, [r4, #4]	@ unaligned
+ 121:Core/Lib/packet_protocol.c ****     
+ 122:Core/Lib/packet_protocol.c ****     return sizeof(end_packet_t);
+ 518              		.loc 1 122 5 is_stmt 1 view .LVU156
+ 123:Core/Lib/packet_protocol.c **** }
+ 519              		.loc 1 123 1 is_stmt 0 view .LVU157
+ 520 0016 2846     		mov	r0, r5
+ 521              	.LVL48:
+ 522              		.loc 1 123 1 view .LVU158
+ 523 0018 38BD     		pop	{r3, r4, r5, pc}
+ 524              		.loc 1 123 1 view .LVU159
+ 525              		.cfi_endproc
+ 526              	.LFE7:
+ 528              		.section	.text.Packet_Build_DataPacket,"ax",%progbits
+ 529              		.align	1
+ 530              		.global	Packet_Build_DataPacket
+ 531              		.syntax unified
+ 532              		.thumb
+ 533              		.thumb_func
+ 535              	Packet_Build_DataPacket:
+ 536              	.LVL49:
+ 537              	.LFB8:
+ 124:Core/Lib/packet_protocol.c **** 
+ 125:Core/Lib/packet_protocol.c **** uint16_t Packet_Build_DataPacket(uint8_t* buffer, uint16_t seq, uint16_t total, 
+ 126:Core/Lib/packet_protocol.c ****                                   const uint8_t* payload, uint8_t payload_size)
+ 127:Core/Lib/packet_protocol.c **** {
+ 538              		.loc 1 127 1 is_stmt 1 view -0
+ 539              		.cfi_startproc
+ 540              		@ args = 4, pretend = 0, frame = 0
+ 541              		@ frame_needed = 0, uses_anonymous_args = 0
+ 542              		.loc 1 127 1 is_stmt 0 view .LVU161
+ 543 0000 70B5     		push	{r4, r5, r6, lr}
+ 544              	.LCFI9:
+ 545              		.cfi_def_cfa_offset 16
+ 546              		.cfi_offset 4, -16
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 13
+
+
+ 547              		.cfi_offset 5, -12
+ 548              		.cfi_offset 6, -8
+ 549              		.cfi_offset 14, -4
+ 550 0002 0446     		mov	r4, r0
+ 551 0004 0846     		mov	r0, r1
+ 552              	.LVL50:
+ 553              		.loc 1 127 1 view .LVU162
+ 554 0006 1946     		mov	r1, r3
+ 555              	.LVL51:
+ 556              		.loc 1 127 1 view .LVU163
+ 557 0008 9DF81050 		ldrb	r5, [sp, #16]	@ zero_extendqisi2
+ 128:Core/Lib/packet_protocol.c ****     if (payload_size > PACKET_DATA_PAYLOAD_MAX)
+ 558              		.loc 1 128 5 is_stmt 1 view .LVU164
+ 559              		.loc 1 128 8 is_stmt 0 view .LVU165
+ 560 000c B42D     		cmp	r5, #180
+ 561 000e 00D9     		bls	.L31
+ 129:Core/Lib/packet_protocol.c ****     {
+ 130:Core/Lib/packet_protocol.c ****         payload_size = PACKET_DATA_PAYLOAD_MAX;
+ 562              		.loc 1 130 22 view .LVU166
+ 563 0010 B425     		movs	r5, #180
+ 564              	.L31:
+ 565              	.LVL52:
+ 131:Core/Lib/packet_protocol.c ****     }
+ 132:Core/Lib/packet_protocol.c ****     
+ 133:Core/Lib/packet_protocol.c ****     // Build header
+ 134:Core/Lib/packet_protocol.c ****     buffer[0] = PACKET_HEADER;
+ 566              		.loc 1 134 5 is_stmt 1 view .LVU167
+ 567              		.loc 1 134 15 is_stmt 0 view .LVU168
+ 568 0012 AA23     		movs	r3, #170
+ 569              	.LVL53:
+ 570              		.loc 1 134 15 view .LVU169
+ 571 0014 2370     		strb	r3, [r4]
+ 135:Core/Lib/packet_protocol.c ****     buffer[1] = PKT_TYPE_DATA;
+ 572              		.loc 1 135 5 is_stmt 1 view .LVU170
+ 573              		.loc 1 135 15 is_stmt 0 view .LVU171
+ 574 0016 0323     		movs	r3, #3
+ 575 0018 6370     		strb	r3, [r4, #1]
+ 136:Core/Lib/packet_protocol.c ****     buffer[2] = (seq >> 8) & 0xFF;
+ 576              		.loc 1 136 5 is_stmt 1 view .LVU172
+ 577              		.loc 1 136 15 is_stmt 0 view .LVU173
+ 578 001a 030A     		lsrs	r3, r0, #8
+ 579 001c A370     		strb	r3, [r4, #2]
+ 137:Core/Lib/packet_protocol.c ****     buffer[3] = seq & 0xFF;
+ 580              		.loc 1 137 5 is_stmt 1 view .LVU174
+ 581              		.loc 1 137 15 is_stmt 0 view .LVU175
+ 582 001e E070     		strb	r0, [r4, #3]
+ 138:Core/Lib/packet_protocol.c ****     buffer[4] = (total >> 8) & 0xFF;
+ 583              		.loc 1 138 5 is_stmt 1 view .LVU176
+ 584              		.loc 1 138 15 is_stmt 0 view .LVU177
+ 585 0020 130A     		lsrs	r3, r2, #8
+ 586 0022 2371     		strb	r3, [r4, #4]
+ 139:Core/Lib/packet_protocol.c ****     buffer[5] = total & 0xFF;
+ 587              		.loc 1 139 5 is_stmt 1 view .LVU178
+ 588              		.loc 1 139 15 is_stmt 0 view .LVU179
+ 589 0024 6271     		strb	r2, [r4, #5]
+ 140:Core/Lib/packet_protocol.c ****     buffer[6] = payload_size;
+ 590              		.loc 1 140 5 is_stmt 1 view .LVU180
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 14
+
+
+ 591              		.loc 1 140 15 is_stmt 0 view .LVU181
+ 592 0026 A571     		strb	r5, [r4, #6]
+ 141:Core/Lib/packet_protocol.c ****     
+ 142:Core/Lib/packet_protocol.c ****     // Copy payload
+ 143:Core/Lib/packet_protocol.c ****     memcpy(&buffer[7], payload, payload_size);
+ 593              		.loc 1 143 5 is_stmt 1 view .LVU182
+ 594 0028 2A46     		mov	r2, r5
+ 595              	.LVL54:
+ 596              		.loc 1 143 5 is_stmt 0 view .LVU183
+ 597 002a E01D     		adds	r0, r4, #7
+ 598 002c FFF7FEFF 		bl	memcpy
+ 599              	.LVL55:
+ 144:Core/Lib/packet_protocol.c ****     
+ 145:Core/Lib/packet_protocol.c ****     // Calculate CRC
+ 146:Core/Lib/packet_protocol.c ****     uint16_t packet_len = 7 + payload_size;
+ 600              		.loc 1 146 5 is_stmt 1 view .LVU184
+ 601              		.loc 1 146 29 is_stmt 0 view .LVU185
+ 602 0030 AEB2     		uxth	r6, r5
+ 603              		.loc 1 146 14 view .LVU186
+ 604 0032 0735     		adds	r5, r5, #7
+ 605              	.LVL56:
+ 147:Core/Lib/packet_protocol.c ****     uint16_t crc = Packet_Calculate_CRC(buffer, packet_len);
+ 606              		.loc 1 147 5 is_stmt 1 view .LVU187
+ 607              		.loc 1 147 20 is_stmt 0 view .LVU188
+ 608 0034 2946     		mov	r1, r5
+ 609 0036 2046     		mov	r0, r4
+ 610 0038 FFF7FEFF 		bl	Packet_Calculate_CRC
+ 611              	.LVL57:
+ 148:Core/Lib/packet_protocol.c ****     buffer[packet_len] = (crc >> 8) & 0xFF;
+ 612              		.loc 1 148 5 is_stmt 1 view .LVU189
+ 613              		.loc 1 148 24 is_stmt 0 view .LVU190
+ 614 003c 030A     		lsrs	r3, r0, #8
+ 615 003e 6355     		strb	r3, [r4, r5]
+ 149:Core/Lib/packet_protocol.c ****     buffer[packet_len + 1] = crc & 0xFF;
+ 616              		.loc 1 149 5 is_stmt 1 view .LVU191
+ 617              		.loc 1 149 11 is_stmt 0 view .LVU192
+ 618 0040 0135     		adds	r5, r5, #1
+ 619              	.LVL58:
+ 620              		.loc 1 149 28 view .LVU193
+ 621 0042 6055     		strb	r0, [r4, r5]
+ 150:Core/Lib/packet_protocol.c ****     
+ 151:Core/Lib/packet_protocol.c ****     return packet_len + 2; // Total packet size including CRC
+ 622              		.loc 1 151 5 is_stmt 1 view .LVU194
+ 623              		.loc 1 151 23 is_stmt 0 view .LVU195
+ 624 0044 06F10900 		add	r0, r6, #9
+ 625              	.LVL59:
+ 152:Core/Lib/packet_protocol.c **** }
+ 626              		.loc 1 152 1 view .LVU196
+ 627 0048 80B2     		uxth	r0, r0
+ 628 004a 70BD     		pop	{r4, r5, r6, pc}
+ 629              		.loc 1 152 1 view .LVU197
+ 630              		.cfi_endproc
+ 631              	.LFE8:
+ 633              		.section	.text.Packet_Parse_Type,"ax",%progbits
+ 634              		.align	1
+ 635              		.global	Packet_Parse_Type
+ 636              		.syntax unified
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 15
+
+
+ 637              		.thumb
+ 638              		.thumb_func
+ 640              	Packet_Parse_Type:
+ 641              	.LVL60:
+ 642              	.LFB9:
+ 153:Core/Lib/packet_protocol.c **** 
+ 154:Core/Lib/packet_protocol.c **** packet_type_t Packet_Parse_Type(const uint8_t* packet)
+ 155:Core/Lib/packet_protocol.c **** {
+ 643              		.loc 1 155 1 is_stmt 1 view -0
+ 644              		.cfi_startproc
+ 645              		@ args = 0, pretend = 0, frame = 0
+ 646              		@ frame_needed = 0, uses_anonymous_args = 0
+ 647              		@ link register save eliminated.
+ 156:Core/Lib/packet_protocol.c ****     if (packet[0] != PACKET_HEADER)
+ 648              		.loc 1 156 5 view .LVU199
+ 649              		.loc 1 156 15 is_stmt 0 view .LVU200
+ 650 0000 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 651              		.loc 1 156 8 view .LVU201
+ 652 0002 AA2B     		cmp	r3, #170
+ 653 0004 01D1     		bne	.L36
+ 157:Core/Lib/packet_protocol.c ****     {
+ 158:Core/Lib/packet_protocol.c ****         return 0; // Invalid packet
+ 159:Core/Lib/packet_protocol.c ****     }
+ 160:Core/Lib/packet_protocol.c ****     
+ 161:Core/Lib/packet_protocol.c ****     return (packet_type_t)packet[1];
+ 654              		.loc 1 161 5 is_stmt 1 view .LVU202
+ 655              		.loc 1 161 12 is_stmt 0 view .LVU203
+ 656 0006 4078     		ldrb	r0, [r0, #1]	@ zero_extendqisi2
+ 657              	.LVL61:
+ 658              		.loc 1 161 12 view .LVU204
+ 659 0008 7047     		bx	lr
+ 660              	.LVL62:
+ 661              	.L36:
+ 158:Core/Lib/packet_protocol.c ****     }
+ 662              		.loc 1 158 16 view .LVU205
+ 663 000a 0020     		movs	r0, #0
+ 664              	.LVL63:
+ 162:Core/Lib/packet_protocol.c **** }
+ 665              		.loc 1 162 1 view .LVU206
+ 666 000c 7047     		bx	lr
+ 667              		.cfi_endproc
+ 668              	.LFE9:
+ 670              		.section	.text.Packet_Parse_Command,"ax",%progbits
+ 671              		.align	1
+ 672              		.global	Packet_Parse_Command
+ 673              		.syntax unified
+ 674              		.thumb
+ 675              		.thumb_func
+ 677              	Packet_Parse_Command:
+ 678              	.LVL64:
+ 679              	.LFB10:
+ 163:Core/Lib/packet_protocol.c **** 
+ 164:Core/Lib/packet_protocol.c **** bool Packet_Parse_Command(const uint8_t* packet, uint16_t length, command_packet_t* cmd)
+ 165:Core/Lib/packet_protocol.c **** {
+ 680              		.loc 1 165 1 is_stmt 1 view -0
+ 681              		.cfi_startproc
+ 682              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 16
+
+
+ 683              		@ frame_needed = 0, uses_anonymous_args = 0
+ 684              		.loc 1 165 1 is_stmt 0 view .LVU208
+ 685 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 686              	.LCFI10:
+ 687              		.cfi_def_cfa_offset 24
+ 688              		.cfi_offset 4, -24
+ 689              		.cfi_offset 5, -20
+ 690              		.cfi_offset 6, -16
+ 691              		.cfi_offset 7, -12
+ 692              		.cfi_offset 8, -8
+ 693              		.cfi_offset 14, -4
+ 166:Core/Lib/packet_protocol.c ****     if (length < 4 || packet[0] != PACKET_HEADER)
+ 694              		.loc 1 166 5 is_stmt 1 view .LVU209
+ 695              		.loc 1 166 8 is_stmt 0 view .LVU210
+ 696 0004 0329     		cmp	r1, #3
+ 697 0006 19D9     		bls	.L40
+ 698 0008 0546     		mov	r5, r0
+ 699 000a 0C46     		mov	r4, r1
+ 700 000c 1746     		mov	r7, r2
+ 701              		.loc 1 166 29 discriminator 1 view .LVU211
+ 702 000e 90F80080 		ldrb	r8, [r0]	@ zero_extendqisi2
+ 703              		.loc 1 166 20 discriminator 1 view .LVU212
+ 704 0012 B8F1AA0F 		cmp	r8, #170
+ 705 0016 15D1     		bne	.L41
+ 167:Core/Lib/packet_protocol.c ****     {
+ 168:Core/Lib/packet_protocol.c ****         return false;
+ 169:Core/Lib/packet_protocol.c ****     }
+ 170:Core/Lib/packet_protocol.c ****     
+ 171:Core/Lib/packet_protocol.c ****     if (!Packet_Verify_CRC(packet, length))
+ 706              		.loc 1 171 5 is_stmt 1 view .LVU213
+ 707              		.loc 1 171 10 is_stmt 0 view .LVU214
+ 708 0018 FFF7FEFF 		bl	Packet_Verify_CRC
+ 709              	.LVL65:
+ 710              		.loc 1 171 8 view .LVU215
+ 711 001c 0646     		mov	r6, r0
+ 712 001e 70B1     		cbz	r0, .L38
+ 172:Core/Lib/packet_protocol.c ****     {
+ 173:Core/Lib/packet_protocol.c ****         return false;
+ 174:Core/Lib/packet_protocol.c ****     }
+ 175:Core/Lib/packet_protocol.c ****     
+ 176:Core/Lib/packet_protocol.c ****     cmd->header = packet[0];
+ 713              		.loc 1 176 5 is_stmt 1 view .LVU216
+ 714              		.loc 1 176 17 is_stmt 0 view .LVU217
+ 715 0020 87F80080 		strb	r8, [r7]
+ 177:Core/Lib/packet_protocol.c ****     cmd->type = packet[1];
+ 716              		.loc 1 177 5 is_stmt 1 view .LVU218
+ 717              		.loc 1 177 15 is_stmt 0 view .LVU219
+ 718 0024 6B78     		ldrb	r3, [r5, #1]	@ zero_extendqisi2
+ 719 0026 7B70     		strb	r3, [r7, #1]
+ 178:Core/Lib/packet_protocol.c ****     
+ 179:Core/Lib/packet_protocol.c ****     // Copy payload (if any)
+ 180:Core/Lib/packet_protocol.c ****     uint16_t payload_len = length - 4; // header + type + crc(2)
+ 720              		.loc 1 180 5 is_stmt 1 view .LVU220
+ 721              		.loc 1 180 14 is_stmt 0 view .LVU221
+ 722 0028 043C     		subs	r4, r4, #4
+ 723 002a A2B2     		uxth	r2, r4
+ 724              	.LVL66:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 17
+
+
+ 181:Core/Lib/packet_protocol.c ****     if (payload_len > sizeof(cmd->payload))
+ 725              		.loc 1 181 5 is_stmt 1 view .LVU222
+ 726              		.loc 1 181 8 is_stmt 0 view .LVU223
+ 727 002c 102A     		cmp	r2, #16
+ 728 002e 00D9     		bls	.L39
+ 182:Core/Lib/packet_protocol.c ****     {
+ 183:Core/Lib/packet_protocol.c ****         payload_len = sizeof(cmd->payload);
+ 729              		.loc 1 183 21 view .LVU224
+ 730 0030 1022     		movs	r2, #16
+ 731              	.LVL67:
+ 732              	.L39:
+ 184:Core/Lib/packet_protocol.c ****     }
+ 185:Core/Lib/packet_protocol.c ****     memcpy(cmd->payload, &packet[2], payload_len);
+ 733              		.loc 1 185 5 is_stmt 1 view .LVU225
+ 734 0032 A91C     		adds	r1, r5, #2
+ 735 0034 B81C     		adds	r0, r7, #2
+ 736 0036 FFF7FEFF 		bl	memcpy
+ 737              	.LVL68:
+ 186:Core/Lib/packet_protocol.c ****     
+ 187:Core/Lib/packet_protocol.c ****     return true;
+ 738              		.loc 1 187 5 view .LVU226
+ 739              		.loc 1 187 12 is_stmt 0 view .LVU227
+ 740 003a 00E0     		b	.L38
+ 741              	.LVL69:
+ 742              	.L40:
+ 168:Core/Lib/packet_protocol.c ****     }
+ 743              		.loc 1 168 16 view .LVU228
+ 744 003c 0026     		movs	r6, #0
+ 745              	.LVL70:
+ 746              	.L38:
+ 188:Core/Lib/packet_protocol.c **** }
+ 747              		.loc 1 188 1 view .LVU229
+ 748 003e 3046     		mov	r0, r6
+ 749 0040 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 750              	.LVL71:
+ 751              	.L41:
+ 168:Core/Lib/packet_protocol.c ****     }
+ 752              		.loc 1 168 16 view .LVU230
+ 753 0044 0026     		movs	r6, #0
+ 754 0046 FAE7     		b	.L38
+ 755              		.cfi_endproc
+ 756              	.LFE10:
+ 758              		.section	.text.Packet_Parse_ACK,"ax",%progbits
+ 759              		.align	1
+ 760              		.global	Packet_Parse_ACK
+ 761              		.syntax unified
+ 762              		.thumb
+ 763              		.thumb_func
+ 765              	Packet_Parse_ACK:
+ 766              	.LVL72:
+ 767              	.LFB11:
+ 189:Core/Lib/packet_protocol.c **** 
+ 190:Core/Lib/packet_protocol.c **** bool Packet_Parse_ACK(const uint8_t* packet, uint16_t length, uint16_t* acked_seq)
+ 191:Core/Lib/packet_protocol.c **** {
+ 768              		.loc 1 191 1 is_stmt 1 view -0
+ 769              		.cfi_startproc
+ 770              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 18
+
+
+ 771              		@ frame_needed = 0, uses_anonymous_args = 0
+ 192:Core/Lib/packet_protocol.c ****     if (length < sizeof(ack_packet_t) || packet[0] != PACKET_HEADER)
+ 772              		.loc 1 192 5 view .LVU232
+ 773              		.loc 1 192 8 is_stmt 0 view .LVU233
+ 774 0000 0529     		cmp	r1, #5
+ 775 0002 0ED9     		bls	.L46
+ 191:Core/Lib/packet_protocol.c ****     if (length < sizeof(ack_packet_t) || packet[0] != PACKET_HEADER)
+ 776              		.loc 1 191 1 discriminator 1 view .LVU234
+ 777 0004 38B5     		push	{r3, r4, r5, lr}
+ 778              	.LCFI11:
+ 779              		.cfi_def_cfa_offset 16
+ 780              		.cfi_offset 3, -16
+ 781              		.cfi_offset 4, -12
+ 782              		.cfi_offset 5, -8
+ 783              		.cfi_offset 14, -4
+ 784 0006 0446     		mov	r4, r0
+ 785 0008 1546     		mov	r5, r2
+ 786              		.loc 1 192 48 discriminator 1 view .LVU235
+ 787 000a 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 788              		.loc 1 192 39 discriminator 1 view .LVU236
+ 789 000c AA2B     		cmp	r3, #170
+ 790 000e 0AD1     		bne	.L47
+ 193:Core/Lib/packet_protocol.c ****     {
+ 194:Core/Lib/packet_protocol.c ****         return false;
+ 195:Core/Lib/packet_protocol.c ****     }
+ 196:Core/Lib/packet_protocol.c ****     
+ 197:Core/Lib/packet_protocol.c ****     if (packet[1] != PKT_TYPE_ACK)
+ 791              		.loc 1 197 5 is_stmt 1 view .LVU237
+ 792              		.loc 1 197 15 is_stmt 0 view .LVU238
+ 793 0010 4378     		ldrb	r3, [r0, #1]	@ zero_extendqisi2
+ 794              		.loc 1 197 8 view .LVU239
+ 795 0012 042B     		cmp	r3, #4
+ 796 0014 09D1     		bne	.L48
+ 198:Core/Lib/packet_protocol.c ****     {
+ 199:Core/Lib/packet_protocol.c ****         return false;
+ 200:Core/Lib/packet_protocol.c ****     }
+ 201:Core/Lib/packet_protocol.c ****     
+ 202:Core/Lib/packet_protocol.c ****     if (!Packet_Verify_CRC(packet, length))
+ 797              		.loc 1 202 5 is_stmt 1 view .LVU240
+ 798              		.loc 1 202 10 is_stmt 0 view .LVU241
+ 799 0016 FFF7FEFF 		bl	Packet_Verify_CRC
+ 800              	.LVL73:
+ 801              		.loc 1 202 8 view .LVU242
+ 802 001a 28B1     		cbz	r0, .L45
+ 203:Core/Lib/packet_protocol.c ****     {
+ 204:Core/Lib/packet_protocol.c ****         return false;
+ 205:Core/Lib/packet_protocol.c ****     }
+ 206:Core/Lib/packet_protocol.c ****     
+ 207:Core/Lib/packet_protocol.c ****     ack_packet_t* ack = (ack_packet_t*)packet;
+ 803              		.loc 1 207 5 is_stmt 1 view .LVU243
+ 804              	.LVL74:
+ 208:Core/Lib/packet_protocol.c ****     *acked_seq = ack->acked_seq;
+ 805              		.loc 1 208 5 view .LVU244
+ 806              		.loc 1 208 21 is_stmt 0 view .LVU245
+ 807 001c 6388     		ldrh	r3, [r4, #2]	@ unaligned
+ 808              		.loc 1 208 16 view .LVU246
+ 809 001e 2B80     		strh	r3, [r5]	@ movhi
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 19
+
+
+ 209:Core/Lib/packet_protocol.c ****     
+ 210:Core/Lib/packet_protocol.c ****     return true;
+ 810              		.loc 1 210 5 is_stmt 1 view .LVU247
+ 811              		.loc 1 210 12 is_stmt 0 view .LVU248
+ 812 0020 02E0     		b	.L45
+ 813              	.LVL75:
+ 814              	.L46:
+ 815              	.LCFI12:
+ 816              		.cfi_def_cfa_offset 0
+ 817              		.cfi_restore 3
+ 818              		.cfi_restore 4
+ 819              		.cfi_restore 5
+ 820              		.cfi_restore 14
+ 194:Core/Lib/packet_protocol.c ****     }
+ 821              		.loc 1 194 16 view .LVU249
+ 822 0022 0020     		movs	r0, #0
+ 823              	.LVL76:
+ 211:Core/Lib/packet_protocol.c **** }
+ 824              		.loc 1 211 1 view .LVU250
+ 825 0024 7047     		bx	lr
+ 826              	.LVL77:
+ 827              	.L47:
+ 828              	.LCFI13:
+ 829              		.cfi_def_cfa_offset 16
+ 830              		.cfi_offset 3, -16
+ 831              		.cfi_offset 4, -12
+ 832              		.cfi_offset 5, -8
+ 833              		.cfi_offset 14, -4
+ 194:Core/Lib/packet_protocol.c ****     }
+ 834              		.loc 1 194 16 view .LVU251
+ 835 0026 0020     		movs	r0, #0
+ 836              	.LVL78:
+ 837              	.L45:
+ 838              		.loc 1 211 1 view .LVU252
+ 839 0028 38BD     		pop	{r3, r4, r5, pc}
+ 840              	.LVL79:
+ 841              	.L48:
+ 199:Core/Lib/packet_protocol.c ****     }
+ 842              		.loc 1 199 16 view .LVU253
+ 843 002a 0020     		movs	r0, #0
+ 844              	.LVL80:
+ 199:Core/Lib/packet_protocol.c ****     }
+ 845              		.loc 1 199 16 view .LVU254
+ 846 002c FCE7     		b	.L45
+ 847              		.cfi_endproc
+ 848              	.LFE11:
+ 850              		.text
+ 851              	.Letext0:
+ 852              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 853              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 854              		.file 4 "Core/Lib/packet_protocol.h"
+ 855              		.file 5 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s 			page 20
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 packet_protocol.c
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:19     .text.crc16_ccitt:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:24     .text.crc16_ccitt:00000000 crc16_ccitt
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:129    .text.Packet_Calculate_CRC:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:135    .text.Packet_Calculate_CRC:00000000 Packet_Calculate_CRC
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:158    .text.Packet_Verify_CRC:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:164    .text.Packet_Verify_CRC:00000000 Packet_Verify_CRC
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:223    .text.Packet_Build_Beacon:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:229    .text.Packet_Build_Beacon:00000000 Packet_Build_Beacon
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:297    .text.Packet_Build_Status:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:303    .text.Packet_Build_Status:00000000 Packet_Build_Status
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:365    .text.Packet_Build_Pong:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:371    .text.Packet_Build_Pong:00000000 Packet_Build_Pong
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:419    .text.Packet_Build_ACK:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:425    .text.Packet_Build_ACK:00000000 Packet_Build_ACK
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:473    .text.Packet_Build_End:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:479    .text.Packet_Build_End:00000000 Packet_Build_End
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:529    .text.Packet_Build_DataPacket:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:535    .text.Packet_Build_DataPacket:00000000 Packet_Build_DataPacket
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:634    .text.Packet_Parse_Type:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:640    .text.Packet_Parse_Type:00000000 Packet_Parse_Type
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:671    .text.Packet_Parse_Command:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:677    .text.Packet_Parse_Command:00000000 Packet_Parse_Command
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:759    .text.Packet_Parse_ACK:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccpN8kkX.s:765    .text.Packet_Parse_ACK:00000000 Packet_Parse_ACK
+
+UNDEFINED SYMBOLS
+memcpy

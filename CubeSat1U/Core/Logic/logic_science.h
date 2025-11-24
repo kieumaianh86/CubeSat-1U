@@ -7,7 +7,7 @@
 #include "hmc5883l.h"
 #include "mpu6050.h"
 #include "neo8m.h"
-#include "OV2640.h"
+//#include "OV2640.h"
 #include "stdint.h"
 
 /* //science phase timing
@@ -52,32 +52,6 @@ typedef enum {
     SCIENCE_PHASE_COMPLETE
 } science_phase_t;
 
-typedef struct {
-    // GPS time
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-    
-    // IMU (MPU6050)
-    int16_t accel_x;
-    int16_t accel_y;
-    int16_t accel_z;
-    int16_t gyro_x;
-    int16_t gyro_y;
-    int16_t gyro_z;
-    
-    // Magnetometer (HMC5883L)
-    int16_t mag_x;
-    int16_t mag_y;
-    int16_t mag_z;
-    
-    // Temperature
-    int16_t temp;
-    
-    // Image info
-    uint8_t has_image;
-    uint32_t image_size;
-} science_data_first_t;
 
 /* science_error_t Logic_Science_Init(void);
 science_error_t Logic_Science_Process(uint32_t ms);
@@ -85,13 +59,10 @@ science_error_t Logic_Science_Phase_Collect(uint32_t ms);
 science_error_t Logic_Science_Phase_Process(uint32_t ms);
 science_error_t Logic_Science_Phase_Clean(uint32_t ms); */
 
+science_error_t Logic_Science_Init(void);
+science_error_t Logic_Science_Process(uint32_t dt_ms);
+science_error_t Logic_Science_Abort(void);
 science_phase_t Logic_Science_GetPhase(void);
-science_phase_t Logic_Science_SetPhase(science_phase_t phase);
-science_phase_t Logic_Science_Abort(void);
-uint32_t Logic_Science_GetPhasetimer(void);
-
-
-
-
+uint32_t Logic_Science_GetPhaseTimer(void);
 
 #endif

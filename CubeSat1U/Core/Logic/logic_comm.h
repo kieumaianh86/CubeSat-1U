@@ -5,7 +5,6 @@
 #include "stdbool.h"
 #include "stm32h7xx_hal.h"
 #include "cubesat_data.h"
-#include "logic_science.h"
 
 typedef enum {
   COMM_PHASE_STANDBY = 0,

@@ -1,0 +1,1615 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"lora_e32.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.lora_set_mode_pins,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	lora_set_mode_pins:
+  25              	.LVL0:
+  26              	.LFB154:
+  27              		.file 1 "Core/Lib/lora_e32.c"
+   1:Core/Lib/lora_e32.c **** #include "lora_e32.h"
+   2:Core/Lib/lora_e32.c **** #include "string.h"
+   3:Core/Lib/lora_e32.c **** 
+   4:Core/Lib/lora_e32.c **** #define AUX_TIMEOUT_MS 1000
+   5:Core/Lib/lora_e32.c **** #define RX_BUFFER_SIZE 256
+   6:Core/Lib/lora_e32.c **** 
+   7:Core/Lib/lora_e32.c **** static void lora_set_mode_pins(lora_e32_handle_t* lora, uint8_t m0, uint8_t m1);
+   8:Core/Lib/lora_e32.c **** static bool lora_wait_aux_high(lora_e32_handle_t* lora, uint32_t timeout_ms);
+   9:Core/Lib/lora_e32.c **** 
+  10:Core/Lib/lora_e32.c **** lora_e32_status_t LoRa_E32_Init(lora_e32_handle_t* lora, const lora_e32_config_t* config)
+  11:Core/Lib/lora_e32.c **** {
+  12:Core/Lib/lora_e32.c ****     if (lora == NULL || config == NULL || config->huart == NULL)
+  13:Core/Lib/lora_e32.c ****     {
+  14:Core/Lib/lora_e32.c ****         return LORA_E32_INVALID_PARAM;
+  15:Core/Lib/lora_e32.c ****     }
+  16:Core/Lib/lora_e32.c ****     
+  17:Core/Lib/lora_e32.c ****     lora->uart = config->huart;
+  18:Core/Lib/lora_e32.c ****     lora->m0_port = config->m0_port;
+  19:Core/Lib/lora_e32.c ****     lora->m0_pin = config->m0_pin;
+  20:Core/Lib/lora_e32.c ****     lora->m1_port = config->m1_port;
+  21:Core/Lib/lora_e32.c ****     lora->m1_pin = config->m1_pin;
+  22:Core/Lib/lora_e32.c ****     lora->aux_port = config->aux_port;
+  23:Core/Lib/lora_e32.c ****     lora->aux_pin = config->aux_pin;
+  24:Core/Lib/lora_e32.c ****     lora->rx_index = 0;
+  25:Core/Lib/lora_e32.c ****     lora->rx_write_index = 0;
+  26:Core/Lib/lora_e32.c ****     lora->rx_read_index = 0;
+  27:Core/Lib/lora_e32.c ****     lora->initialized = false;
+  28:Core/Lib/lora_e32.c ****     lora->current_mode = LORA_E32_MODE_NORMAL;
+  29:Core/Lib/lora_e32.c ****     
+  30:Core/Lib/lora_e32.c ****     memset(lora->rx_buffer, 0, sizeof(lora->rx_buffer));
+  31:Core/Lib/lora_e32.c ****     
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 2
+
+
+  32:Core/Lib/lora_e32.c ****     // Set to normal mode (M0=0, M1=0)
+  33:Core/Lib/lora_e32.c ****     lora_set_mode_pins(lora, 0, 0);
+  34:Core/Lib/lora_e32.c ****     
+  35:Core/Lib/lora_e32.c ****     // Wait for AUX high (module ready)
+  36:Core/Lib/lora_e32.c ****     if (!lora_wait_aux_high(lora, AUX_TIMEOUT_MS))
+  37:Core/Lib/lora_e32.c ****     {
+  38:Core/Lib/lora_e32.c ****         return LORA_E32_TIMEOUT;
+  39:Core/Lib/lora_e32.c ****     }
+  40:Core/Lib/lora_e32.c ****     
+  41:Core/Lib/lora_e32.c ****     // Start UART interrupt receive
+  42:Core/Lib/lora_e32.c ****     HAL_UART_Receive_IT(lora->uart, &lora->rx_temp, 1);
+  43:Core/Lib/lora_e32.c ****     
+  44:Core/Lib/lora_e32.c ****     lora->initialized = true;
+  45:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+  46:Core/Lib/lora_e32.c **** }
+  47:Core/Lib/lora_e32.c **** 
+  48:Core/Lib/lora_e32.c **** lora_e32_status_t LoRa_E32_SetMode(lora_e32_handle_t* lora, lora_e32_mode_t mode)
+  49:Core/Lib/lora_e32.c **** {
+  50:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+  51:Core/Lib/lora_e32.c ****     {
+  52:Core/Lib/lora_e32.c ****         return LORA_E32_ERROR;
+  53:Core/Lib/lora_e32.c ****     }
+  54:Core/Lib/lora_e32.c ****     
+  55:Core/Lib/lora_e32.c ****     switch (mode)
+  56:Core/Lib/lora_e32.c ****     {
+  57:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_NORMAL:      // M0=0, M1=0
+  58:Core/Lib/lora_e32.c ****         lora_set_mode_pins(lora, 0, 0);
+  59:Core/Lib/lora_e32.c ****         break;
+  60:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_WAKEUP:      // M0=1, M1=0
+  61:Core/Lib/lora_e32.c ****         lora_set_mode_pins(lora, 1, 0);
+  62:Core/Lib/lora_e32.c ****         break;
+  63:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_POWER_SAVE:  // M0=0, M1=1
+  64:Core/Lib/lora_e32.c ****         lora_set_mode_pins(lora, 0, 1);
+  65:Core/Lib/lora_e32.c ****         break;
+  66:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_SLEEP:       // M0=1, M1=1
+  67:Core/Lib/lora_e32.c ****         lora_set_mode_pins(lora, 1, 1);
+  68:Core/Lib/lora_e32.c ****         break;
+  69:Core/Lib/lora_e32.c ****     default:
+  70:Core/Lib/lora_e32.c ****         return LORA_E32_INVALID_PARAM;
+  71:Core/Lib/lora_e32.c ****     }
+  72:Core/Lib/lora_e32.c ****     
+  73:Core/Lib/lora_e32.c ****     if (!lora_wait_aux_high(lora, AUX_TIMEOUT_MS))
+  74:Core/Lib/lora_e32.c ****     {
+  75:Core/Lib/lora_e32.c ****         return LORA_E32_TIMEOUT;
+  76:Core/Lib/lora_e32.c ****     }
+  77:Core/Lib/lora_e32.c ****     
+  78:Core/Lib/lora_e32.c ****     lora->current_mode = mode;
+  79:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+  80:Core/Lib/lora_e32.c **** }
+  81:Core/Lib/lora_e32.c **** 
+  82:Core/Lib/lora_e32.c **** bool LoRa_E32_IsReady(const lora_e32_handle_t* lora)
+  83:Core/Lib/lora_e32.c **** {
+  84:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+  85:Core/Lib/lora_e32.c ****     {
+  86:Core/Lib/lora_e32.c ****         return false;
+  87:Core/Lib/lora_e32.c ****     }
+  88:Core/Lib/lora_e32.c ****     
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 3
+
+
+  89:Core/Lib/lora_e32.c ****     return (HAL_GPIO_ReadPin(lora->aux_port, lora->aux_pin) == GPIO_PIN_SET);
+  90:Core/Lib/lora_e32.c **** }
+  91:Core/Lib/lora_e32.c **** 
+  92:Core/Lib/lora_e32.c **** lora_e32_status_t LoRa_E32_Send(lora_e32_handle_t* lora, const uint8_t* data, uint16_t len, uint32_
+  93:Core/Lib/lora_e32.c **** {
+  94:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == 0)
+  95:Core/Lib/lora_e32.c ****     {
+  96:Core/Lib/lora_e32.c ****         return LORA_E32_INVALID_PARAM;
+  97:Core/Lib/lora_e32.c ****     }
+  98:Core/Lib/lora_e32.c ****     
+  99:Core/Lib/lora_e32.c ****     if (!LoRa_E32_IsReady(lora))
+ 100:Core/Lib/lora_e32.c ****     {
+ 101:Core/Lib/lora_e32.c ****         return LORA_E32_BUSY;
+ 102:Core/Lib/lora_e32.c ****     }
+ 103:Core/Lib/lora_e32.c ****     
+ 104:Core/Lib/lora_e32.c ****     if (HAL_UART_Transmit(lora->uart, (uint8_t*)data, len, timeout_ms) != HAL_OK)
+ 105:Core/Lib/lora_e32.c ****     {
+ 106:Core/Lib/lora_e32.c ****         return LORA_E32_ERROR;
+ 107:Core/Lib/lora_e32.c ****     }
+ 108:Core/Lib/lora_e32.c ****     
+ 109:Core/Lib/lora_e32.c ****     // Wait for transmission complete
+ 110:Core/Lib/lora_e32.c ****     if (!lora_wait_aux_high(lora, timeout_ms))
+ 111:Core/Lib/lora_e32.c ****     {
+ 112:Core/Lib/lora_e32.c ****         return LORA_E32_TIMEOUT;
+ 113:Core/Lib/lora_e32.c ****     }
+ 114:Core/Lib/lora_e32.c ****     
+ 115:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+ 116:Core/Lib/lora_e32.c **** }
+ 117:Core/Lib/lora_e32.c **** 
+ 118:Core/Lib/lora_e32.c **** lora_e32_status_t LoRa_E32_Receive(lora_e32_handle_t* lora, uint8_t* data, uint16_t* len, uint32_t 
+ 119:Core/Lib/lora_e32.c **** {
+ 120:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == NULL)
+ 121:Core/Lib/lora_e32.c ****     {
+ 122:Core/Lib/lora_e32.c ****         return LORA_E32_INVALID_PARAM;
+ 123:Core/Lib/lora_e32.c ****     }
+ 124:Core/Lib/lora_e32.c ****     
+ 125:Core/Lib/lora_e32.c ****     uint32_t start = HAL_GetTick();
+ 126:Core/Lib/lora_e32.c ****     uint16_t count = 0;
+ 127:Core/Lib/lora_e32.c ****     uint16_t max_len = *len;
+ 128:Core/Lib/lora_e32.c ****     
+ 129:Core/Lib/lora_e32.c ****     // Read from circular buffer
+ 130:Core/Lib/lora_e32.c ****     while ((HAL_GetTick() - start) < timeout_ms && count < max_len)
+ 131:Core/Lib/lora_e32.c ****     {
+ 132:Core/Lib/lora_e32.c ****         if (lora->rx_read_index != lora->rx_write_index)
+ 133:Core/Lib/lora_e32.c ****         {
+ 134:Core/Lib/lora_e32.c ****             data[count++] = lora->rx_buffer[lora->rx_read_index];
+ 135:Core/Lib/lora_e32.c ****             lora->rx_read_index = (lora->rx_read_index + 1) % RX_BUFFER_SIZE;
+ 136:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
+ 137:Core/Lib/lora_e32.c ****         }
+ 138:Core/Lib/lora_e32.c ****     }
+ 139:Core/Lib/lora_e32.c ****     
+ 140:Core/Lib/lora_e32.c ****     *len = count;
+ 141:Core/Lib/lora_e32.c ****     
+ 142:Core/Lib/lora_e32.c ****     if (count == 0)
+ 143:Core/Lib/lora_e32.c ****     {
+ 144:Core/Lib/lora_e32.c ****         return LORA_E32_TIMEOUT;
+ 145:Core/Lib/lora_e32.c ****     }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 4
+
+
+ 146:Core/Lib/lora_e32.c ****     
+ 147:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+ 148:Core/Lib/lora_e32.c **** }
+ 149:Core/Lib/lora_e32.c **** 
+ 150:Core/Lib/lora_e32.c **** bool LoRa_E32_DataAvailable(const lora_e32_handle_t* lora)
+ 151:Core/Lib/lora_e32.c **** {
+ 152:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 153:Core/Lib/lora_e32.c ****     {
+ 154:Core/Lib/lora_e32.c ****         return false;
+ 155:Core/Lib/lora_e32.c ****     }
+ 156:Core/Lib/lora_e32.c ****     
+ 157:Core/Lib/lora_e32.c ****     // Check if there's data in circular buffer
+ 158:Core/Lib/lora_e32.c ****     return (lora->rx_read_index != lora->rx_write_index);
+ 159:Core/Lib/lora_e32.c **** }
+ 160:Core/Lib/lora_e32.c **** 
+ 161:Core/Lib/lora_e32.c **** void LoRa_E32_FlushRxBuffer(lora_e32_handle_t* lora)
+ 162:Core/Lib/lora_e32.c **** {
+ 163:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 164:Core/Lib/lora_e32.c ****     {
+ 165:Core/Lib/lora_e32.c ****         return;
+ 166:Core/Lib/lora_e32.c ****     }
+ 167:Core/Lib/lora_e32.c ****     
+ 168:Core/Lib/lora_e32.c ****     lora->rx_read_index = lora->rx_write_index;
+ 169:Core/Lib/lora_e32.c **** }
+ 170:Core/Lib/lora_e32.c **** 
+ 171:Core/Lib/lora_e32.c **** lora_e32_status_t LoRa_E32_PowerOff(lora_e32_handle_t* lora)
+ 172:Core/Lib/lora_e32.c **** {
+ 173:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 174:Core/Lib/lora_e32.c ****     {
+ 175:Core/Lib/lora_e32.c ****         return LORA_E32_INVALID_PARAM;
+ 176:Core/Lib/lora_e32.c ****     }
+ 177:Core/Lib/lora_e32.c ****     
+ 178:Core/Lib/lora_e32.c ****     // Set to sleep mode
+ 179:Core/Lib/lora_e32.c ****     return LoRa_E32_SetMode(lora, LORA_E32_MODE_SLEEP);
+ 180:Core/Lib/lora_e32.c **** }
+ 181:Core/Lib/lora_e32.c **** 
+ 182:Core/Lib/lora_e32.c **** lora_e32_status_t LoRa_E32_PowerOn(lora_e32_handle_t* lora)
+ 183:Core/Lib/lora_e32.c **** {
+ 184:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 185:Core/Lib/lora_e32.c ****     {
+ 186:Core/Lib/lora_e32.c ****         return LORA_E32_INVALID_PARAM;
+ 187:Core/Lib/lora_e32.c ****     }
+ 188:Core/Lib/lora_e32.c ****     
+ 189:Core/Lib/lora_e32.c ****     // Set to normal mode
+ 190:Core/Lib/lora_e32.c ****     return LoRa_E32_SetMode(lora, LORA_E32_MODE_NORMAL);
+ 191:Core/Lib/lora_e32.c **** }
+ 192:Core/Lib/lora_e32.c **** 
+ 193:Core/Lib/lora_e32.c **** void LoRa_E32_UART_IRQHandler(lora_e32_handle_t* lora)
+ 194:Core/Lib/lora_e32.c **** {
+ 195:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 196:Core/Lib/lora_e32.c ****     {
+ 197:Core/Lib/lora_e32.c ****         return;
+ 198:Core/Lib/lora_e32.c ****     }
+ 199:Core/Lib/lora_e32.c ****     
+ 200:Core/Lib/lora_e32.c ****     // Store received byte in circular buffer
+ 201:Core/Lib/lora_e32.c ****     uint16_t next_index = (lora->rx_write_index + 1) % RX_BUFFER_SIZE;
+ 202:Core/Lib/lora_e32.c ****     
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 5
+
+
+ 203:Core/Lib/lora_e32.c ****     // Check for buffer overflow
+ 204:Core/Lib/lora_e32.c ****     if (next_index != lora->rx_read_index)
+ 205:Core/Lib/lora_e32.c ****     {
+ 206:Core/Lib/lora_e32.c ****         lora->rx_buffer[lora->rx_write_index] = lora->rx_temp;
+ 207:Core/Lib/lora_e32.c ****         lora->rx_write_index = next_index;
+ 208:Core/Lib/lora_e32.c ****     }
+ 209:Core/Lib/lora_e32.c ****     
+ 210:Core/Lib/lora_e32.c ****     // Continue receiving
+ 211:Core/Lib/lora_e32.c ****     HAL_UART_Receive_IT(lora->uart, &lora->rx_temp, 1);
+ 212:Core/Lib/lora_e32.c **** }
+ 213:Core/Lib/lora_e32.c **** 
+ 214:Core/Lib/lora_e32.c **** static void lora_set_mode_pins(lora_e32_handle_t* lora, uint8_t m0, uint8_t m1)
+ 215:Core/Lib/lora_e32.c **** {
+  28              		.loc 1 215 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 215 1 is_stmt 0 view .LVU1
+  33 0000 38B5     		push	{r3, r4, r5, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 3, -16
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 0446     		mov	r4, r0
+  41 0004 1546     		mov	r5, r2
+ 216:Core/Lib/lora_e32.c ****     HAL_GPIO_WritePin(lora->m0_port, lora->m0_pin, m0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  42              		.loc 1 216 5 is_stmt 1 view .LVU2
+  43 0006 0A1E     		subs	r2, r1, #0
+  44              	.LVL1:
+  45              		.loc 1 216 5 is_stmt 0 view .LVU3
+  46 0008 18BF     		it	ne
+  47 000a 0122     		movne	r2, #1
+  48 000c 0189     		ldrh	r1, [r0, #8]
+  49              	.LVL2:
+  50              		.loc 1 216 5 view .LVU4
+  51 000e 4068     		ldr	r0, [r0, #4]
+  52              	.LVL3:
+  53              		.loc 1 216 5 view .LVU5
+  54 0010 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  55              	.LVL4:
+ 217:Core/Lib/lora_e32.c ****     HAL_GPIO_WritePin(lora->m1_port, lora->m1_pin, m1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  56              		.loc 1 217 5 is_stmt 1 view .LVU6
+  57 0014 2A1E     		subs	r2, r5, #0
+  58 0016 18BF     		it	ne
+  59 0018 0122     		movne	r2, #1
+  60 001a 218A     		ldrh	r1, [r4, #16]
+  61 001c E068     		ldr	r0, [r4, #12]
+  62 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+  63              	.LVL5:
+ 218:Core/Lib/lora_e32.c **** }
+  64              		.loc 1 218 1 is_stmt 0 view .LVU7
+  65 0022 38BD     		pop	{r3, r4, r5, pc}
+  66              		.loc 1 218 1 view .LVU8
+  67              		.cfi_endproc
+  68              	.LFE154:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 6
+
+
+  70              		.section	.text.lora_wait_aux_high,"ax",%progbits
+  71              		.align	1
+  72              		.syntax unified
+  73              		.thumb
+  74              		.thumb_func
+  76              	lora_wait_aux_high:
+  77              	.LVL6:
+  78              	.LFB155:
+ 219:Core/Lib/lora_e32.c **** 
+ 220:Core/Lib/lora_e32.c **** static bool lora_wait_aux_high(lora_e32_handle_t* lora, uint32_t timeout_ms)
+ 221:Core/Lib/lora_e32.c **** {
+  79              		.loc 1 221 1 is_stmt 1 view -0
+  80              		.cfi_startproc
+  81              		@ args = 0, pretend = 0, frame = 0
+  82              		@ frame_needed = 0, uses_anonymous_args = 0
+  83              		.loc 1 221 1 is_stmt 0 view .LVU10
+  84 0000 70B5     		push	{r4, r5, r6, lr}
+  85              	.LCFI1:
+  86              		.cfi_def_cfa_offset 16
+  87              		.cfi_offset 4, -16
+  88              		.cfi_offset 5, -12
+  89              		.cfi_offset 6, -8
+  90              		.cfi_offset 14, -4
+  91 0002 0446     		mov	r4, r0
+  92 0004 0E46     		mov	r6, r1
+ 222:Core/Lib/lora_e32.c ****     uint32_t start = HAL_GetTick();
+  93              		.loc 1 222 5 is_stmt 1 view .LVU11
+  94              		.loc 1 222 22 is_stmt 0 view .LVU12
+  95 0006 FFF7FEFF 		bl	HAL_GetTick
+  96              	.LVL7:
+  97              		.loc 1 222 22 view .LVU13
+  98 000a 0546     		mov	r5, r0
+  99              	.LVL8:
+ 223:Core/Lib/lora_e32.c ****     
+ 224:Core/Lib/lora_e32.c ****     while ((HAL_GetTick() - start) < timeout_ms)
+ 100              		.loc 1 224 5 is_stmt 1 view .LVU14
+ 101              		.loc 1 224 11 is_stmt 0 view .LVU15
+ 102 000c 02E0     		b	.L4
+ 103              	.LVL9:
+ 104              	.L10:
+ 225:Core/Lib/lora_e32.c ****     {
+ 226:Core/Lib/lora_e32.c ****         if (HAL_GPIO_ReadPin(lora->aux_port, lora->aux_pin) == GPIO_PIN_SET)
+ 227:Core/Lib/lora_e32.c ****         {
+ 228:Core/Lib/lora_e32.c ****             return true;
+ 229:Core/Lib/lora_e32.c ****         }
+ 230:Core/Lib/lora_e32.c ****         HAL_Delay(1);
+ 105              		.loc 1 230 9 is_stmt 1 view .LVU16
+ 106 000e 0120     		movs	r0, #1
+ 107 0010 FFF7FEFF 		bl	HAL_Delay
+ 108              	.LVL10:
+ 109              	.L4:
+ 224:Core/Lib/lora_e32.c ****     {
+ 110              		.loc 1 224 11 view .LVU17
+ 224:Core/Lib/lora_e32.c ****     {
+ 111              		.loc 1 224 13 is_stmt 0 view .LVU18
+ 112 0014 FFF7FEFF 		bl	HAL_GetTick
+ 113              	.LVL11:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 7
+
+
+ 224:Core/Lib/lora_e32.c ****     {
+ 114              		.loc 1 224 27 view .LVU19
+ 115 0018 401B     		subs	r0, r0, r5
+ 224:Core/Lib/lora_e32.c ****     {
+ 116              		.loc 1 224 11 view .LVU20
+ 117 001a B042     		cmp	r0, r6
+ 118 001c 07D2     		bcs	.L9
+ 226:Core/Lib/lora_e32.c ****         {
+ 119              		.loc 1 226 9 is_stmt 1 view .LVU21
+ 226:Core/Lib/lora_e32.c ****         {
+ 120              		.loc 1 226 13 is_stmt 0 view .LVU22
+ 121 001e 218B     		ldrh	r1, [r4, #24]
+ 122 0020 6069     		ldr	r0, [r4, #20]
+ 123 0022 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 124              	.LVL12:
+ 226:Core/Lib/lora_e32.c ****         {
+ 125              		.loc 1 226 12 view .LVU23
+ 126 0026 0128     		cmp	r0, #1
+ 127 0028 F1D1     		bne	.L10
+ 228:Core/Lib/lora_e32.c ****         }
+ 128              		.loc 1 228 20 view .LVU24
+ 129 002a 0120     		movs	r0, #1
+ 130 002c 00E0     		b	.L5
+ 131              	.L9:
+ 231:Core/Lib/lora_e32.c ****     }
+ 232:Core/Lib/lora_e32.c ****     
+ 233:Core/Lib/lora_e32.c ****     return false;
+ 132              		.loc 1 233 12 view .LVU25
+ 133 002e 0020     		movs	r0, #0
+ 134              	.L5:
+ 234:Core/Lib/lora_e32.c **** }
+ 135              		.loc 1 234 1 view .LVU26
+ 136 0030 70BD     		pop	{r4, r5, r6, pc}
+ 137              		.loc 1 234 1 view .LVU27
+ 138              		.cfi_endproc
+ 139              	.LFE155:
+ 141              		.section	.text.LoRa_E32_Init,"ax",%progbits
+ 142              		.align	1
+ 143              		.global	LoRa_E32_Init
+ 144              		.syntax unified
+ 145              		.thumb
+ 146              		.thumb_func
+ 148              	LoRa_E32_Init:
+ 149              	.LVL13:
+ 150              	.LFB144:
+  11:Core/Lib/lora_e32.c ****     if (lora == NULL || config == NULL || config->huart == NULL)
+ 151              		.loc 1 11 1 is_stmt 1 view -0
+ 152              		.cfi_startproc
+ 153              		@ args = 0, pretend = 0, frame = 0
+ 154              		@ frame_needed = 0, uses_anonymous_args = 0
+  12:Core/Lib/lora_e32.c ****     {
+ 155              		.loc 1 12 5 view .LVU29
+  12:Core/Lib/lora_e32.c ****     {
+ 156              		.loc 1 12 8 is_stmt 0 view .LVU30
+ 157 0000 0029     		cmp	r1, #0
+ 158 0002 18BF     		it	ne
+ 159 0004 0028     		cmpne	r0, #0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 8
+
+
+ 160 0006 38D0     		beq	.L13
+  11:Core/Lib/lora_e32.c ****     if (lora == NULL || config == NULL || config->huart == NULL)
+ 161              		.loc 1 11 1 discriminator 1 view .LVU31
+ 162 0008 38B5     		push	{r3, r4, r5, lr}
+ 163              	.LCFI2:
+ 164              		.cfi_def_cfa_offset 16
+ 165              		.cfi_offset 3, -16
+ 166              		.cfi_offset 4, -12
+ 167              		.cfi_offset 5, -8
+ 168              		.cfi_offset 14, -4
+ 169 000a 0446     		mov	r4, r0
+  12:Core/Lib/lora_e32.c ****     {
+ 170              		.loc 1 12 49 discriminator 1 view .LVU32
+ 171 000c 0A68     		ldr	r2, [r1]
+  12:Core/Lib/lora_e32.c ****     {
+ 172              		.loc 1 12 40 discriminator 1 view .LVU33
+ 173 000e 002A     		cmp	r2, #0
+ 174 0010 35D0     		beq	.L14
+  17:Core/Lib/lora_e32.c ****     lora->m0_port = config->m0_port;
+ 175              		.loc 1 17 5 is_stmt 1 view .LVU34
+  17:Core/Lib/lora_e32.c ****     lora->m0_port = config->m0_port;
+ 176              		.loc 1 17 16 is_stmt 0 view .LVU35
+ 177 0012 0260     		str	r2, [r0]
+  18:Core/Lib/lora_e32.c ****     lora->m0_pin = config->m0_pin;
+ 178              		.loc 1 18 5 is_stmt 1 view .LVU36
+  18:Core/Lib/lora_e32.c ****     lora->m0_pin = config->m0_pin;
+ 179              		.loc 1 18 27 is_stmt 0 view .LVU37
+ 180 0014 4A68     		ldr	r2, [r1, #4]
+  18:Core/Lib/lora_e32.c ****     lora->m0_pin = config->m0_pin;
+ 181              		.loc 1 18 19 view .LVU38
+ 182 0016 4260     		str	r2, [r0, #4]
+  19:Core/Lib/lora_e32.c ****     lora->m1_port = config->m1_port;
+ 183              		.loc 1 19 5 is_stmt 1 view .LVU39
+  19:Core/Lib/lora_e32.c ****     lora->m1_port = config->m1_port;
+ 184              		.loc 1 19 26 is_stmt 0 view .LVU40
+ 185 0018 0A89     		ldrh	r2, [r1, #8]
+  19:Core/Lib/lora_e32.c ****     lora->m1_port = config->m1_port;
+ 186              		.loc 1 19 18 view .LVU41
+ 187 001a 0281     		strh	r2, [r0, #8]	@ movhi
+  20:Core/Lib/lora_e32.c ****     lora->m1_pin = config->m1_pin;
+ 188              		.loc 1 20 5 is_stmt 1 view .LVU42
+  20:Core/Lib/lora_e32.c ****     lora->m1_pin = config->m1_pin;
+ 189              		.loc 1 20 27 is_stmt 0 view .LVU43
+ 190 001c CA68     		ldr	r2, [r1, #12]
+  20:Core/Lib/lora_e32.c ****     lora->m1_pin = config->m1_pin;
+ 191              		.loc 1 20 19 view .LVU44
+ 192 001e C260     		str	r2, [r0, #12]
+  21:Core/Lib/lora_e32.c ****     lora->aux_port = config->aux_port;
+ 193              		.loc 1 21 5 is_stmt 1 view .LVU45
+  21:Core/Lib/lora_e32.c ****     lora->aux_port = config->aux_port;
+ 194              		.loc 1 21 26 is_stmt 0 view .LVU46
+ 195 0020 0A8A     		ldrh	r2, [r1, #16]
+  21:Core/Lib/lora_e32.c ****     lora->aux_port = config->aux_port;
+ 196              		.loc 1 21 18 view .LVU47
+ 197 0022 0282     		strh	r2, [r0, #16]	@ movhi
+  22:Core/Lib/lora_e32.c ****     lora->aux_pin = config->aux_pin;
+ 198              		.loc 1 22 5 is_stmt 1 view .LVU48
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 9
+
+
+  22:Core/Lib/lora_e32.c ****     lora->aux_pin = config->aux_pin;
+ 199              		.loc 1 22 28 is_stmt 0 view .LVU49
+ 200 0024 4A69     		ldr	r2, [r1, #20]
+  22:Core/Lib/lora_e32.c ****     lora->aux_pin = config->aux_pin;
+ 201              		.loc 1 22 20 view .LVU50
+ 202 0026 4261     		str	r2, [r0, #20]
+  23:Core/Lib/lora_e32.c ****     lora->rx_index = 0;
+ 203              		.loc 1 23 5 is_stmt 1 view .LVU51
+  23:Core/Lib/lora_e32.c ****     lora->rx_index = 0;
+ 204              		.loc 1 23 27 is_stmt 0 view .LVU52
+ 205 0028 0B8B     		ldrh	r3, [r1, #24]
+  23:Core/Lib/lora_e32.c ****     lora->rx_index = 0;
+ 206              		.loc 1 23 19 view .LVU53
+ 207 002a 0383     		strh	r3, [r0, #24]	@ movhi
+  24:Core/Lib/lora_e32.c ****     lora->rx_write_index = 0;
+ 208              		.loc 1 24 5 is_stmt 1 view .LVU54
+  24:Core/Lib/lora_e32.c ****     lora->rx_write_index = 0;
+ 209              		.loc 1 24 20 is_stmt 0 view .LVU55
+ 210 002c 0025     		movs	r5, #0
+ 211 002e A0F81A51 		strh	r5, [r0, #282]	@ movhi
+  25:Core/Lib/lora_e32.c ****     lora->rx_read_index = 0;
+ 212              		.loc 1 25 5 is_stmt 1 view .LVU56
+  25:Core/Lib/lora_e32.c ****     lora->rx_read_index = 0;
+ 213              		.loc 1 25 26 is_stmt 0 view .LVU57
+ 214 0032 A0F81C51 		strh	r5, [r0, #284]	@ movhi
+  26:Core/Lib/lora_e32.c ****     lora->initialized = false;
+ 215              		.loc 1 26 5 is_stmt 1 view .LVU58
+  26:Core/Lib/lora_e32.c ****     lora->initialized = false;
+ 216              		.loc 1 26 25 is_stmt 0 view .LVU59
+ 217 0036 A0F81E51 		strh	r5, [r0, #286]	@ movhi
+  27:Core/Lib/lora_e32.c ****     lora->current_mode = LORA_E32_MODE_NORMAL;
+ 218              		.loc 1 27 5 is_stmt 1 view .LVU60
+  27:Core/Lib/lora_e32.c ****     lora->current_mode = LORA_E32_MODE_NORMAL;
+ 219              		.loc 1 27 23 is_stmt 0 view .LVU61
+ 220 003a 80F82151 		strb	r5, [r0, #289]
+  28:Core/Lib/lora_e32.c ****     
+ 221              		.loc 1 28 5 is_stmt 1 view .LVU62
+  28:Core/Lib/lora_e32.c ****     
+ 222              		.loc 1 28 24 is_stmt 0 view .LVU63
+ 223 003e 80F82251 		strb	r5, [r0, #290]
+  30:Core/Lib/lora_e32.c ****     
+ 224              		.loc 1 30 5 is_stmt 1 view .LVU64
+ 225 0042 4FF48072 		mov	r2, #256
+ 226 0046 2946     		mov	r1, r5
+ 227              	.LVL14:
+  30:Core/Lib/lora_e32.c ****     
+ 228              		.loc 1 30 5 is_stmt 0 view .LVU65
+ 229 0048 1A30     		adds	r0, r0, #26
+ 230              	.LVL15:
+  30:Core/Lib/lora_e32.c ****     
+ 231              		.loc 1 30 5 view .LVU66
+ 232 004a FFF7FEFF 		bl	memset
+ 233              	.LVL16:
+  33:Core/Lib/lora_e32.c ****     
+ 234              		.loc 1 33 5 is_stmt 1 view .LVU67
+ 235 004e 2A46     		mov	r2, r5
+ 236 0050 2946     		mov	r1, r5
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 10
+
+
+ 237 0052 2046     		mov	r0, r4
+ 238 0054 FFF7FEFF 		bl	lora_set_mode_pins
+ 239              	.LVL17:
+  36:Core/Lib/lora_e32.c ****     {
+ 240              		.loc 1 36 5 view .LVU68
+  36:Core/Lib/lora_e32.c ****     {
+ 241              		.loc 1 36 10 is_stmt 0 view .LVU69
+ 242 0058 4FF47A71 		mov	r1, #1000
+ 243 005c 2046     		mov	r0, r4
+ 244 005e FFF7FEFF 		bl	lora_wait_aux_high
+ 245              	.LVL18:
+  36:Core/Lib/lora_e32.c ****     {
+ 246              		.loc 1 36 8 view .LVU70
+ 247 0062 70B1     		cbz	r0, .L15
+  42:Core/Lib/lora_e32.c ****     
+ 248              		.loc 1 42 5 is_stmt 1 view .LVU71
+ 249 0064 0122     		movs	r2, #1
+ 250 0066 04F59071 		add	r1, r4, #288
+ 251 006a 2068     		ldr	r0, [r4]
+ 252 006c FFF7FEFF 		bl	HAL_UART_Receive_IT
+ 253              	.LVL19:
+  44:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+ 254              		.loc 1 44 5 view .LVU72
+  44:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+ 255              		.loc 1 44 23 is_stmt 0 view .LVU73
+ 256 0070 0123     		movs	r3, #1
+ 257 0072 84F82131 		strb	r3, [r4, #289]
+  45:Core/Lib/lora_e32.c **** }
+ 258              		.loc 1 45 5 is_stmt 1 view .LVU74
+  45:Core/Lib/lora_e32.c **** }
+ 259              		.loc 1 45 12 is_stmt 0 view .LVU75
+ 260 0076 2846     		mov	r0, r5
+ 261              	.L12:
+  46:Core/Lib/lora_e32.c **** 
+ 262              		.loc 1 46 1 view .LVU76
+ 263 0078 38BD     		pop	{r3, r4, r5, pc}
+ 264              	.LVL20:
+ 265              	.L13:
+ 266              	.LCFI3:
+ 267              		.cfi_def_cfa_offset 0
+ 268              		.cfi_restore 3
+ 269              		.cfi_restore 4
+ 270              		.cfi_restore 5
+ 271              		.cfi_restore 14
+  14:Core/Lib/lora_e32.c ****     }
+ 272              		.loc 1 14 16 view .LVU77
+ 273 007a 0420     		movs	r0, #4
+ 274              	.LVL21:
+  46:Core/Lib/lora_e32.c **** 
+ 275              		.loc 1 46 1 view .LVU78
+ 276 007c 7047     		bx	lr
+ 277              	.LVL22:
+ 278              	.L14:
+ 279              	.LCFI4:
+ 280              		.cfi_def_cfa_offset 16
+ 281              		.cfi_offset 3, -16
+ 282              		.cfi_offset 4, -12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 11
+
+
+ 283              		.cfi_offset 5, -8
+ 284              		.cfi_offset 14, -4
+  14:Core/Lib/lora_e32.c ****     }
+ 285              		.loc 1 14 16 view .LVU79
+ 286 007e 0420     		movs	r0, #4
+ 287              	.LVL23:
+  14:Core/Lib/lora_e32.c ****     }
+ 288              		.loc 1 14 16 view .LVU80
+ 289 0080 FAE7     		b	.L12
+ 290              	.LVL24:
+ 291              	.L15:
+  38:Core/Lib/lora_e32.c ****     }
+ 292              		.loc 1 38 16 view .LVU81
+ 293 0082 0320     		movs	r0, #3
+ 294 0084 F8E7     		b	.L12
+ 295              		.cfi_endproc
+ 296              	.LFE144:
+ 298              		.section	.text.LoRa_E32_SetMode,"ax",%progbits
+ 299              		.align	1
+ 300              		.global	LoRa_E32_SetMode
+ 301              		.syntax unified
+ 302              		.thumb
+ 303              		.thumb_func
+ 305              	LoRa_E32_SetMode:
+ 306              	.LVL25:
+ 307              	.LFB145:
+  49:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 308              		.loc 1 49 1 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+  50:Core/Lib/lora_e32.c ****     {
+ 312              		.loc 1 50 5 view .LVU83
+  50:Core/Lib/lora_e32.c ****     {
+ 313              		.loc 1 50 8 is_stmt 0 view .LVU84
+ 314 0000 40B3     		cbz	r0, .L28
+  49:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 315              		.loc 1 49 1 discriminator 1 view .LVU85
+ 316 0002 38B5     		push	{r3, r4, r5, lr}
+ 317              	.LCFI5:
+ 318              		.cfi_def_cfa_offset 16
+ 319              		.cfi_offset 3, -16
+ 320              		.cfi_offset 4, -12
+ 321              		.cfi_offset 5, -8
+ 322              		.cfi_offset 14, -4
+ 323 0004 0C46     		mov	r4, r1
+ 324 0006 0546     		mov	r5, r0
+  50:Core/Lib/lora_e32.c ****     {
+ 325              		.loc 1 50 30 discriminator 1 view .LVU86
+ 326 0008 90F82131 		ldrb	r3, [r0, #289]	@ zero_extendqisi2
+  50:Core/Lib/lora_e32.c ****     {
+ 327              		.loc 1 50 22 discriminator 1 view .LVU87
+ 328 000c 23B3     		cbz	r3, .L29
+  55:Core/Lib/lora_e32.c ****     {
+ 329              		.loc 1 55 5 is_stmt 1 view .LVU88
+ 330 000e 0329     		cmp	r1, #3
+ 331 0010 24D8     		bhi	.L30
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 12
+
+
+ 332 0012 DFE801F0 		tbb	[pc, r1]
+ 333              	.L23:
+ 334 0016 02       		.byte	(.L26-.L23)/2
+ 335 0017 10       		.byte	(.L25-.L23)/2
+ 336 0018 15       		.byte	(.L24-.L23)/2
+ 337 0019 1A       		.byte	(.L22-.L23)/2
+ 338              		.p2align 1
+ 339              	.L26:
+  58:Core/Lib/lora_e32.c ****         break;
+ 340              		.loc 1 58 9 view .LVU89
+ 341 001a 0022     		movs	r2, #0
+ 342 001c 1146     		mov	r1, r2
+ 343              	.LVL26:
+  58:Core/Lib/lora_e32.c ****         break;
+ 344              		.loc 1 58 9 is_stmt 0 view .LVU90
+ 345 001e FFF7FEFF 		bl	lora_set_mode_pins
+ 346              	.LVL27:
+  59:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_WAKEUP:      // M0=1, M1=0
+ 347              		.loc 1 59 9 is_stmt 1 view .LVU91
+ 348              	.L27:
+  73:Core/Lib/lora_e32.c ****     {
+ 349              		.loc 1 73 5 view .LVU92
+  73:Core/Lib/lora_e32.c ****     {
+ 350              		.loc 1 73 10 is_stmt 0 view .LVU93
+ 351 0022 4FF47A71 		mov	r1, #1000
+ 352 0026 2846     		mov	r0, r5
+ 353 0028 FFF7FEFF 		bl	lora_wait_aux_high
+ 354              	.LVL28:
+  73:Core/Lib/lora_e32.c ****     {
+ 355              		.loc 1 73 8 view .LVU94
+ 356 002c C0B1     		cbz	r0, .L31
+  78:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+ 357              		.loc 1 78 5 is_stmt 1 view .LVU95
+  78:Core/Lib/lora_e32.c ****     return LORA_E32_OK;
+ 358              		.loc 1 78 24 is_stmt 0 view .LVU96
+ 359 002e 85F82241 		strb	r4, [r5, #290]
+  79:Core/Lib/lora_e32.c **** }
+ 360              		.loc 1 79 5 is_stmt 1 view .LVU97
+  79:Core/Lib/lora_e32.c **** }
+ 361              		.loc 1 79 12 is_stmt 0 view .LVU98
+ 362 0032 0020     		movs	r0, #0
+ 363              	.L21:
+  80:Core/Lib/lora_e32.c **** 
+ 364              		.loc 1 80 1 view .LVU99
+ 365 0034 38BD     		pop	{r3, r4, r5, pc}
+ 366              	.LVL29:
+ 367              	.L25:
+  61:Core/Lib/lora_e32.c ****         break;
+ 368              		.loc 1 61 9 is_stmt 1 view .LVU100
+ 369 0036 0022     		movs	r2, #0
+ 370 0038 0121     		movs	r1, #1
+ 371              	.LVL30:
+  61:Core/Lib/lora_e32.c ****         break;
+ 372              		.loc 1 61 9 is_stmt 0 view .LVU101
+ 373 003a FFF7FEFF 		bl	lora_set_mode_pins
+ 374              	.LVL31:
+  62:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_POWER_SAVE:  // M0=0, M1=1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 13
+
+
+ 375              		.loc 1 62 9 is_stmt 1 view .LVU102
+ 376 003e F0E7     		b	.L27
+ 377              	.LVL32:
+ 378              	.L24:
+  64:Core/Lib/lora_e32.c ****         break;
+ 379              		.loc 1 64 9 view .LVU103
+ 380 0040 0122     		movs	r2, #1
+ 381 0042 0021     		movs	r1, #0
+ 382              	.LVL33:
+  64:Core/Lib/lora_e32.c ****         break;
+ 383              		.loc 1 64 9 is_stmt 0 view .LVU104
+ 384 0044 FFF7FEFF 		bl	lora_set_mode_pins
+ 385              	.LVL34:
+  65:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_SLEEP:       // M0=1, M1=1
+ 386              		.loc 1 65 9 is_stmt 1 view .LVU105
+ 387 0048 EBE7     		b	.L27
+ 388              	.LVL35:
+ 389              	.L22:
+  67:Core/Lib/lora_e32.c ****         break;
+ 390              		.loc 1 67 9 view .LVU106
+ 391 004a 0122     		movs	r2, #1
+ 392 004c 1146     		mov	r1, r2
+ 393              	.LVL36:
+  67:Core/Lib/lora_e32.c ****         break;
+ 394              		.loc 1 67 9 is_stmt 0 view .LVU107
+ 395 004e FFF7FEFF 		bl	lora_set_mode_pins
+ 396              	.LVL37:
+  68:Core/Lib/lora_e32.c ****     default:
+ 397              		.loc 1 68 9 is_stmt 1 view .LVU108
+ 398 0052 E6E7     		b	.L27
+ 399              	.LVL38:
+ 400              	.L28:
+ 401              	.LCFI6:
+ 402              		.cfi_def_cfa_offset 0
+ 403              		.cfi_restore 3
+ 404              		.cfi_restore 4
+ 405              		.cfi_restore 5
+ 406              		.cfi_restore 14
+  52:Core/Lib/lora_e32.c ****     }
+ 407              		.loc 1 52 16 is_stmt 0 view .LVU109
+ 408 0054 0120     		movs	r0, #1
+ 409              	.LVL39:
+  80:Core/Lib/lora_e32.c **** 
+ 410              		.loc 1 80 1 view .LVU110
+ 411 0056 7047     		bx	lr
+ 412              	.LVL40:
+ 413              	.L29:
+ 414              	.LCFI7:
+ 415              		.cfi_def_cfa_offset 16
+ 416              		.cfi_offset 3, -16
+ 417              		.cfi_offset 4, -12
+ 418              		.cfi_offset 5, -8
+ 419              		.cfi_offset 14, -4
+  52:Core/Lib/lora_e32.c ****     }
+ 420              		.loc 1 52 16 view .LVU111
+ 421 0058 0120     		movs	r0, #1
+ 422              	.LVL41:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 14
+
+
+  52:Core/Lib/lora_e32.c ****     }
+ 423              		.loc 1 52 16 view .LVU112
+ 424 005a EBE7     		b	.L21
+ 425              	.LVL42:
+ 426              	.L30:
+  55:Core/Lib/lora_e32.c ****     {
+ 427              		.loc 1 55 5 view .LVU113
+ 428 005c 0420     		movs	r0, #4
+ 429              	.LVL43:
+  55:Core/Lib/lora_e32.c ****     {
+ 430              		.loc 1 55 5 view .LVU114
+ 431 005e E9E7     		b	.L21
+ 432              	.LVL44:
+ 433              	.L31:
+  75:Core/Lib/lora_e32.c ****     }
+ 434              		.loc 1 75 16 view .LVU115
+ 435 0060 0320     		movs	r0, #3
+ 436 0062 E7E7     		b	.L21
+ 437              		.cfi_endproc
+ 438              	.LFE145:
+ 440              		.section	.text.LoRa_E32_IsReady,"ax",%progbits
+ 441              		.align	1
+ 442              		.global	LoRa_E32_IsReady
+ 443              		.syntax unified
+ 444              		.thumb
+ 445              		.thumb_func
+ 447              	LoRa_E32_IsReady:
+ 448              	.LVL45:
+ 449              	.LFB146:
+  83:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 450              		.loc 1 83 1 is_stmt 1 view -0
+ 451              		.cfi_startproc
+ 452              		@ args = 0, pretend = 0, frame = 0
+ 453              		@ frame_needed = 0, uses_anonymous_args = 0
+  84:Core/Lib/lora_e32.c ****     {
+ 454              		.loc 1 84 5 view .LVU117
+  84:Core/Lib/lora_e32.c ****     {
+ 455              		.loc 1 84 8 is_stmt 0 view .LVU118
+ 456 0000 70B1     		cbz	r0, .L38
+  83:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 457              		.loc 1 83 1 discriminator 1 view .LVU119
+ 458 0002 08B5     		push	{r3, lr}
+ 459              	.LCFI8:
+ 460              		.cfi_def_cfa_offset 8
+ 461              		.cfi_offset 3, -8
+ 462              		.cfi_offset 14, -4
+ 463 0004 0346     		mov	r3, r0
+  84:Core/Lib/lora_e32.c ****     {
+ 464              		.loc 1 84 30 discriminator 1 view .LVU120
+ 465 0006 90F82101 		ldrb	r0, [r0, #289]	@ zero_extendqisi2
+ 466              	.LVL46:
+  84:Core/Lib/lora_e32.c ****     {
+ 467              		.loc 1 84 22 discriminator 1 view .LVU121
+ 468 000a 00B9     		cbnz	r0, .L43
+ 469              	.LVL47:
+ 470              	.L37:
+  90:Core/Lib/lora_e32.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 15
+
+
+ 471              		.loc 1 90 1 view .LVU122
+ 472 000c 08BD     		pop	{r3, pc}
+ 473              	.LVL48:
+ 474              	.L43:
+  89:Core/Lib/lora_e32.c **** }
+ 475              		.loc 1 89 5 is_stmt 1 view .LVU123
+  89:Core/Lib/lora_e32.c **** }
+ 476              		.loc 1 89 13 is_stmt 0 view .LVU124
+ 477 000e 198B     		ldrh	r1, [r3, #24]
+ 478 0010 5869     		ldr	r0, [r3, #20]
+ 479 0012 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 480              	.LVL49:
+  89:Core/Lib/lora_e32.c **** }
+ 481              		.loc 1 89 61 view .LVU125
+ 482 0016 0128     		cmp	r0, #1
+ 483 0018 14BF     		ite	ne
+ 484 001a 0020     		movne	r0, #0
+ 485 001c 0120     		moveq	r0, #1
+ 486 001e F5E7     		b	.L37
+ 487              	.LVL50:
+ 488              	.L38:
+ 489              	.LCFI9:
+ 490              		.cfi_def_cfa_offset 0
+ 491              		.cfi_restore 3
+ 492              		.cfi_restore 14
+  86:Core/Lib/lora_e32.c ****     }
+ 493              		.loc 1 86 16 view .LVU126
+ 494 0020 0020     		movs	r0, #0
+ 495              	.LVL51:
+  90:Core/Lib/lora_e32.c **** 
+ 496              		.loc 1 90 1 view .LVU127
+ 497 0022 7047     		bx	lr
+ 498              		.cfi_endproc
+ 499              	.LFE146:
+ 501              		.section	.text.LoRa_E32_Send,"ax",%progbits
+ 502              		.align	1
+ 503              		.global	LoRa_E32_Send
+ 504              		.syntax unified
+ 505              		.thumb
+ 506              		.thumb_func
+ 508              	LoRa_E32_Send:
+ 509              	.LVL52:
+ 510              	.LFB147:
+  93:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == 0)
+ 511              		.loc 1 93 1 is_stmt 1 view -0
+ 512              		.cfi_startproc
+ 513              		@ args = 0, pretend = 0, frame = 0
+ 514              		@ frame_needed = 0, uses_anonymous_args = 0
+  93:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == 0)
+ 515              		.loc 1 93 1 is_stmt 0 view .LVU129
+ 516 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 517              	.LCFI10:
+ 518              		.cfi_def_cfa_offset 24
+ 519              		.cfi_offset 3, -24
+ 520              		.cfi_offset 4, -20
+ 521              		.cfi_offset 5, -16
+ 522              		.cfi_offset 6, -12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 16
+
+
+ 523              		.cfi_offset 7, -8
+ 524              		.cfi_offset 14, -4
+  94:Core/Lib/lora_e32.c ****     {
+ 525              		.loc 1 94 5 is_stmt 1 view .LVU130
+  94:Core/Lib/lora_e32.c ****     {
+ 526              		.loc 1 94 8 is_stmt 0 view .LVU131
+ 527 0002 00B3     		cbz	r0, .L46
+ 528 0004 0F46     		mov	r7, r1
+ 529 0006 1546     		mov	r5, r2
+ 530 0008 1E46     		mov	r6, r3
+ 531 000a 0446     		mov	r4, r0
+  94:Core/Lib/lora_e32.c ****     {
+ 532              		.loc 1 94 30 discriminator 1 view .LVU132
+ 533 000c 90F82131 		ldrb	r3, [r0, #289]	@ zero_extendqisi2
+ 534              	.LVL53:
+  94:Core/Lib/lora_e32.c ****     {
+ 535              		.loc 1 94 22 discriminator 1 view .LVU133
+ 536 0010 DBB1     		cbz	r3, .L47
+  94:Core/Lib/lora_e32.c ****     {
+ 537              		.loc 1 94 67 discriminator 2 view .LVU134
+ 538 0012 B2FA82F0 		clz	r0, r2
+ 539              	.LVL54:
+  94:Core/Lib/lora_e32.c ****     {
+ 540              		.loc 1 94 67 discriminator 2 view .LVU135
+ 541 0016 4009     		lsrs	r0, r0, #5
+  94:Core/Lib/lora_e32.c ****     {
+ 542              		.loc 1 94 60 discriminator 2 view .LVU136
+ 543 0018 C9B1     		cbz	r1, .L48
+ 544 001a C0B9     		cbnz	r0, .L48
+  99:Core/Lib/lora_e32.c ****     {
+ 545              		.loc 1 99 5 is_stmt 1 view .LVU137
+  99:Core/Lib/lora_e32.c ****     {
+ 546              		.loc 1 99 10 is_stmt 0 view .LVU138
+ 547 001c 2046     		mov	r0, r4
+ 548 001e FFF7FEFF 		bl	LoRa_E32_IsReady
+ 549              	.LVL55:
+  99:Core/Lib/lora_e32.c ****     {
+ 550              		.loc 1 99 8 view .LVU139
+ 551 0022 B8B1     		cbz	r0, .L49
+ 104:Core/Lib/lora_e32.c ****     {
+ 552              		.loc 1 104 5 is_stmt 1 view .LVU140
+ 104:Core/Lib/lora_e32.c ****     {
+ 553              		.loc 1 104 9 is_stmt 0 view .LVU141
+ 554 0024 3346     		mov	r3, r6
+ 555 0026 2A46     		mov	r2, r5
+ 556 0028 3946     		mov	r1, r7
+ 557 002a 2068     		ldr	r0, [r4]
+ 558 002c FFF7FEFF 		bl	HAL_UART_Transmit
+ 559              	.LVL56:
+ 104:Core/Lib/lora_e32.c ****     {
+ 560              		.loc 1 104 8 view .LVU142
+ 561 0030 0546     		mov	r5, r0
+ 562 0032 08B1     		cbz	r0, .L53
+ 106:Core/Lib/lora_e32.c ****     }
+ 563              		.loc 1 106 16 view .LVU143
+ 564 0034 0125     		movs	r5, #1
+ 565 0036 0BE0     		b	.L45
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 17
+
+
+ 566              	.L53:
+ 110:Core/Lib/lora_e32.c ****     {
+ 567              		.loc 1 110 5 is_stmt 1 view .LVU144
+ 110:Core/Lib/lora_e32.c ****     {
+ 568              		.loc 1 110 10 is_stmt 0 view .LVU145
+ 569 0038 3146     		mov	r1, r6
+ 570 003a 2046     		mov	r0, r4
+ 571 003c FFF7FEFF 		bl	lora_wait_aux_high
+ 572              	.LVL57:
+ 110:Core/Lib/lora_e32.c ****     {
+ 573              		.loc 1 110 8 view .LVU146
+ 574 0040 30B9     		cbnz	r0, .L45
+ 112:Core/Lib/lora_e32.c ****     }
+ 575              		.loc 1 112 16 view .LVU147
+ 576 0042 0325     		movs	r5, #3
+ 577 0044 04E0     		b	.L45
+ 578              	.LVL58:
+ 579              	.L46:
+  96:Core/Lib/lora_e32.c ****     }
+ 580              		.loc 1 96 16 view .LVU148
+ 581 0046 0425     		movs	r5, #4
+ 582 0048 02E0     		b	.L45
+ 583              	.LVL59:
+ 584              	.L47:
+  96:Core/Lib/lora_e32.c ****     }
+ 585              		.loc 1 96 16 view .LVU149
+ 586 004a 0425     		movs	r5, #4
+ 587 004c 00E0     		b	.L45
+ 588              	.LVL60:
+ 589              	.L48:
+  96:Core/Lib/lora_e32.c ****     }
+ 590              		.loc 1 96 16 view .LVU150
+ 591 004e 0425     		movs	r5, #4
+ 592              	.LVL61:
+ 593              	.L45:
+ 116:Core/Lib/lora_e32.c **** 
+ 594              		.loc 1 116 1 view .LVU151
+ 595 0050 2846     		mov	r0, r5
+ 596 0052 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 597              	.LVL62:
+ 598              	.L49:
+ 101:Core/Lib/lora_e32.c ****     }
+ 599              		.loc 1 101 16 view .LVU152
+ 600 0054 0225     		movs	r5, #2
+ 601 0056 FBE7     		b	.L45
+ 602              		.cfi_endproc
+ 603              	.LFE147:
+ 605              		.section	.text.LoRa_E32_Receive,"ax",%progbits
+ 606              		.align	1
+ 607              		.global	LoRa_E32_Receive
+ 608              		.syntax unified
+ 609              		.thumb
+ 610              		.thumb_func
+ 612              	LoRa_E32_Receive:
+ 613              	.LVL63:
+ 614              	.LFB148:
+ 119:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == NULL)
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 18
+
+
+ 615              		.loc 1 119 1 is_stmt 1 view -0
+ 616              		.cfi_startproc
+ 617              		@ args = 0, pretend = 0, frame = 0
+ 618              		@ frame_needed = 0, uses_anonymous_args = 0
+ 120:Core/Lib/lora_e32.c ****     {
+ 619              		.loc 1 120 5 view .LVU154
+ 120:Core/Lib/lora_e32.c ****     {
+ 620              		.loc 1 120 8 is_stmt 0 view .LVU155
+ 621 0000 0028     		cmp	r0, #0
+ 622 0002 3DD0     		beq	.L60
+ 119:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == NULL)
+ 623              		.loc 1 119 1 discriminator 1 view .LVU156
+ 624 0004 2DE9F84F 		push	{r3, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 625              	.LCFI11:
+ 626              		.cfi_def_cfa_offset 40
+ 627              		.cfi_offset 3, -40
+ 628              		.cfi_offset 4, -36
+ 629              		.cfi_offset 5, -32
+ 630              		.cfi_offset 6, -28
+ 631              		.cfi_offset 7, -24
+ 632              		.cfi_offset 8, -20
+ 633              		.cfi_offset 9, -16
+ 634              		.cfi_offset 10, -12
+ 635              		.cfi_offset 11, -8
+ 636              		.cfi_offset 14, -4
+ 637 0008 8A46     		mov	r10, r1
+ 638 000a 9146     		mov	r9, r2
+ 639 000c 1D46     		mov	r5, r3
+ 640 000e 0446     		mov	r4, r0
+ 120:Core/Lib/lora_e32.c ****     {
+ 641              		.loc 1 120 30 discriminator 1 view .LVU157
+ 642 0010 90F82131 		ldrb	r3, [r0, #289]	@ zero_extendqisi2
+ 643              	.LVL64:
+ 120:Core/Lib/lora_e32.c ****     {
+ 644              		.loc 1 120 22 discriminator 1 view .LVU158
+ 645 0014 B3B3     		cbz	r3, .L61
+ 120:Core/Lib/lora_e32.c ****     {
+ 646              		.loc 1 120 67 discriminator 2 view .LVU159
+ 647 0016 B2FA82F3 		clz	r3, r2
+ 648 001a 5B09     		lsrs	r3, r3, #5
+ 120:Core/Lib/lora_e32.c ****     {
+ 649              		.loc 1 120 60 discriminator 2 view .LVU160
+ 650 001c A1B3     		cbz	r1, .L62
+ 651 001e 9BBB     		cbnz	r3, .L62
+ 125:Core/Lib/lora_e32.c ****     uint16_t count = 0;
+ 652              		.loc 1 125 5 is_stmt 1 view .LVU161
+ 125:Core/Lib/lora_e32.c ****     uint16_t count = 0;
+ 653              		.loc 1 125 22 is_stmt 0 view .LVU162
+ 654 0020 FFF7FEFF 		bl	HAL_GetTick
+ 655              	.LVL65:
+ 125:Core/Lib/lora_e32.c ****     uint16_t count = 0;
+ 656              		.loc 1 125 22 view .LVU163
+ 657 0024 0646     		mov	r6, r0
+ 658              	.LVL66:
+ 126:Core/Lib/lora_e32.c ****     uint16_t max_len = *len;
+ 659              		.loc 1 126 5 is_stmt 1 view .LVU164
+ 127:Core/Lib/lora_e32.c ****     
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 19
+
+
+ 660              		.loc 1 127 5 view .LVU165
+ 127:Core/Lib/lora_e32.c ****     
+ 661              		.loc 1 127 14 is_stmt 0 view .LVU166
+ 662 0026 B9F80080 		ldrh	r8, [r9]
+ 663              	.LVL67:
+ 130:Core/Lib/lora_e32.c ****     {
+ 664              		.loc 1 130 5 is_stmt 1 view .LVU167
+ 126:Core/Lib/lora_e32.c ****     uint16_t max_len = *len;
+ 665              		.loc 1 126 14 is_stmt 0 view .LVU168
+ 666 002a 0027     		movs	r7, #0
+ 667              	.LVL68:
+ 668              	.L57:
+ 130:Core/Lib/lora_e32.c ****     {
+ 669              		.loc 1 130 11 is_stmt 1 view .LVU169
+ 130:Core/Lib/lora_e32.c ****     {
+ 670              		.loc 1 130 13 is_stmt 0 view .LVU170
+ 671 002c FFF7FEFF 		bl	HAL_GetTick
+ 672              	.LVL69:
+ 130:Core/Lib/lora_e32.c ****     {
+ 673              		.loc 1 130 27 view .LVU171
+ 674 0030 801B     		subs	r0, r0, r6
+ 130:Core/Lib/lora_e32.c ****     {
+ 675              		.loc 1 130 11 view .LVU172
+ 676 0032 A842     		cmp	r0, r5
+ 677 0034 1ED2     		bcs	.L58
+ 130:Core/Lib/lora_e32.c ****     {
+ 678              		.loc 1 130 49 discriminator 1 view .LVU173
+ 679 0036 4745     		cmp	r7, r8
+ 680 0038 1CD2     		bcs	.L58
+ 132:Core/Lib/lora_e32.c ****         {
+ 681              		.loc 1 132 9 is_stmt 1 view .LVU174
+ 132:Core/Lib/lora_e32.c ****         {
+ 682              		.loc 1 132 17 is_stmt 0 view .LVU175
+ 683 003a B4F81E31 		ldrh	r3, [r4, #286]
+ 132:Core/Lib/lora_e32.c ****         {
+ 684              		.loc 1 132 40 view .LVU176
+ 685 003e B4F81C21 		ldrh	r2, [r4, #284]
+ 132:Core/Lib/lora_e32.c ****         {
+ 686              		.loc 1 132 12 view .LVU177
+ 687 0042 9342     		cmp	r3, r2
+ 688 0044 F2D0     		beq	.L57
+ 134:Core/Lib/lora_e32.c ****             lora->rx_read_index = (lora->rx_read_index + 1) % RX_BUFFER_SIZE;
+ 689              		.loc 1 134 13 is_stmt 1 view .LVU178
+ 134:Core/Lib/lora_e32.c ****             lora->rx_read_index = (lora->rx_read_index + 1) % RX_BUFFER_SIZE;
+ 690              		.loc 1 134 23 is_stmt 0 view .LVU179
+ 691 0046 07F1010B 		add	fp, r7, #1
+ 692 004a 1FFA8BFB 		uxth	fp, fp
+ 693              	.LVL70:
+ 134:Core/Lib/lora_e32.c ****             lora->rx_read_index = (lora->rx_read_index + 1) % RX_BUFFER_SIZE;
+ 694              		.loc 1 134 44 view .LVU180
+ 695 004e 2344     		add	r3, r3, r4
+ 696 0050 9B7E     		ldrb	r3, [r3, #26]	@ zero_extendqisi2
+ 134:Core/Lib/lora_e32.c ****             lora->rx_read_index = (lora->rx_read_index + 1) % RX_BUFFER_SIZE;
+ 697              		.loc 1 134 27 view .LVU181
+ 698 0052 0AF80730 		strb	r3, [r10, r7]
+ 135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
+ 699              		.loc 1 135 13 is_stmt 1 view .LVU182
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 20
+
+
+ 135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
+ 700              		.loc 1 135 40 is_stmt 0 view .LVU183
+ 701 0056 B4F81E31 		ldrh	r3, [r4, #286]
+ 135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
+ 702              		.loc 1 135 56 view .LVU184
+ 703 005a 0133     		adds	r3, r3, #1
+ 135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
+ 704              		.loc 1 135 61 view .LVU185
+ 705 005c 5A42     		rsbs	r2, r3, #0
+ 706 005e DBB2     		uxtb	r3, r3
+ 707 0060 D2B2     		uxtb	r2, r2
+ 708 0062 58BF     		it	pl
+ 709 0064 5342     		rsbpl	r3, r2, #0
+ 135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
+ 710              		.loc 1 135 33 view .LVU186
+ 711 0066 A4F81E31 		strh	r3, [r4, #286]	@ movhi
+ 136:Core/Lib/lora_e32.c ****         }
+ 712              		.loc 1 136 13 is_stmt 1 view .LVU187
+ 136:Core/Lib/lora_e32.c ****         }
+ 713              		.loc 1 136 21 is_stmt 0 view .LVU188
+ 714 006a FFF7FEFF 		bl	HAL_GetTick
+ 715              	.LVL71:
+ 716 006e 0646     		mov	r6, r0
+ 717              	.LVL72:
+ 134:Core/Lib/lora_e32.c ****             lora->rx_read_index = (lora->rx_read_index + 1) % RX_BUFFER_SIZE;
+ 718              		.loc 1 134 23 view .LVU189
+ 719 0070 5F46     		mov	r7, fp
+ 720 0072 DBE7     		b	.L57
+ 721              	.LVL73:
+ 722              	.L58:
+ 140:Core/Lib/lora_e32.c ****     
+ 723              		.loc 1 140 5 is_stmt 1 view .LVU190
+ 140:Core/Lib/lora_e32.c ****     
+ 724              		.loc 1 140 10 is_stmt 0 view .LVU191
+ 725 0074 A9F80070 		strh	r7, [r9]	@ movhi
+ 142:Core/Lib/lora_e32.c ****     {
+ 726              		.loc 1 142 5 is_stmt 1 view .LVU192
+ 142:Core/Lib/lora_e32.c ****     {
+ 727              		.loc 1 142 8 is_stmt 0 view .LVU193
+ 728 0078 47B1     		cbz	r7, .L63
+ 147:Core/Lib/lora_e32.c **** }
+ 729              		.loc 1 147 12 view .LVU194
+ 730 007a 0020     		movs	r0, #0
+ 731              	.LVL74:
+ 732              	.L55:
+ 148:Core/Lib/lora_e32.c **** 
+ 733              		.loc 1 148 1 view .LVU195
+ 734 007c BDE8F88F 		pop	{r3, r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 735              	.LVL75:
+ 736              	.L60:
+ 737              	.LCFI12:
+ 738              		.cfi_def_cfa_offset 0
+ 739              		.cfi_restore 3
+ 740              		.cfi_restore 4
+ 741              		.cfi_restore 5
+ 742              		.cfi_restore 6
+ 743              		.cfi_restore 7
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 21
+
+
+ 744              		.cfi_restore 8
+ 745              		.cfi_restore 9
+ 746              		.cfi_restore 10
+ 747              		.cfi_restore 11
+ 748              		.cfi_restore 14
+ 122:Core/Lib/lora_e32.c ****     }
+ 749              		.loc 1 122 16 view .LVU196
+ 750 0080 0420     		movs	r0, #4
+ 751              	.LVL76:
+ 148:Core/Lib/lora_e32.c **** 
+ 752              		.loc 1 148 1 view .LVU197
+ 753 0082 7047     		bx	lr
+ 754              	.LVL77:
+ 755              	.L61:
+ 756              	.LCFI13:
+ 757              		.cfi_def_cfa_offset 40
+ 758              		.cfi_offset 3, -40
+ 759              		.cfi_offset 4, -36
+ 760              		.cfi_offset 5, -32
+ 761              		.cfi_offset 6, -28
+ 762              		.cfi_offset 7, -24
+ 763              		.cfi_offset 8, -20
+ 764              		.cfi_offset 9, -16
+ 765              		.cfi_offset 10, -12
+ 766              		.cfi_offset 11, -8
+ 767              		.cfi_offset 14, -4
+ 122:Core/Lib/lora_e32.c ****     }
+ 768              		.loc 1 122 16 view .LVU198
+ 769 0084 0420     		movs	r0, #4
+ 770              	.LVL78:
+ 122:Core/Lib/lora_e32.c ****     }
+ 771              		.loc 1 122 16 view .LVU199
+ 772 0086 F9E7     		b	.L55
+ 773              	.LVL79:
+ 774              	.L62:
+ 122:Core/Lib/lora_e32.c ****     }
+ 775              		.loc 1 122 16 view .LVU200
+ 776 0088 0420     		movs	r0, #4
+ 777              	.LVL80:
+ 122:Core/Lib/lora_e32.c ****     }
+ 778              		.loc 1 122 16 view .LVU201
+ 779 008a F7E7     		b	.L55
+ 780              	.LVL81:
+ 781              	.L63:
+ 144:Core/Lib/lora_e32.c ****     }
+ 782              		.loc 1 144 16 view .LVU202
+ 783 008c 0320     		movs	r0, #3
+ 784 008e F5E7     		b	.L55
+ 785              		.cfi_endproc
+ 786              	.LFE148:
+ 788              		.section	.text.LoRa_E32_DataAvailable,"ax",%progbits
+ 789              		.align	1
+ 790              		.global	LoRa_E32_DataAvailable
+ 791              		.syntax unified
+ 792              		.thumb
+ 793              		.thumb_func
+ 795              	LoRa_E32_DataAvailable:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 22
+
+
+ 796              	.LVL82:
+ 797              	.LFB149:
+ 151:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 798              		.loc 1 151 1 is_stmt 1 view -0
+ 799              		.cfi_startproc
+ 800              		@ args = 0, pretend = 0, frame = 0
+ 801              		@ frame_needed = 0, uses_anonymous_args = 0
+ 802              		@ link register save eliminated.
+ 152:Core/Lib/lora_e32.c ****     {
+ 803              		.loc 1 152 5 view .LVU204
+ 152:Core/Lib/lora_e32.c ****     {
+ 804              		.loc 1 152 8 is_stmt 0 view .LVU205
+ 805 0000 0346     		mov	r3, r0
+ 806 0002 50B1     		cbz	r0, .L70
+ 152:Core/Lib/lora_e32.c ****     {
+ 807              		.loc 1 152 30 discriminator 1 view .LVU206
+ 808 0004 90F82101 		ldrb	r0, [r0, #289]	@ zero_extendqisi2
+ 809              	.LVL83:
+ 152:Core/Lib/lora_e32.c ****     {
+ 810              		.loc 1 152 22 discriminator 1 view .LVU207
+ 811 0008 40B1     		cbz	r0, .L69
+ 158:Core/Lib/lora_e32.c **** }
+ 812              		.loc 1 158 5 is_stmt 1 view .LVU208
+ 158:Core/Lib/lora_e32.c **** }
+ 813              		.loc 1 158 17 is_stmt 0 view .LVU209
+ 814 000a B3F81E01 		ldrh	r0, [r3, #286]
+ 158:Core/Lib/lora_e32.c **** }
+ 815              		.loc 1 158 40 view .LVU210
+ 816 000e B3F81C31 		ldrh	r3, [r3, #284]
+ 817              	.LVL84:
+ 158:Core/Lib/lora_e32.c **** }
+ 818              		.loc 1 158 33 view .LVU211
+ 819 0012 C01A     		subs	r0, r0, r3
+ 820 0014 18BF     		it	ne
+ 821 0016 0120     		movne	r0, #1
+ 822 0018 7047     		bx	lr
+ 823              	.LVL85:
+ 824              	.L70:
+ 154:Core/Lib/lora_e32.c ****     }
+ 825              		.loc 1 154 16 view .LVU212
+ 826 001a 0020     		movs	r0, #0
+ 827              	.LVL86:
+ 828              	.L69:
+ 159:Core/Lib/lora_e32.c **** 
+ 829              		.loc 1 159 1 view .LVU213
+ 830 001c 7047     		bx	lr
+ 831              		.cfi_endproc
+ 832              	.LFE149:
+ 834              		.section	.text.LoRa_E32_FlushRxBuffer,"ax",%progbits
+ 835              		.align	1
+ 836              		.global	LoRa_E32_FlushRxBuffer
+ 837              		.syntax unified
+ 838              		.thumb
+ 839              		.thumb_func
+ 841              	LoRa_E32_FlushRxBuffer:
+ 842              	.LVL87:
+ 843              	.LFB150:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 23
+
+
+ 162:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 844              		.loc 1 162 1 is_stmt 1 view -0
+ 845              		.cfi_startproc
+ 846              		@ args = 0, pretend = 0, frame = 0
+ 847              		@ frame_needed = 0, uses_anonymous_args = 0
+ 848              		@ link register save eliminated.
+ 163:Core/Lib/lora_e32.c ****     {
+ 849              		.loc 1 163 5 view .LVU215
+ 163:Core/Lib/lora_e32.c ****     {
+ 850              		.loc 1 163 8 is_stmt 0 view .LVU216
+ 851 0000 18B1     		cbz	r0, .L71
+ 168:Core/Lib/lora_e32.c **** }
+ 852              		.loc 1 168 5 is_stmt 1 view .LVU217
+ 168:Core/Lib/lora_e32.c **** }
+ 853              		.loc 1 168 31 is_stmt 0 view .LVU218
+ 854 0002 B0F81C21 		ldrh	r2, [r0, #284]
+ 168:Core/Lib/lora_e32.c **** }
+ 855              		.loc 1 168 25 view .LVU219
+ 856 0006 A0F81E21 		strh	r2, [r0, #286]	@ movhi
+ 857              	.L71:
+ 169:Core/Lib/lora_e32.c **** 
+ 858              		.loc 1 169 1 view .LVU220
+ 859 000a 7047     		bx	lr
+ 860              		.cfi_endproc
+ 861              	.LFE150:
+ 863              		.section	.text.LoRa_E32_PowerOff,"ax",%progbits
+ 864              		.align	1
+ 865              		.global	LoRa_E32_PowerOff
+ 866              		.syntax unified
+ 867              		.thumb
+ 868              		.thumb_func
+ 870              	LoRa_E32_PowerOff:
+ 871              	.LVL88:
+ 872              	.LFB151:
+ 172:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 873              		.loc 1 172 1 is_stmt 1 view -0
+ 874              		.cfi_startproc
+ 875              		@ args = 0, pretend = 0, frame = 0
+ 876              		@ frame_needed = 0, uses_anonymous_args = 0
+ 173:Core/Lib/lora_e32.c ****     {
+ 877              		.loc 1 173 5 view .LVU222
+ 173:Core/Lib/lora_e32.c ****     {
+ 878              		.loc 1 173 8 is_stmt 0 view .LVU223
+ 879 0000 20B1     		cbz	r0, .L75
+ 172:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 880              		.loc 1 172 1 view .LVU224
+ 881 0002 08B5     		push	{r3, lr}
+ 882              	.LCFI14:
+ 883              		.cfi_def_cfa_offset 8
+ 884              		.cfi_offset 3, -8
+ 885              		.cfi_offset 14, -4
+ 179:Core/Lib/lora_e32.c **** }
+ 886              		.loc 1 179 5 is_stmt 1 view .LVU225
+ 179:Core/Lib/lora_e32.c **** }
+ 887              		.loc 1 179 12 is_stmt 0 view .LVU226
+ 888 0004 0321     		movs	r1, #3
+ 889 0006 FFF7FEFF 		bl	LoRa_E32_SetMode
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 24
+
+
+ 890              	.LVL89:
+ 180:Core/Lib/lora_e32.c **** 
+ 891              		.loc 1 180 1 view .LVU227
+ 892 000a 08BD     		pop	{r3, pc}
+ 893              	.LVL90:
+ 894              	.L75:
+ 895              	.LCFI15:
+ 896              		.cfi_def_cfa_offset 0
+ 897              		.cfi_restore 3
+ 898              		.cfi_restore 14
+ 175:Core/Lib/lora_e32.c ****     }
+ 899              		.loc 1 175 16 view .LVU228
+ 900 000c 0420     		movs	r0, #4
+ 901              	.LVL91:
+ 180:Core/Lib/lora_e32.c **** 
+ 902              		.loc 1 180 1 view .LVU229
+ 903 000e 7047     		bx	lr
+ 904              		.cfi_endproc
+ 905              	.LFE151:
+ 907              		.section	.text.LoRa_E32_PowerOn,"ax",%progbits
+ 908              		.align	1
+ 909              		.global	LoRa_E32_PowerOn
+ 910              		.syntax unified
+ 911              		.thumb
+ 912              		.thumb_func
+ 914              	LoRa_E32_PowerOn:
+ 915              	.LVL92:
+ 916              	.LFB152:
+ 183:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 917              		.loc 1 183 1 is_stmt 1 view -0
+ 918              		.cfi_startproc
+ 919              		@ args = 0, pretend = 0, frame = 0
+ 920              		@ frame_needed = 0, uses_anonymous_args = 0
+ 184:Core/Lib/lora_e32.c ****     {
+ 921              		.loc 1 184 5 view .LVU231
+ 184:Core/Lib/lora_e32.c ****     {
+ 922              		.loc 1 184 8 is_stmt 0 view .LVU232
+ 923 0000 20B1     		cbz	r0, .L82
+ 183:Core/Lib/lora_e32.c ****     if (lora == NULL)
+ 924              		.loc 1 183 1 view .LVU233
+ 925 0002 08B5     		push	{r3, lr}
+ 926              	.LCFI16:
+ 927              		.cfi_def_cfa_offset 8
+ 928              		.cfi_offset 3, -8
+ 929              		.cfi_offset 14, -4
+ 190:Core/Lib/lora_e32.c **** }
+ 930              		.loc 1 190 5 is_stmt 1 view .LVU234
+ 190:Core/Lib/lora_e32.c **** }
+ 931              		.loc 1 190 12 is_stmt 0 view .LVU235
+ 932 0004 0021     		movs	r1, #0
+ 933 0006 FFF7FEFF 		bl	LoRa_E32_SetMode
+ 934              	.LVL93:
+ 191:Core/Lib/lora_e32.c **** 
+ 935              		.loc 1 191 1 view .LVU236
+ 936 000a 08BD     		pop	{r3, pc}
+ 937              	.LVL94:
+ 938              	.L82:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 25
+
+
+ 939              	.LCFI17:
+ 940              		.cfi_def_cfa_offset 0
+ 941              		.cfi_restore 3
+ 942              		.cfi_restore 14
+ 186:Core/Lib/lora_e32.c ****     }
+ 943              		.loc 1 186 16 view .LVU237
+ 944 000c 0420     		movs	r0, #4
+ 945              	.LVL95:
+ 191:Core/Lib/lora_e32.c **** 
+ 946              		.loc 1 191 1 view .LVU238
+ 947 000e 7047     		bx	lr
+ 948              		.cfi_endproc
+ 949              	.LFE152:
+ 951              		.section	.text.LoRa_E32_UART_IRQHandler,"ax",%progbits
+ 952              		.align	1
+ 953              		.global	LoRa_E32_UART_IRQHandler
+ 954              		.syntax unified
+ 955              		.thumb
+ 956              		.thumb_func
+ 958              	LoRa_E32_UART_IRQHandler:
+ 959              	.LVL96:
+ 960              	.LFB153:
+ 194:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 961              		.loc 1 194 1 is_stmt 1 view -0
+ 962              		.cfi_startproc
+ 963              		@ args = 0, pretend = 0, frame = 0
+ 964              		@ frame_needed = 0, uses_anonymous_args = 0
+ 195:Core/Lib/lora_e32.c ****     {
+ 965              		.loc 1 195 5 view .LVU240
+ 195:Core/Lib/lora_e32.c ****     {
+ 966              		.loc 1 195 8 is_stmt 0 view .LVU241
+ 967 0000 F8B1     		cbz	r0, .L91
+ 194:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized)
+ 968              		.loc 1 194 1 discriminator 1 view .LVU242
+ 969 0002 08B5     		push	{r3, lr}
+ 970              	.LCFI18:
+ 971              		.cfi_def_cfa_offset 8
+ 972              		.cfi_offset 3, -8
+ 973              		.cfi_offset 14, -4
+ 974 0004 8446     		mov	ip, r0
+ 195:Core/Lib/lora_e32.c ****     {
+ 975              		.loc 1 195 30 discriminator 1 view .LVU243
+ 976 0006 90F82131 		ldrb	r3, [r0, #289]	@ zero_extendqisi2
+ 195:Core/Lib/lora_e32.c ****     {
+ 977              		.loc 1 195 22 discriminator 1 view .LVU244
+ 978 000a CBB1     		cbz	r3, .L87
+ 201:Core/Lib/lora_e32.c ****     
+ 979              		.loc 1 201 5 is_stmt 1 view .LVU245
+ 201:Core/Lib/lora_e32.c ****     
+ 980              		.loc 1 201 32 is_stmt 0 view .LVU246
+ 981 000c B0F81C11 		ldrh	r1, [r0, #284]
+ 201:Core/Lib/lora_e32.c ****     
+ 982              		.loc 1 201 49 view .LVU247
+ 983 0010 4B1C     		adds	r3, r1, #1
+ 201:Core/Lib/lora_e32.c ****     
+ 984              		.loc 1 201 54 view .LVU248
+ 985 0012 5A42     		rsbs	r2, r3, #0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 26
+
+
+ 986 0014 DBB2     		uxtb	r3, r3
+ 987 0016 D2B2     		uxtb	r2, r2
+ 988 0018 58BF     		it	pl
+ 989 001a 5342     		rsbpl	r3, r2, #0
+ 201:Core/Lib/lora_e32.c ****     
+ 990              		.loc 1 201 14 view .LVU249
+ 991 001c 9BB2     		uxth	r3, r3
+ 992              	.LVL97:
+ 204:Core/Lib/lora_e32.c ****     {
+ 993              		.loc 1 204 5 is_stmt 1 view .LVU250
+ 204:Core/Lib/lora_e32.c ****     {
+ 994              		.loc 1 204 27 is_stmt 0 view .LVU251
+ 995 001e B0F81E21 		ldrh	r2, [r0, #286]
+ 204:Core/Lib/lora_e32.c ****     {
+ 996              		.loc 1 204 8 view .LVU252
+ 997 0022 9A42     		cmp	r2, r3
+ 998 0024 05D0     		beq	.L89
+ 206:Core/Lib/lora_e32.c ****         lora->rx_write_index = next_index;
+ 999              		.loc 1 206 9 is_stmt 1 view .LVU253
+ 206:Core/Lib/lora_e32.c ****         lora->rx_write_index = next_index;
+ 1000              		.loc 1 206 53 is_stmt 0 view .LVU254
+ 1001 0026 90F82021 		ldrb	r2, [r0, #288]	@ zero_extendqisi2
+ 206:Core/Lib/lora_e32.c ****         lora->rx_write_index = next_index;
+ 1002              		.loc 1 206 47 view .LVU255
+ 1003 002a 0144     		add	r1, r1, r0
+ 1004 002c 8A76     		strb	r2, [r1, #26]
+ 207:Core/Lib/lora_e32.c ****     }
+ 1005              		.loc 1 207 9 is_stmt 1 view .LVU256
+ 207:Core/Lib/lora_e32.c ****     }
+ 1006              		.loc 1 207 30 is_stmt 0 view .LVU257
+ 1007 002e A0F81C31 		strh	r3, [r0, #284]	@ movhi
+ 1008              	.L89:
+ 211:Core/Lib/lora_e32.c **** }
+ 1009              		.loc 1 211 5 is_stmt 1 view .LVU258
+ 1010 0032 0122     		movs	r2, #1
+ 1011 0034 0CF59071 		add	r1, ip, #288
+ 1012 0038 DCF80000 		ldr	r0, [ip]
+ 1013              	.LVL98:
+ 211:Core/Lib/lora_e32.c **** }
+ 1014              		.loc 1 211 5 is_stmt 0 view .LVU259
+ 1015 003c FFF7FEFF 		bl	HAL_UART_Receive_IT
+ 1016              	.LVL99:
+ 1017              	.L87:
+ 212:Core/Lib/lora_e32.c **** 
+ 1018              		.loc 1 212 1 view .LVU260
+ 1019 0040 08BD     		pop	{r3, pc}
+ 1020              	.LVL100:
+ 1021              	.L91:
+ 1022              	.LCFI19:
+ 1023              		.cfi_def_cfa_offset 0
+ 1024              		.cfi_restore 3
+ 1025              		.cfi_restore 14
+ 212:Core/Lib/lora_e32.c **** 
+ 1026              		.loc 1 212 1 view .LVU261
+ 1027 0042 7047     		bx	lr
+ 1028              		.cfi_endproc
+ 1029              	.LFE153:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 27
+
+
+ 1031              		.text
+ 1032              	.Letext0:
+ 1033              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1034              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1035              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1036              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1037              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1038              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1039              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 1040              		.file 9 "Core/Lib/lora_e32.h"
+ 1041              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 1042              		.file 11 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccSNpwom.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 lora_e32.c
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:19     .text.lora_set_mode_pins:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:24     .text.lora_set_mode_pins:00000000 lora_set_mode_pins
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:71     .text.lora_wait_aux_high:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:76     .text.lora_wait_aux_high:00000000 lora_wait_aux_high
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:142    .text.LoRa_E32_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:148    .text.LoRa_E32_Init:00000000 LoRa_E32_Init
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:299    .text.LoRa_E32_SetMode:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:305    .text.LoRa_E32_SetMode:00000000 LoRa_E32_SetMode
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:334    .text.LoRa_E32_SetMode:00000016 $d
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:338    .text.LoRa_E32_SetMode:0000001a $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:441    .text.LoRa_E32_IsReady:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:447    .text.LoRa_E32_IsReady:00000000 LoRa_E32_IsReady
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:502    .text.LoRa_E32_Send:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:508    .text.LoRa_E32_Send:00000000 LoRa_E32_Send
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:606    .text.LoRa_E32_Receive:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:612    .text.LoRa_E32_Receive:00000000 LoRa_E32_Receive
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:789    .text.LoRa_E32_DataAvailable:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:795    .text.LoRa_E32_DataAvailable:00000000 LoRa_E32_DataAvailable
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:835    .text.LoRa_E32_FlushRxBuffer:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:841    .text.LoRa_E32_FlushRxBuffer:00000000 LoRa_E32_FlushRxBuffer
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:864    .text.LoRa_E32_PowerOff:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:870    .text.LoRa_E32_PowerOff:00000000 LoRa_E32_PowerOff
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:908    .text.LoRa_E32_PowerOn:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:914    .text.LoRa_E32_PowerOn:00000000 LoRa_E32_PowerOn
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:952    .text.LoRa_E32_UART_IRQHandler:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccSNpwom.s:958    .text.LoRa_E32_UART_IRQHandler:00000000 LoRa_E32_UART_IRQHandler
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_GetTick
+HAL_Delay
+HAL_GPIO_ReadPin
+memset
+HAL_UART_Receive_IT
+HAL_UART_Transmit

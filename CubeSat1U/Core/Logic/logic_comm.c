@@ -27,7 +27,7 @@ static comm_error_t Logic_Comm_Phase_Beacon(uint32_t ms);
 static comm_error_t Logic_Comm_Phase_Listen(uint32_t ms);
 static comm_error_t Logic_Comm_Phase_DataTx(uint32_t ms);
 static comm_error_t Logic_Comm_Phase_End(uint32_t ms);
-static void Logic_Comm_Handle_Command(gcs_command_t cmd);
+static void Logic_Comm_Handle_Command(packet_type_t type, const uint8_t* pkt, uint16_t len);
 
 
 comm_error_t Logic_Comm_Init(void)
@@ -39,7 +39,7 @@ comm_error_t Logic_Comm_Init(void)
   return COMM_OK;
 }
 
-comm_error_t Logic_Comm_Abort(uint32_t)
+comm_error_t Logic_Comm_Process(uint32_t ms)
 {
   comm_error_t result = COMM_IN_PROGRESS;
   system_health_t* health = Logic_GetHealth();
@@ -71,7 +71,7 @@ comm_error_t Logic_Comm_Abort(uint32_t)
   switch (current_phase)
   {
   case COMM_PHASE_PREP:
-    result = Logic_Phase_Prep(total_timer);
+    result = Logic_Comm_Phase_Prep(total_timer);
     if (result == COMM_OK && total_timer >= COMM_PHASE1_PREP_MS)
     {
       current_phase = COMM_PHASE_BEACON;
@@ -110,7 +110,7 @@ comm_error_t Logic_Comm_Abort(uint32_t)
     break;
   case COMM_PHASE_END:
     result = Logic_Comm_Phase_End(total_timer);
-    if (total_timer >= COMM_PHASE5_END_MS);
+    if (total_timer >= COMM_PHASE5_END_MS)
     {
       current_phase = COMM_PHASE_COMPLETE;
       Logic_Log("COMM: Complete\r\n");
@@ -213,7 +213,7 @@ static comm_error_t Logic_Comm_Phase_Beacon(uint32_t ms)
   system_health_t* health = Logic_GetHealth();
   cubesat_status_t* status = Logic_GetStatus();
 
-  if (t < COMM_PHASE1_PREP_MS || t >= COMM_PHASE2_SEND_BEACON_MS) {
+  if (ms < COMM_PHASE1_PREP_MS || ms >= COMM_PHASE2_SEND_BEACON_MS) {
         return COMM_IN_PROGRESS;
     }
     
@@ -262,7 +262,7 @@ static comm_error_t Logic_Comm_Phase_Listen(uint32_t ms)
             len > 0 && buf[0] == PACKET_HEADER) {
             
             if (Packet_Verify_CRC(buf, len)) {
-                handle_cmd(Packet_Parse_Type(buf), buf, len);
+                Logic_Comm_Handle_Command(Packet_Parse_Type(buf), buf, len);
             } else {
                 uint8_t nack[8] = {PACKET_HEADER, PKT_TYPE_NACK};
                 uint16_t crc = Packet_Calculate_CRC(nack, 2);
@@ -430,7 +430,7 @@ static comm_error_t Logic_Comm_Phase_End(uint32_t ms)
   if (!end_state.sent && ms >= (COMM_PHASE4_DATA_TX_MS + END_GOODBYE_DELAY_MS))
   {
     uint8_t gb[8] = {PACKET_HEADER, PKT_TYPE_GOODBYE};
-    uint16_t crc = packet_calculate_crc(gb,2);
+    uint16_t crc = Packet_Calculate_CRC(gb,2);
     gb[2] = crc >> 8;
     gb[3] = crc & 0xFF;
     LoRa_E32_Send(&lora_handle, gb, 4, 500);

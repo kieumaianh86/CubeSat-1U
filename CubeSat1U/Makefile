@@ -39,14 +39,17 @@ C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
-\ \
+\
 Core/Lib/mpu6050.c\
 Core/Lib/hmc5883l.c\
 Core/Lib/neo8m.c\
 Core/Lib/packet_protocol.c\
 Core/Lib/lora_e32.c\
 \
-Core/Hardware/hardware.c\ \
+Core/Hardware/hardware.c\
+\
+Core/Logic/logic_science.c\
+Core/Logic/logic_comm.c\
 \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
@@ -139,8 +142,9 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
--ICore/Lib\ \
--ICore/Hardware\ \
+-ICore/Lib\
+-ICore/Hardware\
+-ICore/Logic\
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
 -IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \

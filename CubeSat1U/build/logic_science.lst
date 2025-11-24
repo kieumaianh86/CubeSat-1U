@@ -1,0 +1,1592 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"logic_science.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.rodata.Logic_Science_Phase_Prep.str1.4,"aMS",%progbits,1
+  19              		.align	2
+  20              	.LC0:
+  21 0000 53434945 		.ascii	"SCIENCE PREP: Battery low\015\012\000"
+  21      4E434520 
+  21      50524550 
+  21      3A204261 
+  21      74746572 
+  22              		.align	2
+  23              	.LC1:
+  24 001c 53434945 		.ascii	"SCIENCE Prep: Sensors powered on\015\012\000"
+  24      4E434520 
+  24      50726570 
+  24      3A205365 
+  24      6E736F72 
+  25              		.section	.text.Logic_Science_Phase_Prep,"ax",%progbits
+  26              		.align	1
+  27              		.syntax unified
+  28              		.thumb
+  29              		.thumb_func
+  31              	Logic_Science_Phase_Prep:
+  32              	.LVL0:
+  33              	.LFB149:
+  34              		.file 1 "Core/Logic/logic_science.c"
+   1:Core/Logic/logic_science.c **** #include "logic_science.h"
+   2:Core/Logic/logic_science.c **** #include "logic.h"
+   3:Core/Logic/logic_science.c **** #include "hardware.h"
+   4:Core/Logic/logic_science.c **** 
+   5:Core/Logic/logic_science.c **** //extern system_status_t system_status;
+   6:Core/Logic/logic_science.c **** static science_phase_t current_phase = SCIENCE_PHASE_STANDBY;
+   7:Core/Logic/logic_science.c **** //static uint32_t phase_start_tick = 0;
+   8:Core/Logic/logic_science.c **** static uint32_t science_start_tick = 0;
+   9:Core/Logic/logic_science.c **** static uint8_t flash_retry_count = 0;
+  10:Core/Logic/logic_science.c **** static bool cleanup_done = false; //phase cleanup
+  11:Core/Logic/logic_science.c **** 
+  12:Core/Logic/logic_science.c **** // Private function declarations
+  13:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Prep(uint32_t ms);
+  14:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Collect(uint32_t ms);
+  15:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Process(uint32_t ms);
+  16:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Clean(uint32_t ms);
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 2
+
+
+  17:Core/Logic/logic_science.c **** 
+  18:Core/Logic/logic_science.c **** science_error_t Logic_Science_Init(void) 
+  19:Core/Logic/logic_science.c **** {
+  20:Core/Logic/logic_science.c ****   current_phase = SCIENCE_PHASE_PREP;
+  21:Core/Logic/logic_science.c ****   //phase_start_tick = HAL_GetTick();
+  22:Core/Logic/logic_science.c ****   science_start_tick = HAL_GetTick();
+  23:Core/Logic/logic_science.c ****   flash_retry_count = 0;
+  24:Core/Logic/logic_science.c ****   Logic_Log("SCIENCE: Init\r\n");
+  25:Core/Logic/logic_science.c ****   return SCIENCE_OK;
+  26:Core/Logic/logic_science.c **** }
+  27:Core/Logic/logic_science.c **** 
+  28:Core/Logic/logic_science.c **** science_error_t Logic_Science_Process(uint32_t ms)
+  29:Core/Logic/logic_science.c **** {
+  30:Core/Logic/logic_science.c ****   science_error_t result = SCIENCE_OK;
+  31:Core/Logic/logic_science.c ****   //uint32_t phase_timer = HAL_GetTick() - phase_start_tick;
+  32:Core/Logic/logic_science.c ****   uint32_t total_timer = HAL_GetTick() - science_start_tick;
+  33:Core/Logic/logic_science.c ****   //timeout check
+  34:Core/Logic/logic_science.c ****   if (total_timer > TIMEOUT_SCIENCE_TOTAL)
+  35:Core/Logic/logic_science.c ****   {
+  36:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: Total timeout\r\n");
+  37:Core/Logic/logic_science.c ****     return SCIENCE_ERR_TIMEOUT;
+  38:Core/Logic/logic_science.c ****   }
+  39:Core/Logic/logic_science.c ****   //battery critical check every 10s
+  40:Core/Logic/logic_science.c ****   cubesat_status_t* status = Logic_GetStatus();
+  41:Core/Logic/logic_science.c ****   if (HAL_GetTick() - status->last_battery_check >= BATTERY_CHECK_INTERVAL)
+  42:Core/Logic/logic_science.c ****   {
+  43:Core/Logic/logic_science.c ****     status->last_battery_check = HAL_GetTick();
+  44:Core/Logic/logic_science.c ****     if (Logic_Battery_Check_Critical())
+  45:Core/Logic/logic_science.c ****     {
+  46:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: Battery critical\r\n");
+  47:Core/Logic/logic_science.c ****       return SCIENCE_ERR_BATTERY_CRITICAL;
+  48:Core/Logic/logic_science.c ****     }
+  49:Core/Logic/logic_science.c ****     
+  50:Core/Logic/logic_science.c ****   }
+  51:Core/Logic/logic_science.c ****   //emergency command check
+  52:Core/Logic/logic_science.c ****   if (Logic_Command_Get_Pending() == CMD_START_COMM)
+  53:Core/Logic/logic_science.c ****   {
+  54:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: COMM command\r\n");
+  55:Core/Logic/logic_science.c ****     return SCIENCE_ERR_EMERGENCY_CMD;
+  56:Core/Logic/logic_science.c ****   }
+  57:Core/Logic/logic_science.c ****   
+  58:Core/Logic/logic_science.c ****   switch (current_phase)
+  59:Core/Logic/logic_science.c ****   {
+  60:Core/Logic/logic_science.c ****   case SCIENCE_PHASE_PREP:
+  61:Core/Logic/logic_science.c ****     result = Logic_Science_Phase_Prep(total_timer);
+  62:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE1_PREP_MS)
+  63:Core/Logic/logic_science.c ****     {
+  64:Core/Logic/logic_science.c ****       current_phase = SCIENCE_PHASE_COLLECT;
+  65:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+  66:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: PREP complete\r\n");
+  67:Core/Logic/logic_science.c ****       result = SCIENCE_IN_PROGRESS;
+  68:Core/Logic/logic_science.c ****     }
+  69:Core/Logic/logic_science.c ****     break;
+  70:Core/Logic/logic_science.c ****     
+  71:Core/Logic/logic_science.c ****   case SCIENCE_PHASE_COLLECT:
+  72:Core/Logic/logic_science.c ****     result = Logic_Science_Phase_Collect(total_timer);
+  73:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE2_PROCESS_MS)
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 3
+
+
+  74:Core/Logic/logic_science.c ****     {
+  75:Core/Logic/logic_science.c ****       current_phase = SCIENCE_PHASE_PROCESS;
+  76:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+  77:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: COLLECT complete\r\n");
+  78:Core/Logic/logic_science.c ****       result = SCIENCE_IN_PROGRESS;
+  79:Core/Logic/logic_science.c ****     }
+  80:Core/Logic/logic_science.c ****     break;
+  81:Core/Logic/logic_science.c ****   case SCIENCE_PHASE_PROCESS:
+  82:Core/Logic/logic_science.c ****     result = Logic_Science_Phase_Process(total_timer);
+  83:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE3_CLEAN_MS)
+  84:Core/Logic/logic_science.c ****     {
+  85:Core/Logic/logic_science.c ****       current_phase = SCIENCE_PHASE_CLEAN;
+  86:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+  87:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: PROCESS complete!\r\n");
+  88:Core/Logic/logic_science.c ****       result = SCIENCE_IN_PROGRESS;
+  89:Core/Logic/logic_science.c ****     }
+  90:Core/Logic/logic_science.c ****     break;
+  91:Core/Logic/logic_science.c ****   case SCIENCE_PHASE_CLEAN:
+  92:Core/Logic/logic_science.c ****     result = Logic_Science_Phase_Clean(total_timer);
+  93:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK)
+  94:Core/Logic/logic_science.c ****     {
+  95:Core/Logic/logic_science.c ****       current_phase = SCIENCE_PHASE_COMPLETE;
+  96:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: CLEAN complete!\r\n");
+  97:Core/Logic/logic_science.c ****     }
+  98:Core/Logic/logic_science.c ****     break;
+  99:Core/Logic/logic_science.c ****   case SCIENCE_PHASE_COMPLETE:
+ 100:Core/Logic/logic_science.c ****     current_phase = SCIENCE_PHASE_STANDBY;
+ 101:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: Complete\r\n");
+ 102:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 103:Core/Logic/logic_science.c ****   default:
+ 104:Core/Logic/logic_science.c ****     break;
+ 105:Core/Logic/logic_science.c ****   }
+ 106:Core/Logic/logic_science.c ****   return result;
+ 107:Core/Logic/logic_science.c **** }
+ 108:Core/Logic/logic_science.c **** 
+ 109:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Prep(uint32_t ms)
+ 110:Core/Logic/logic_science.c **** {
+  35              		.loc 1 110 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  39              		.loc 1 110 1 is_stmt 0 view .LVU1
+  40 0000 10B5     		push	{r4, lr}
+  41              	.LCFI0:
+  42              		.cfi_def_cfa_offset 8
+  43              		.cfi_offset 4, -8
+  44              		.cfi_offset 14, -4
+  45 0002 0446     		mov	r4, r0
+ 111:Core/Logic/logic_science.c ****   static bool sensors_powered = false;
+  46              		.loc 1 111 3 is_stmt 1 view .LVU2
+ 112:Core/Logic/logic_science.c ****   if (!sensors_powered && ms < SCIENCE_PHASE1_PREP_MS)
+  47              		.loc 1 112 3 view .LVU3
+  48              		.loc 1 112 7 is_stmt 0 view .LVU4
+  49 0004 144B     		ldr	r3, .L10
+  50 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  51              		.loc 1 112 6 view .LVU5
+  52 0008 1BB9     		cbnz	r3, .L2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 4
+
+
+  53              		.loc 1 112 24 discriminator 1 view .LVU6
+  54 000a 42F20F73 		movw	r3, #9999
+  55 000e 9842     		cmp	r0, r3
+  56 0010 05D9     		bls	.L7
+  57              	.LVL1:
+  58              	.L2:
+ 113:Core/Logic/logic_science.c ****   {
+ 114:Core/Logic/logic_science.c ****     if (Logic_Battery_Check_Low())
+ 115:Core/Logic/logic_science.c ****     {
+ 116:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE PREP: Battery low\r\n");
+ 117:Core/Logic/logic_science.c ****       return SCIENCE_ERR_BATTERY_LOW;
+ 118:Core/Logic/logic_science.c ****     }
+ 119:Core/Logic/logic_science.c **** 
+ 120:Core/Logic/logic_science.c ****     HW_Power_GPS_On();
+ 121:Core/Logic/logic_science.c ****     HW_Power_IMU_On();
+ 122:Core/Logic/logic_science.c ****     HW_Power_Magnetometer_On();
+ 123:Core/Logic/logic_science.c ****     HW_Power_Temperature_On();
+ 124:Core/Logic/logic_science.c ****     HW_Power_Camera_On();
+ 125:Core/Logic/logic_science.c **** 
+ 126:Core/Logic/logic_science.c ****     sensors_powered = true;
+ 127:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE Prep: Sensors powered on\r\n");    
+ 128:Core/Logic/logic_science.c ****   }
+ 129:Core/Logic/logic_science.c **** 
+ 130:Core/Logic/logic_science.c ****   if (ms >= SCIENCE_PHASE1_PREP_MS)
+  59              		.loc 1 130 3 is_stmt 1 view .LVU7
+  60              		.loc 1 130 6 is_stmt 0 view .LVU8
+  61 0012 42F20F73 		movw	r3, #9999
+  62 0016 9C42     		cmp	r4, r3
+  63 0018 1AD8     		bhi	.L8
+ 131:Core/Logic/logic_science.c ****   {
+ 132:Core/Logic/logic_science.c ****     sensors_powered = false;
+ 133:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 134:Core/Logic/logic_science.c ****   }
+ 135:Core/Logic/logic_science.c ****   return SCIENCE_IN_PROGRESS;
+  64              		.loc 1 135 10 view .LVU9
+  65 001a 0120     		movs	r0, #1
+  66              	.L4:
+ 136:Core/Logic/logic_science.c **** }
+  67              		.loc 1 136 1 view .LVU10
+  68 001c 10BD     		pop	{r4, pc}
+  69              	.LVL2:
+  70              	.L7:
+ 114:Core/Logic/logic_science.c ****     {
+  71              		.loc 1 114 5 is_stmt 1 view .LVU11
+ 114:Core/Logic/logic_science.c ****     {
+  72              		.loc 1 114 9 is_stmt 0 view .LVU12
+  73 001e FFF7FEFF 		bl	Logic_Battery_Check_Low
+  74              	.LVL3:
+ 114:Core/Logic/logic_science.c ****     {
+  75              		.loc 1 114 8 view .LVU13
+  76 0022 80B9     		cbnz	r0, .L9
+ 120:Core/Logic/logic_science.c ****     HW_Power_IMU_On();
+  77              		.loc 1 120 5 is_stmt 1 view .LVU14
+  78 0024 FFF7FEFF 		bl	HW_Power_GPS_On
+  79              	.LVL4:
+ 121:Core/Logic/logic_science.c ****     HW_Power_Magnetometer_On();
+  80              		.loc 1 121 5 view .LVU15
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 5
+
+
+  81 0028 FFF7FEFF 		bl	HW_Power_IMU_On
+  82              	.LVL5:
+ 122:Core/Logic/logic_science.c ****     HW_Power_Temperature_On();
+  83              		.loc 1 122 5 view .LVU16
+  84 002c FFF7FEFF 		bl	HW_Power_Magnetometer_On
+  85              	.LVL6:
+ 123:Core/Logic/logic_science.c ****     HW_Power_Camera_On();
+  86              		.loc 1 123 5 view .LVU17
+  87 0030 FFF7FEFF 		bl	HW_Power_Temperature_On
+  88              	.LVL7:
+ 124:Core/Logic/logic_science.c **** 
+  89              		.loc 1 124 5 view .LVU18
+  90 0034 FFF7FEFF 		bl	HW_Power_Camera_On
+  91              	.LVL8:
+ 126:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE Prep: Sensors powered on\r\n");    
+  92              		.loc 1 126 5 view .LVU19
+ 126:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE Prep: Sensors powered on\r\n");    
+  93              		.loc 1 126 21 is_stmt 0 view .LVU20
+  94 0038 074B     		ldr	r3, .L10
+  95 003a 0122     		movs	r2, #1
+  96 003c 1A70     		strb	r2, [r3]
+ 127:Core/Logic/logic_science.c ****   }
+  97              		.loc 1 127 5 is_stmt 1 view .LVU21
+  98 003e 0748     		ldr	r0, .L10+4
+  99 0040 FFF7FEFF 		bl	Logic_Log
+ 100              	.LVL9:
+ 101 0044 E5E7     		b	.L2
+ 102              	.L9:
+ 116:Core/Logic/logic_science.c ****       return SCIENCE_ERR_BATTERY_LOW;
+ 103              		.loc 1 116 7 view .LVU22
+ 104 0046 0648     		ldr	r0, .L10+8
+ 105 0048 FFF7FEFF 		bl	Logic_Log
+ 106              	.LVL10:
+ 117:Core/Logic/logic_science.c ****     }
+ 107              		.loc 1 117 7 view .LVU23
+ 117:Core/Logic/logic_science.c ****     }
+ 108              		.loc 1 117 14 is_stmt 0 view .LVU24
+ 109 004c 0220     		movs	r0, #2
+ 110 004e E5E7     		b	.L4
+ 111              	.L8:
+ 132:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 112              		.loc 1 132 5 is_stmt 1 view .LVU25
+ 132:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 113              		.loc 1 132 21 is_stmt 0 view .LVU26
+ 114 0050 0020     		movs	r0, #0
+ 115 0052 014B     		ldr	r3, .L10
+ 116 0054 1870     		strb	r0, [r3]
+ 133:Core/Logic/logic_science.c ****   }
+ 117              		.loc 1 133 5 is_stmt 1 view .LVU27
+ 133:Core/Logic/logic_science.c ****   }
+ 118              		.loc 1 133 12 is_stmt 0 view .LVU28
+ 119 0056 E1E7     		b	.L4
+ 120              	.L11:
+ 121              		.align	2
+ 122              	.L10:
+ 123 0058 00000000 		.word	.LANCHOR0
+ 124 005c 1C000000 		.word	.LC1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 6
+
+
+ 125 0060 00000000 		.word	.LC0
+ 126              		.cfi_endproc
+ 127              	.LFE149:
+ 129              		.section	.rodata.Logic_Science_Phase_Collect.str1.4,"aMS",%progbits,1
+ 130              		.align	2
+ 131              	.LC2:
+ 132 0000 42617474 		.ascii	"Battery LOW: %.1f \015\012\000"
+ 132      65727920 
+ 132      4C4F573A 
+ 132      20252E31 
+ 132      66200D0A 
+ 133 0015 000000   		.align	2
+ 134              	.LC3:
+ 135 0018 53434945 		.ascii	"SCIENCE COLLECT: Sensor critical fail\015\012\000"
+ 135      4E434520 
+ 135      434F4C4C 
+ 135      4543543A 
+ 135      2053656E 
+ 136              		.section	.text.Logic_Science_Phase_Collect,"ax",%progbits
+ 137              		.align	1
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 142              	Logic_Science_Phase_Collect:
+ 143              	.LVL11:
+ 144              	.LFB150:
+ 137:Core/Logic/logic_science.c **** 
+ 138:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Collect(uint32_t ms)
+ 139:Core/Logic/logic_science.c **** {
+ 145              		.loc 1 139 1 is_stmt 1 view -0
+ 146              		.cfi_startproc
+ 147              		@ args = 0, pretend = 0, frame = 0
+ 148              		@ frame_needed = 0, uses_anonymous_args = 0
+ 149              		.loc 1 139 1 is_stmt 0 view .LVU30
+ 150 0000 38B5     		push	{r3, r4, r5, lr}
+ 151              	.LCFI1:
+ 152              		.cfi_def_cfa_offset 16
+ 153              		.cfi_offset 3, -16
+ 154              		.cfi_offset 4, -12
+ 155              		.cfi_offset 5, -8
+ 156              		.cfi_offset 14, -4
+ 140:Core/Logic/logic_science.c ****   static uint32_t last_battery_read = 0;
+ 157              		.loc 1 140 3 is_stmt 1 view .LVU31
+ 141:Core/Logic/logic_science.c ****   system_health_t* health = Logic_GetHealth();
+ 158              		.loc 1 141 3 view .LVU32
+ 159              		.loc 1 141 29 is_stmt 0 view .LVU33
+ 160 0002 FFF7FEFF 		bl	Logic_GetHealth
+ 161              	.LVL12:
+ 162              		.loc 1 141 29 view .LVU34
+ 163 0006 0546     		mov	r5, r0
+ 164              	.LVL13:
+ 142:Core/Logic/logic_science.c **** 
+ 143:Core/Logic/logic_science.c ****   if (HAL_GetTick() - last_battery_read >= BATTERY_CHECK_INTERVAL)
+ 165              		.loc 1 143 3 is_stmt 1 view .LVU35
+ 166              		.loc 1 143 7 is_stmt 0 view .LVU36
+ 167 0008 FFF7FEFF 		bl	HAL_GetTick
+ 168              	.LVL14:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 7
+
+
+ 169              		.loc 1 143 21 view .LVU37
+ 170 000c 2C4B     		ldr	r3, .L30
+ 171 000e 1B68     		ldr	r3, [r3]
+ 172 0010 C01A     		subs	r0, r0, r3
+ 173              		.loc 1 143 6 view .LVU38
+ 174 0012 42F20F73 		movw	r3, #9999
+ 175 0016 9842     		cmp	r0, r3
+ 176 0018 06D9     		bls	.L13
+ 144:Core/Logic/logic_science.c ****   {
+ 145:Core/Logic/logic_science.c ****     last_battery_read = HAL_GetTick();
+ 177              		.loc 1 145 5 is_stmt 1 view .LVU39
+ 178              		.loc 1 145 25 is_stmt 0 view .LVU40
+ 179 001a FFF7FEFF 		bl	HAL_GetTick
+ 180              	.LVL15:
+ 181              		.loc 1 145 23 view .LVU41
+ 182 001e 284B     		ldr	r3, .L30
+ 183 0020 1860     		str	r0, [r3]
+ 146:Core/Logic/logic_science.c ****     if (health->battery_percent < BATTERY_CRITICAL)
+ 184              		.loc 1 146 5 is_stmt 1 view .LVU42
+ 185              		.loc 1 146 15 is_stmt 0 view .LVU43
+ 186 0022 2978     		ldrb	r1, [r5]	@ zero_extendqisi2
+ 187              		.loc 1 146 8 view .LVU44
+ 188 0024 1329     		cmp	r1, #19
+ 189 0026 16D9     		bls	.L27
+ 190              	.L13:
+ 147:Core/Logic/logic_science.c ****     {
+ 148:Core/Logic/logic_science.c ****       Logic_Log("Battery LOW: %.1f \r\n", health->battery_percent);
+ 149:Core/Logic/logic_science.c ****       return SCIENCE_ERR_BATTERY_LOW;
+ 150:Core/Logic/logic_science.c ****     }
+ 151:Core/Logic/logic_science.c ****   }
+ 152:Core/Logic/logic_science.c ****   extern neo8m_handle_t gps_handle;
+ 191              		.loc 1 152 3 is_stmt 1 view .LVU45
+ 153:Core/Logic/logic_science.c ****   extern mpu6050_handle_t mpu_handle;
+ 192              		.loc 1 153 3 view .LVU46
+ 154:Core/Logic/logic_science.c ****   extern hmc5883l_handle_t mag_handle;
+ 193              		.loc 1 154 3 view .LVU47
+ 155:Core/Logic/logic_science.c ****   //extern OV2640_Handle cam_handle;
+ 156:Core/Logic/logic_science.c ****   static int count_sensor_ok = 0;
+ 194              		.loc 1 156 3 view .LVU48
+ 157:Core/Logic/logic_science.c ****   if (mpu6050_read_all(&mpu_handle) != MPU6050_OK)
+ 195              		.loc 1 157 3 view .LVU49
+ 196              		.loc 1 157 7 is_stmt 0 view .LVU50
+ 197 0028 2648     		ldr	r0, .L30+4
+ 198 002a FFF7FEFF 		bl	mpu6050_read_all
+ 199              	.LVL16:
+ 200              		.loc 1 157 6 view .LVU51
+ 201 002e B8B1     		cbz	r0, .L15
+ 158:Core/Logic/logic_science.c ****   {
+ 159:Core/Logic/logic_science.c ****     health->sensor_fail_count[SENSOR_MPU6050]++;
+ 202              		.loc 1 159 5 is_stmt 1 view .LVU52
+ 203              		.loc 1 159 30 is_stmt 0 view .LVU53
+ 204 0030 EB7C     		ldrb	r3, [r5, #19]	@ zero_extendqisi2
+ 205              		.loc 1 159 46 view .LVU54
+ 206 0032 0133     		adds	r3, r3, #1
+ 207 0034 EB74     		strb	r3, [r5, #19]
+ 208              	.L16:
+ 160:Core/Logic/logic_science.c ****   } else
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 8
+
+
+ 161:Core/Logic/logic_science.c ****   {
+ 162:Core/Logic/logic_science.c ****     health->sensor_fail_count[SENSOR_MPU6050] = 0;
+ 163:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 164:Core/Logic/logic_science.c ****   }
+ 165:Core/Logic/logic_science.c ****   if (hmc5883l_read_mag(&mag_handle) != HMC5883L_OK)
+ 209              		.loc 1 165 3 is_stmt 1 view .LVU55
+ 210              		.loc 1 165 7 is_stmt 0 view .LVU56
+ 211 0036 2448     		ldr	r0, .L30+8
+ 212 0038 FFF7FEFF 		bl	hmc5883l_read_mag
+ 213              	.LVL17:
+ 214              		.loc 1 165 6 view .LVU57
+ 215 003c B8B1     		cbz	r0, .L17
+ 166:Core/Logic/logic_science.c ****   {
+ 167:Core/Logic/logic_science.c ****     health->sensor_fail_count[SENSOR_HMC5883L]++;
+ 216              		.loc 1 167 5 is_stmt 1 view .LVU58
+ 217              		.loc 1 167 30 is_stmt 0 view .LVU59
+ 218 003e 2B7D     		ldrb	r3, [r5, #20]	@ zero_extendqisi2
+ 219              		.loc 1 167 47 view .LVU60
+ 220 0040 0133     		adds	r3, r3, #1
+ 221 0042 2B75     		strb	r3, [r5, #20]
+ 222              	.L18:
+ 168:Core/Logic/logic_science.c ****   } else
+ 169:Core/Logic/logic_science.c ****   {
+ 170:Core/Logic/logic_science.c ****     health->sensor_fail_count[SENSOR_HMC5883L] = 0;
+ 171:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 172:Core/Logic/logic_science.c ****   }
+ 173:Core/Logic/logic_science.c ****   if (neo8m_get_data(&gps_handle))
+ 223              		.loc 1 173 3 is_stmt 1 view .LVU61
+ 224              		.loc 1 173 7 is_stmt 0 view .LVU62
+ 225 0044 2148     		ldr	r0, .L30+12
+ 226 0046 FFF7FEFF 		bl	neo8m_get_data
+ 227              	.LVL18:
+ 228              		.loc 1 173 6 view .LVU63
+ 229 004a B8B1     		cbz	r0, .L19
+ 174:Core/Logic/logic_science.c ****   {
+ 175:Core/Logic/logic_science.c ****     health->sensor_fail_count[SENSOR_GPS]++;
+ 230              		.loc 1 175 5 is_stmt 1 view .LVU64
+ 231              		.loc 1 175 30 is_stmt 0 view .LVU65
+ 232 004c 6B7C     		ldrb	r3, [r5, #17]	@ zero_extendqisi2
+ 233              		.loc 1 175 42 view .LVU66
+ 234 004e 0133     		adds	r3, r3, #1
+ 235 0050 6B74     		strb	r3, [r5, #17]
+ 236              	.L21:
+ 139:Core/Logic/logic_science.c ****   static uint32_t last_battery_read = 0;
+ 237              		.loc 1 139 1 discriminator 1 view .LVU67
+ 238 0052 0024     		movs	r4, #0
+ 239 0054 1AE0     		b	.L20
+ 240              	.L27:
+ 148:Core/Logic/logic_science.c ****       return SCIENCE_ERR_BATTERY_LOW;
+ 241              		.loc 1 148 7 is_stmt 1 view .LVU68
+ 242 0056 1E48     		ldr	r0, .L30+16
+ 243 0058 FFF7FEFF 		bl	Logic_Log
+ 244              	.LVL19:
+ 149:Core/Logic/logic_science.c ****     }
+ 245              		.loc 1 149 7 view .LVU69
+ 149:Core/Logic/logic_science.c ****     }
+ 246              		.loc 1 149 14 is_stmt 0 view .LVU70
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 9
+
+
+ 247 005c 0220     		movs	r0, #2
+ 248 005e 27E0     		b	.L14
+ 249              	.L15:
+ 162:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 250              		.loc 1 162 5 is_stmt 1 view .LVU71
+ 162:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 251              		.loc 1 162 47 is_stmt 0 view .LVU72
+ 252 0060 0023     		movs	r3, #0
+ 253 0062 EB74     		strb	r3, [r5, #19]
+ 163:Core/Logic/logic_science.c ****   }
+ 254              		.loc 1 163 5 is_stmt 1 view .LVU73
+ 163:Core/Logic/logic_science.c ****   }
+ 255              		.loc 1 163 20 is_stmt 0 view .LVU74
+ 256 0064 1B4A     		ldr	r2, .L30+20
+ 257 0066 1368     		ldr	r3, [r2]
+ 258 0068 0133     		adds	r3, r3, #1
+ 259 006a 1360     		str	r3, [r2]
+ 260 006c E3E7     		b	.L16
+ 261              	.L17:
+ 170:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 262              		.loc 1 170 5 is_stmt 1 view .LVU75
+ 170:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 263              		.loc 1 170 48 is_stmt 0 view .LVU76
+ 264 006e 0023     		movs	r3, #0
+ 265 0070 2B75     		strb	r3, [r5, #20]
+ 171:Core/Logic/logic_science.c ****   }
+ 266              		.loc 1 171 5 is_stmt 1 view .LVU77
+ 171:Core/Logic/logic_science.c ****   }
+ 267              		.loc 1 171 20 is_stmt 0 view .LVU78
+ 268 0072 184A     		ldr	r2, .L30+20
+ 269 0074 1368     		ldr	r3, [r2]
+ 270 0076 0133     		adds	r3, r3, #1
+ 271 0078 1360     		str	r3, [r2]
+ 272 007a E3E7     		b	.L18
+ 273              	.L19:
+ 176:Core/Logic/logic_science.c ****   } else
+ 177:Core/Logic/logic_science.c ****   {
+ 178:Core/Logic/logic_science.c ****     health->sensor_fail_count[SENSOR_GPS] = 0;
+ 274              		.loc 1 178 5 is_stmt 1 view .LVU79
+ 275              		.loc 1 178 43 is_stmt 0 view .LVU80
+ 276 007c 0023     		movs	r3, #0
+ 277 007e 6B74     		strb	r3, [r5, #17]
+ 179:Core/Logic/logic_science.c ****     count_sensor_ok++;
+ 278              		.loc 1 179 5 is_stmt 1 view .LVU81
+ 279              		.loc 1 179 20 is_stmt 0 view .LVU82
+ 280 0080 144A     		ldr	r2, .L30+20
+ 281 0082 1368     		ldr	r3, [r2]
+ 282 0084 0133     		adds	r3, r3, #1
+ 283 0086 1360     		str	r3, [r2]
+ 284 0088 E3E7     		b	.L21
+ 285              	.LVL20:
+ 286              	.L22:
+ 287              	.LBB2:
+ 180:Core/Logic/logic_science.c ****   }
+ 181:Core/Logic/logic_science.c ****   //camera function
+ 182:Core/Logic/logic_science.c ****   
+ 183:Core/Logic/logic_science.c ****   
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 10
+
+
+ 184:Core/Logic/logic_science.c ****   for (int i = 0; i < SENSOR_COUNT; i++)
+ 288              		.loc 1 184 37 is_stmt 1 discriminator 2 view .LVU83
+ 289              		.loc 1 184 38 is_stmt 0 discriminator 2 view .LVU84
+ 290 008a 0134     		adds	r4, r4, #1
+ 291              	.LVL21:
+ 292              	.L20:
+ 293              		.loc 1 184 19 is_stmt 1 discriminator 1 view .LVU85
+ 294              		.loc 1 184 3 is_stmt 0 discriminator 1 view .LVU86
+ 295 008c 042C     		cmp	r4, #4
+ 296 008e 07DC     		bgt	.L28
+ 185:Core/Logic/logic_science.c ****   {
+ 186:Core/Logic/logic_science.c ****     if (health->sensor_fail_count[i] > RETRY_SENSOR)
+ 297              		.loc 1 186 5 is_stmt 1 view .LVU87
+ 298              		.loc 1 186 34 is_stmt 0 view .LVU88
+ 299 0090 2B19     		adds	r3, r5, r4
+ 300 0092 5B7C     		ldrb	r3, [r3, #17]	@ zero_extendqisi2
+ 301              		.loc 1 186 8 view .LVU89
+ 302 0094 032B     		cmp	r3, #3
+ 303 0096 F8D9     		bls	.L22
+ 187:Core/Logic/logic_science.c ****     {
+ 188:Core/Logic/logic_science.c ****       Logic_Sensor_Mark_Dead((sensor_id_t)i);
+ 304              		.loc 1 188 7 is_stmt 1 view .LVU90
+ 305 0098 E0B2     		uxtb	r0, r4
+ 306 009a FFF7FEFF 		bl	Logic_Sensor_Mark_Dead
+ 307              	.LVL22:
+ 308 009e F4E7     		b	.L22
+ 309              	.L28:
+ 310              		.loc 1 188 7 is_stmt 0 view .LVU91
+ 311              	.LBE2:
+ 189:Core/Logic/logic_science.c ****     }
+ 190:Core/Logic/logic_science.c ****   }
+ 191:Core/Logic/logic_science.c **** 
+ 192:Core/Logic/logic_science.c ****   if (Logic_Sensor_Check_Critical_Fail())
+ 312              		.loc 1 192 3 is_stmt 1 view .LVU92
+ 313              		.loc 1 192 7 is_stmt 0 view .LVU93
+ 314 00a0 FFF7FEFF 		bl	Logic_Sensor_Check_Critical_Fail
+ 315              	.LVL23:
+ 316              		.loc 1 192 6 view .LVU94
+ 317 00a4 28B9     		cbnz	r0, .L29
+ 193:Core/Logic/logic_science.c ****   {
+ 194:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE COLLECT: Sensor critical fail\r\n");
+ 195:Core/Logic/logic_science.c ****     return SCIENCE_ERR_SENSOR_CRITICAL;
+ 196:Core/Logic/logic_science.c ****   } 
+ 197:Core/Logic/logic_science.c **** 
+ 198:Core/Logic/logic_science.c ****   if (count_sensor_ok >= 3)
+ 318              		.loc 1 198 3 is_stmt 1 view .LVU95
+ 319              		.loc 1 198 23 is_stmt 0 view .LVU96
+ 320 00a6 0B4B     		ldr	r3, .L30+20
+ 321 00a8 1B68     		ldr	r3, [r3]
+ 322              		.loc 1 198 6 view .LVU97
+ 323 00aa 022B     		cmp	r3, #2
+ 324 00ac 06DC     		bgt	.L25
+ 199:Core/Logic/logic_science.c ****   {
+ 200:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 201:Core/Logic/logic_science.c ****   }
+ 202:Core/Logic/logic_science.c **** 
+ 203:Core/Logic/logic_science.c ****   return SCIENCE_IN_PROGRESS;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 11
+
+
+ 325              		.loc 1 203 10 view .LVU98
+ 326 00ae 0120     		movs	r0, #1
+ 327              	.LVL24:
+ 328              	.L14:
+ 204:Core/Logic/logic_science.c **** }
+ 329              		.loc 1 204 1 view .LVU99
+ 330 00b0 38BD     		pop	{r3, r4, r5, pc}
+ 331              	.LVL25:
+ 332              	.L29:
+ 194:Core/Logic/logic_science.c ****     return SCIENCE_ERR_SENSOR_CRITICAL;
+ 333              		.loc 1 194 5 is_stmt 1 view .LVU100
+ 334 00b2 0948     		ldr	r0, .L30+24
+ 335 00b4 FFF7FEFF 		bl	Logic_Log
+ 336              	.LVL26:
+ 195:Core/Logic/logic_science.c ****   } 
+ 337              		.loc 1 195 5 view .LVU101
+ 195:Core/Logic/logic_science.c ****   } 
+ 338              		.loc 1 195 12 is_stmt 0 view .LVU102
+ 339 00b8 0420     		movs	r0, #4
+ 340 00ba F9E7     		b	.L14
+ 341              	.L25:
+ 200:Core/Logic/logic_science.c ****   }
+ 342              		.loc 1 200 12 view .LVU103
+ 343 00bc 0020     		movs	r0, #0
+ 344 00be F7E7     		b	.L14
+ 345              	.L31:
+ 346              		.align	2
+ 347              	.L30:
+ 348 00c0 00000000 		.word	.LANCHOR1
+ 349 00c4 00000000 		.word	mpu_handle
+ 350 00c8 00000000 		.word	mag_handle
+ 351 00cc 00000000 		.word	gps_handle
+ 352 00d0 00000000 		.word	.LC2
+ 353 00d4 00000000 		.word	.LANCHOR2
+ 354 00d8 18000000 		.word	.LC3
+ 355              		.cfi_endproc
+ 356              	.LFE150:
+ 358              		.section	.rodata.Logic_Science_Phase_Clean.str1.4,"aMS",%progbits,1
+ 359              		.align	2
+ 360              	.LC4:
+ 361 0000 53434945 		.ascii	"SCIENCE CLEANUP: Sensors off, RAM free\015\012\000"
+ 361      4E434520 
+ 361      434C4541 
+ 361      4E55503A 
+ 361      2053656E 
+ 362              		.section	.text.Logic_Science_Phase_Clean,"ax",%progbits
+ 363              		.align	1
+ 364              		.syntax unified
+ 365              		.thumb
+ 366              		.thumb_func
+ 368              	Logic_Science_Phase_Clean:
+ 369              	.LVL27:
+ 370              	.LFB152:
+ 205:Core/Logic/logic_science.c **** 
+ 206:Core/Logic/logic_science.c **** static science_error_t Science_Phase_Process(uint32_t ms)
+ 207:Core/Logic/logic_science.c **** {
+ 208:Core/Logic/logic_science.c **** /*   static uint8_t save_step = 0;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 12
+
+
+ 209:Core/Logic/logic_science.c **** 
+ 210:Core/Logic/logic_science.c ****   switch (save_step)
+ 211:Core/Logic/logic_science.c ****   {
+ 212:Core/Logic/logic_science.c ****   case 0:
+ 213:Core/Logic/logic_science.c ****     
+ 214:Core/Logic/logic_science.c ****     break;
+ 215:Core/Logic/logic_science.c ****   
+ 216:Core/Logic/logic_science.c ****   default:
+ 217:Core/Logic/logic_science.c ****     break;
+ 218:Core/Logic/logic_science.c ****   } */
+ 219:Core/Logic/logic_science.c **** }
+ 220:Core/Logic/logic_science.c **** 
+ 221:Core/Logic/logic_science.c **** 
+ 222:Core/Logic/logic_science.c **** static science_error_t Logic_Science_Phase_Clean(uint32_t ms)
+ 223:Core/Logic/logic_science.c **** {
+ 371              		.loc 1 223 1 is_stmt 1 view -0
+ 372              		.cfi_startproc
+ 373              		@ args = 0, pretend = 0, frame = 0
+ 374              		@ frame_needed = 0, uses_anonymous_args = 0
+ 375              		.loc 1 223 1 is_stmt 0 view .LVU105
+ 376 0000 08B5     		push	{r3, lr}
+ 377              	.LCFI2:
+ 378              		.cfi_def_cfa_offset 8
+ 379              		.cfi_offset 3, -8
+ 380              		.cfi_offset 14, -4
+ 224:Core/Logic/logic_science.c ****   if (!cleanup_done)
+ 381              		.loc 1 224 3 is_stmt 1 view .LVU106
+ 382              		.loc 1 224 7 is_stmt 0 view .LVU107
+ 383 0002 0B4B     		ldr	r3, .L37
+ 384 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 385              		.loc 1 224 6 view .LVU108
+ 386 0006 0BB1     		cbz	r3, .L36
+ 225:Core/Logic/logic_science.c ****   {
+ 226:Core/Logic/logic_science.c ****     HW_Power_GPS_Off();
+ 227:Core/Logic/logic_science.c ****     HW_Power_IMU_Off();
+ 228:Core/Logic/logic_science.c ****     HW_Power_Magnetometer_Off();
+ 229:Core/Logic/logic_science.c ****     HW_Power_Temperature_Off();
+ 230:Core/Logic/logic_science.c ****     HW_Power_Camera_Off();
+ 231:Core/Logic/logic_science.c **** 
+ 232:Core/Logic/logic_science.c ****     cleanup_done = true;
+ 233:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE CLEANUP: Sensors off, RAM free\r\n");
+ 234:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 235:Core/Logic/logic_science.c ****   }
+ 236:Core/Logic/logic_science.c ****   return SCIENCE_IN_PROGRESS;  
+ 387              		.loc 1 236 10 view .LVU109
+ 388 0008 0120     		movs	r0, #1
+ 389              	.LVL28:
+ 390              	.L33:
+ 237:Core/Logic/logic_science.c **** }
+ 391              		.loc 1 237 1 view .LVU110
+ 392 000a 08BD     		pop	{r3, pc}
+ 393              	.LVL29:
+ 394              	.L36:
+ 226:Core/Logic/logic_science.c ****     HW_Power_IMU_Off();
+ 395              		.loc 1 226 5 is_stmt 1 view .LVU111
+ 396 000c FFF7FEFF 		bl	HW_Power_GPS_Off
+ 397              	.LVL30:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 13
+
+
+ 227:Core/Logic/logic_science.c ****     HW_Power_Magnetometer_Off();
+ 398              		.loc 1 227 5 view .LVU112
+ 399 0010 FFF7FEFF 		bl	HW_Power_IMU_Off
+ 400              	.LVL31:
+ 228:Core/Logic/logic_science.c ****     HW_Power_Temperature_Off();
+ 401              		.loc 1 228 5 view .LVU113
+ 402 0014 FFF7FEFF 		bl	HW_Power_Magnetometer_Off
+ 403              	.LVL32:
+ 229:Core/Logic/logic_science.c ****     HW_Power_Camera_Off();
+ 404              		.loc 1 229 5 view .LVU114
+ 405 0018 FFF7FEFF 		bl	HW_Power_Temperature_Off
+ 406              	.LVL33:
+ 230:Core/Logic/logic_science.c **** 
+ 407              		.loc 1 230 5 view .LVU115
+ 408 001c FFF7FEFF 		bl	HW_Power_Camera_Off
+ 409              	.LVL34:
+ 232:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE CLEANUP: Sensors off, RAM free\r\n");
+ 410              		.loc 1 232 5 view .LVU116
+ 232:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE CLEANUP: Sensors off, RAM free\r\n");
+ 411              		.loc 1 232 18 is_stmt 0 view .LVU117
+ 412 0020 034B     		ldr	r3, .L37
+ 413 0022 0122     		movs	r2, #1
+ 414 0024 1A70     		strb	r2, [r3]
+ 233:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 415              		.loc 1 233 5 is_stmt 1 view .LVU118
+ 416 0026 0348     		ldr	r0, .L37+4
+ 417 0028 FFF7FEFF 		bl	Logic_Log
+ 418              	.LVL35:
+ 234:Core/Logic/logic_science.c ****   }
+ 419              		.loc 1 234 5 view .LVU119
+ 234:Core/Logic/logic_science.c ****   }
+ 420              		.loc 1 234 12 is_stmt 0 view .LVU120
+ 421 002c 0020     		movs	r0, #0
+ 422 002e ECE7     		b	.L33
+ 423              	.L38:
+ 424              		.align	2
+ 425              	.L37:
+ 426 0030 00000000 		.word	.LANCHOR3
+ 427 0034 00000000 		.word	.LC4
+ 428              		.cfi_endproc
+ 429              	.LFE152:
+ 431              		.section	.rodata.Logic_Science_Init.str1.4,"aMS",%progbits,1
+ 432              		.align	2
+ 433              	.LC5:
+ 434 0000 53434945 		.ascii	"SCIENCE: Init\015\012\000"
+ 434      4E43453A 
+ 434      20496E69 
+ 434      740D0A00 
+ 435              		.section	.text.Logic_Science_Init,"ax",%progbits
+ 436              		.align	1
+ 437              		.global	Logic_Science_Init
+ 438              		.syntax unified
+ 439              		.thumb
+ 440              		.thumb_func
+ 442              	Logic_Science_Init:
+ 443              	.LFB147:
+  19:Core/Logic/logic_science.c ****   current_phase = SCIENCE_PHASE_PREP;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 14
+
+
+ 444              		.loc 1 19 1 is_stmt 1 view -0
+ 445              		.cfi_startproc
+ 446              		@ args = 0, pretend = 0, frame = 0
+ 447              		@ frame_needed = 0, uses_anonymous_args = 0
+ 448 0000 10B5     		push	{r4, lr}
+ 449              	.LCFI3:
+ 450              		.cfi_def_cfa_offset 8
+ 451              		.cfi_offset 4, -8
+ 452              		.cfi_offset 14, -4
+  20:Core/Logic/logic_science.c ****   //phase_start_tick = HAL_GetTick();
+ 453              		.loc 1 20 3 view .LVU122
+  20:Core/Logic/logic_science.c ****   //phase_start_tick = HAL_GetTick();
+ 454              		.loc 1 20 17 is_stmt 0 view .LVU123
+ 455 0002 074B     		ldr	r3, .L41
+ 456 0004 0122     		movs	r2, #1
+ 457 0006 1A70     		strb	r2, [r3]
+  22:Core/Logic/logic_science.c ****   flash_retry_count = 0;
+ 458              		.loc 1 22 3 is_stmt 1 view .LVU124
+  22:Core/Logic/logic_science.c ****   flash_retry_count = 0;
+ 459              		.loc 1 22 24 is_stmt 0 view .LVU125
+ 460 0008 FFF7FEFF 		bl	HAL_GetTick
+ 461              	.LVL36:
+  22:Core/Logic/logic_science.c ****   flash_retry_count = 0;
+ 462              		.loc 1 22 22 view .LVU126
+ 463 000c 054B     		ldr	r3, .L41+4
+ 464 000e 1860     		str	r0, [r3]
+  23:Core/Logic/logic_science.c ****   Logic_Log("SCIENCE: Init\r\n");
+ 465              		.loc 1 23 3 is_stmt 1 view .LVU127
+  23:Core/Logic/logic_science.c ****   Logic_Log("SCIENCE: Init\r\n");
+ 466              		.loc 1 23 21 is_stmt 0 view .LVU128
+ 467 0010 0024     		movs	r4, #0
+ 468 0012 054B     		ldr	r3, .L41+8
+ 469 0014 1C70     		strb	r4, [r3]
+  24:Core/Logic/logic_science.c ****   return SCIENCE_OK;
+ 470              		.loc 1 24 3 is_stmt 1 view .LVU129
+ 471 0016 0548     		ldr	r0, .L41+12
+ 472 0018 FFF7FEFF 		bl	Logic_Log
+ 473              	.LVL37:
+  25:Core/Logic/logic_science.c **** }
+ 474              		.loc 1 25 3 view .LVU130
+  26:Core/Logic/logic_science.c **** 
+ 475              		.loc 1 26 1 is_stmt 0 view .LVU131
+ 476 001c 2046     		mov	r0, r4
+ 477 001e 10BD     		pop	{r4, pc}
+ 478              	.L42:
+ 479              		.align	2
+ 480              	.L41:
+ 481 0020 00000000 		.word	.LANCHOR4
+ 482 0024 00000000 		.word	.LANCHOR5
+ 483 0028 00000000 		.word	.LANCHOR6
+ 484 002c 00000000 		.word	.LC5
+ 485              		.cfi_endproc
+ 486              	.LFE147:
+ 488              		.section	.rodata.Logic_Science_Process.str1.4,"aMS",%progbits,1
+ 489              		.align	2
+ 490              	.LC6:
+ 491 0000 53434945 		.ascii	"SCIENCE: Total timeout\015\012\000"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 15
+
+
+ 491      4E43453A 
+ 491      20546F74 
+ 491      616C2074 
+ 491      696D656F 
+ 492 0019 000000   		.align	2
+ 493              	.LC7:
+ 494 001c 53434945 		.ascii	"SCIENCE: Battery critical\015\012\000"
+ 494      4E43453A 
+ 494      20426174 
+ 494      74657279 
+ 494      20637269 
+ 495              		.align	2
+ 496              	.LC8:
+ 497 0038 53434945 		.ascii	"SCIENCE: COMM command\015\012\000"
+ 497      4E43453A 
+ 497      20434F4D 
+ 497      4D20636F 
+ 497      6D6D616E 
+ 498              		.align	2
+ 499              	.LC9:
+ 500 0050 53434945 		.ascii	"SCIENCE: PREP complete\015\012\000"
+ 500      4E43453A 
+ 500      20505245 
+ 500      5020636F 
+ 500      6D706C65 
+ 501 0069 000000   		.align	2
+ 502              	.LC10:
+ 503 006c 53434945 		.ascii	"SCIENCE: COLLECT complete\015\012\000"
+ 503      4E43453A 
+ 503      20434F4C 
+ 503      4C454354 
+ 503      20636F6D 
+ 504              		.align	2
+ 505              	.LC11:
+ 506 0088 53434945 		.ascii	"SCIENCE: PROCESS complete!\015\012\000"
+ 506      4E43453A 
+ 506      2050524F 
+ 506      43455353 
+ 506      20636F6D 
+ 507 00a5 000000   		.align	2
+ 508              	.LC12:
+ 509 00a8 53434945 		.ascii	"SCIENCE: CLEAN complete!\015\012\000"
+ 509      4E43453A 
+ 509      20434C45 
+ 509      414E2063 
+ 509      6F6D706C 
+ 510 00c3 00       		.align	2
+ 511              	.LC13:
+ 512 00c4 53434945 		.ascii	"SCIENCE: Complete\015\012\000"
+ 512      4E43453A 
+ 512      20436F6D 
+ 512      706C6574 
+ 512      650D0A00 
+ 513              		.section	.text.Logic_Science_Process,"ax",%progbits
+ 514              		.align	1
+ 515              		.global	Logic_Science_Process
+ 516              		.syntax unified
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 16
+
+
+ 517              		.thumb
+ 518              		.thumb_func
+ 520              	Logic_Science_Process:
+ 521              	.LVL38:
+ 522              	.LFB148:
+  29:Core/Logic/logic_science.c ****   science_error_t result = SCIENCE_OK;
+ 523              		.loc 1 29 1 is_stmt 1 view -0
+ 524              		.cfi_startproc
+ 525              		@ args = 0, pretend = 0, frame = 0
+ 526              		@ frame_needed = 0, uses_anonymous_args = 0
+  29:Core/Logic/logic_science.c ****   science_error_t result = SCIENCE_OK;
+ 527              		.loc 1 29 1 is_stmt 0 view .LVU133
+ 528 0000 70B5     		push	{r4, r5, r6, lr}
+ 529              	.LCFI4:
+ 530              		.cfi_def_cfa_offset 16
+ 531              		.cfi_offset 4, -16
+ 532              		.cfi_offset 5, -12
+ 533              		.cfi_offset 6, -8
+ 534              		.cfi_offset 14, -4
+  30:Core/Logic/logic_science.c ****   //uint32_t phase_timer = HAL_GetTick() - phase_start_tick;
+ 535              		.loc 1 30 3 is_stmt 1 view .LVU134
+ 536              	.LVL39:
+  32:Core/Logic/logic_science.c ****   //timeout check
+ 537              		.loc 1 32 3 view .LVU135
+  32:Core/Logic/logic_science.c ****   //timeout check
+ 538              		.loc 1 32 26 is_stmt 0 view .LVU136
+ 539 0002 FFF7FEFF 		bl	HAL_GetTick
+ 540              	.LVL40:
+  32:Core/Logic/logic_science.c ****   //timeout check
+ 541              		.loc 1 32 40 view .LVU137
+ 542 0006 474B     		ldr	r3, .L59
+ 543 0008 1C68     		ldr	r4, [r3]
+  32:Core/Logic/logic_science.c ****   //timeout check
+ 544              		.loc 1 32 12 view .LVU138
+ 545 000a 041B     		subs	r4, r0, r4
+ 546              	.LVL41:
+  34:Core/Logic/logic_science.c ****   {
+ 547              		.loc 1 34 3 is_stmt 1 view .LVU139
+  34:Core/Logic/logic_science.c ****   {
+ 548              		.loc 1 34 6 is_stmt 0 view .LVU140
+ 549 000c 4EF66023 		movw	r3, #60000
+ 550 0010 9C42     		cmp	r4, r3
+ 551 0012 1ED8     		bhi	.L56
+  40:Core/Logic/logic_science.c ****   if (HAL_GetTick() - status->last_battery_check >= BATTERY_CHECK_INTERVAL)
+ 552              		.loc 1 40 3 is_stmt 1 view .LVU141
+  40:Core/Logic/logic_science.c ****   if (HAL_GetTick() - status->last_battery_check >= BATTERY_CHECK_INTERVAL)
+ 553              		.loc 1 40 30 is_stmt 0 view .LVU142
+ 554 0014 FFF7FEFF 		bl	Logic_GetStatus
+ 555              	.LVL42:
+ 556 0018 0546     		mov	r5, r0
+ 557              	.LVL43:
+  41:Core/Logic/logic_science.c ****   {
+ 558              		.loc 1 41 3 is_stmt 1 view .LVU143
+  41:Core/Logic/logic_science.c ****   {
+ 559              		.loc 1 41 7 is_stmt 0 view .LVU144
+ 560 001a FFF7FEFF 		bl	HAL_GetTick
+ 561              	.LVL44:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 17
+
+
+  41:Core/Logic/logic_science.c ****   {
+ 562              		.loc 1 41 29 view .LVU145
+ 563 001e 2B69     		ldr	r3, [r5, #16]
+  41:Core/Logic/logic_science.c ****   {
+ 564              		.loc 1 41 21 view .LVU146
+ 565 0020 C01A     		subs	r0, r0, r3
+  41:Core/Logic/logic_science.c ****   {
+ 566              		.loc 1 41 6 view .LVU147
+ 567 0022 42F20F73 		movw	r3, #9999
+ 568 0026 9842     		cmp	r0, r3
+ 569 0028 05D9     		bls	.L46
+  43:Core/Logic/logic_science.c ****     if (Logic_Battery_Check_Critical())
+ 570              		.loc 1 43 5 is_stmt 1 view .LVU148
+  43:Core/Logic/logic_science.c ****     if (Logic_Battery_Check_Critical())
+ 571              		.loc 1 43 34 is_stmt 0 view .LVU149
+ 572 002a FFF7FEFF 		bl	HAL_GetTick
+ 573              	.LVL45:
+  43:Core/Logic/logic_science.c ****     if (Logic_Battery_Check_Critical())
+ 574              		.loc 1 43 32 view .LVU150
+ 575 002e 2861     		str	r0, [r5, #16]
+  44:Core/Logic/logic_science.c ****     {
+ 576              		.loc 1 44 5 is_stmt 1 view .LVU151
+  44:Core/Logic/logic_science.c ****     {
+ 577              		.loc 1 44 9 is_stmt 0 view .LVU152
+ 578 0030 FFF7FEFF 		bl	Logic_Battery_Check_Critical
+ 579              	.LVL46:
+  44:Core/Logic/logic_science.c ****     {
+ 580              		.loc 1 44 8 view .LVU153
+ 581 0034 98B9     		cbnz	r0, .L57
+ 582              	.L46:
+  52:Core/Logic/logic_science.c ****   {
+ 583              		.loc 1 52 3 is_stmt 1 view .LVU154
+  52:Core/Logic/logic_science.c ****   {
+ 584              		.loc 1 52 7 is_stmt 0 view .LVU155
+ 585 0036 FFF7FEFF 		bl	Logic_Command_Get_Pending
+ 586              	.LVL47:
+  52:Core/Logic/logic_science.c ****   {
+ 587              		.loc 1 52 6 view .LVU156
+ 588 003a 0828     		cmp	r0, #8
+ 589 003c 14D0     		beq	.L58
+  58:Core/Logic/logic_science.c ****   {
+ 590              		.loc 1 58 3 is_stmt 1 view .LVU157
+ 591 003e 3A4B     		ldr	r3, .L59+4
+ 592 0040 1E78     		ldrb	r6, [r3]	@ zero_extendqisi2
+ 593 0042 731E     		subs	r3, r6, #1
+ 594 0044 042B     		cmp	r3, #4
+ 595 0046 6AD8     		bhi	.L54
+ 596 0048 DFE803F0 		tbb	[pc, r3]
+ 597              	.L49:
+ 598 004c 13       		.byte	(.L53-.L49)/2
+ 599 004d 29       		.byte	(.L52-.L49)/2
+ 600 004e 3F       		.byte	(.L51-.L49)/2
+ 601 004f 55       		.byte	(.L50-.L49)/2
+ 602 0050 62       		.byte	(.L48-.L49)/2
+ 603              	.LVL48:
+ 604 0051 00       		.p2align 1
+ 605              	.L56:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 18
+
+
+  36:Core/Logic/logic_science.c ****     return SCIENCE_ERR_TIMEOUT;
+ 606              		.loc 1 36 5 view .LVU158
+ 607 0052 3648     		ldr	r0, .L59+8
+ 608 0054 FFF7FEFF 		bl	Logic_Log
+ 609              	.LVL49:
+  37:Core/Logic/logic_science.c ****   }
+ 610              		.loc 1 37 5 view .LVU159
+  37:Core/Logic/logic_science.c ****   }
+ 611              		.loc 1 37 12 is_stmt 0 view .LVU160
+ 612 0058 0625     		movs	r5, #6
+ 613              	.LVL50:
+ 614              	.L45:
+ 107:Core/Logic/logic_science.c **** 
+ 615              		.loc 1 107 1 view .LVU161
+ 616 005a 2846     		mov	r0, r5
+ 617 005c 70BD     		pop	{r4, r5, r6, pc}
+ 618              	.LVL51:
+ 619              	.L57:
+  46:Core/Logic/logic_science.c ****       return SCIENCE_ERR_BATTERY_CRITICAL;
+ 620              		.loc 1 46 7 is_stmt 1 view .LVU162
+ 621 005e 3448     		ldr	r0, .L59+12
+ 622 0060 FFF7FEFF 		bl	Logic_Log
+ 623              	.LVL52:
+  47:Core/Logic/logic_science.c ****     }
+ 624              		.loc 1 47 7 view .LVU163
+  47:Core/Logic/logic_science.c ****     }
+ 625              		.loc 1 47 14 is_stmt 0 view .LVU164
+ 626 0064 0325     		movs	r5, #3
+ 627              	.LVL53:
+  47:Core/Logic/logic_science.c ****     }
+ 628              		.loc 1 47 14 view .LVU165
+ 629 0066 F8E7     		b	.L45
+ 630              	.LVL54:
+ 631              	.L58:
+  54:Core/Logic/logic_science.c ****     return SCIENCE_ERR_EMERGENCY_CMD;
+ 632              		.loc 1 54 5 is_stmt 1 view .LVU166
+ 633 0068 3248     		ldr	r0, .L59+16
+ 634 006a FFF7FEFF 		bl	Logic_Log
+ 635              	.LVL55:
+  55:Core/Logic/logic_science.c ****   }
+ 636              		.loc 1 55 5 view .LVU167
+  55:Core/Logic/logic_science.c ****   }
+ 637              		.loc 1 55 12 is_stmt 0 view .LVU168
+ 638 006e 0725     		movs	r5, #7
+ 639              	.LVL56:
+  55:Core/Logic/logic_science.c ****   }
+ 640              		.loc 1 55 12 view .LVU169
+ 641 0070 F3E7     		b	.L45
+ 642              	.LVL57:
+ 643              	.L53:
+  61:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE1_PREP_MS)
+ 644              		.loc 1 61 5 is_stmt 1 view .LVU170
+  61:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE1_PREP_MS)
+ 645              		.loc 1 61 14 is_stmt 0 view .LVU171
+ 646 0072 2046     		mov	r0, r4
+ 647 0074 FFF7FEFF 		bl	Logic_Science_Phase_Prep
+ 648              	.LVL58:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 19
+
+
+  62:Core/Logic/logic_science.c ****     {
+ 649              		.loc 1 62 5 is_stmt 1 view .LVU172
+  62:Core/Logic/logic_science.c ****     {
+ 650              		.loc 1 62 16 is_stmt 0 view .LVU173
+ 651 0078 0546     		mov	r5, r0
+ 652              	.LVL59:
+  62:Core/Logic/logic_science.c ****     {
+ 653              		.loc 1 62 30 view .LVU174
+ 654 007a 42F20F73 		movw	r3, #9999
+ 655 007e B0FA80F0 		clz	r0, r0
+ 656              	.LVL60:
+  62:Core/Logic/logic_science.c ****     {
+ 657              		.loc 1 62 30 view .LVU175
+ 658 0082 4009     		lsrs	r0, r0, #5
+ 659 0084 9C42     		cmp	r4, r3
+ 660 0086 98BF     		it	ls
+ 661 0088 0020     		movls	r0, #0
+  62:Core/Logic/logic_science.c ****     {
+ 662              		.loc 1 62 8 view .LVU176
+ 663 008a 0028     		cmp	r0, #0
+ 664 008c E5D0     		beq	.L45
+  64:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+ 665              		.loc 1 64 7 is_stmt 1 view .LVU177
+  64:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+ 666              		.loc 1 64 21 is_stmt 0 view .LVU178
+ 667 008e 264B     		ldr	r3, .L59+4
+ 668 0090 0222     		movs	r2, #2
+ 669 0092 1A70     		strb	r2, [r3]
+  66:Core/Logic/logic_science.c ****       result = SCIENCE_IN_PROGRESS;
+ 670              		.loc 1 66 7 is_stmt 1 view .LVU179
+ 671 0094 2848     		ldr	r0, .L59+20
+ 672 0096 FFF7FEFF 		bl	Logic_Log
+ 673              	.LVL61:
+  67:Core/Logic/logic_science.c ****     }
+ 674              		.loc 1 67 7 view .LVU180
+  67:Core/Logic/logic_science.c ****     }
+ 675              		.loc 1 67 14 is_stmt 0 view .LVU181
+ 676 009a 3546     		mov	r5, r6
+ 677 009c DDE7     		b	.L45
+ 678              	.LVL62:
+ 679              	.L52:
+  72:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE2_PROCESS_MS)
+ 680              		.loc 1 72 5 is_stmt 1 view .LVU182
+  72:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE2_PROCESS_MS)
+ 681              		.loc 1 72 14 is_stmt 0 view .LVU183
+ 682 009e 2046     		mov	r0, r4
+ 683 00a0 FFF7FEFF 		bl	Logic_Science_Phase_Collect
+ 684              	.LVL63:
+  73:Core/Logic/logic_science.c ****     {
+ 685              		.loc 1 73 5 is_stmt 1 view .LVU184
+  73:Core/Logic/logic_science.c ****     {
+ 686              		.loc 1 73 16 is_stmt 0 view .LVU185
+ 687 00a4 0546     		mov	r5, r0
+ 688              	.LVL64:
+  73:Core/Logic/logic_science.c ****     {
+ 689              		.loc 1 73 30 view .LVU186
+ 690 00a6 4DF2D763 		movw	r3, #54999
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 20
+
+
+ 691 00aa B0FA80F0 		clz	r0, r0
+ 692              	.LVL65:
+  73:Core/Logic/logic_science.c ****     {
+ 693              		.loc 1 73 30 view .LVU187
+ 694 00ae 4009     		lsrs	r0, r0, #5
+ 695 00b0 9C42     		cmp	r4, r3
+ 696 00b2 98BF     		it	ls
+ 697 00b4 0020     		movls	r0, #0
+  73:Core/Logic/logic_science.c ****     {
+ 698              		.loc 1 73 8 view .LVU188
+ 699 00b6 0028     		cmp	r0, #0
+ 700 00b8 CFD0     		beq	.L45
+  75:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+ 701              		.loc 1 75 7 is_stmt 1 view .LVU189
+  75:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+ 702              		.loc 1 75 21 is_stmt 0 view .LVU190
+ 703 00ba 1B4B     		ldr	r3, .L59+4
+ 704 00bc 0322     		movs	r2, #3
+ 705 00be 1A70     		strb	r2, [r3]
+  77:Core/Logic/logic_science.c ****       result = SCIENCE_IN_PROGRESS;
+ 706              		.loc 1 77 7 is_stmt 1 view .LVU191
+ 707 00c0 1E48     		ldr	r0, .L59+24
+ 708 00c2 FFF7FEFF 		bl	Logic_Log
+ 709              	.LVL66:
+  78:Core/Logic/logic_science.c ****     }
+ 710              		.loc 1 78 7 view .LVU192
+  78:Core/Logic/logic_science.c ****     }
+ 711              		.loc 1 78 14 is_stmt 0 view .LVU193
+ 712 00c6 0125     		movs	r5, #1
+ 713 00c8 C7E7     		b	.L45
+ 714              	.LVL67:
+ 715              	.L51:
+  82:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE3_CLEAN_MS)
+ 716              		.loc 1 82 5 is_stmt 1 view .LVU194
+  82:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK && total_timer >= SCIENCE_PHASE3_CLEAN_MS)
+ 717              		.loc 1 82 14 is_stmt 0 view .LVU195
+ 718 00ca 2046     		mov	r0, r4
+ 719 00cc FFF7FEFF 		bl	Logic_Science_Phase_Process
+ 720              	.LVL68:
+  83:Core/Logic/logic_science.c ****     {
+ 721              		.loc 1 83 5 is_stmt 1 view .LVU196
+  83:Core/Logic/logic_science.c ****     {
+ 722              		.loc 1 83 16 is_stmt 0 view .LVU197
+ 723 00d0 0546     		mov	r5, r0
+ 724              	.LVL69:
+  83:Core/Logic/logic_science.c ****     {
+ 725              		.loc 1 83 30 view .LVU198
+ 726 00d2 4EF65F23 		movw	r3, #59999
+ 727 00d6 B0FA80F0 		clz	r0, r0
+ 728              	.LVL70:
+  83:Core/Logic/logic_science.c ****     {
+ 729              		.loc 1 83 30 view .LVU199
+ 730 00da 4009     		lsrs	r0, r0, #5
+ 731 00dc 9C42     		cmp	r4, r3
+ 732 00de 98BF     		it	ls
+ 733 00e0 0020     		movls	r0, #0
+  83:Core/Logic/logic_science.c ****     {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 21
+
+
+ 734              		.loc 1 83 8 view .LVU200
+ 735 00e2 0028     		cmp	r0, #0
+ 736 00e4 B9D0     		beq	.L45
+  85:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+ 737              		.loc 1 85 7 is_stmt 1 view .LVU201
+  85:Core/Logic/logic_science.c ****       //phase_start_tick = HAL_GetTick();
+ 738              		.loc 1 85 21 is_stmt 0 view .LVU202
+ 739 00e6 104B     		ldr	r3, .L59+4
+ 740 00e8 0422     		movs	r2, #4
+ 741 00ea 1A70     		strb	r2, [r3]
+  87:Core/Logic/logic_science.c ****       result = SCIENCE_IN_PROGRESS;
+ 742              		.loc 1 87 7 is_stmt 1 view .LVU203
+ 743 00ec 1448     		ldr	r0, .L59+28
+ 744 00ee FFF7FEFF 		bl	Logic_Log
+ 745              	.LVL71:
+  88:Core/Logic/logic_science.c ****     }
+ 746              		.loc 1 88 7 view .LVU204
+  88:Core/Logic/logic_science.c ****     }
+ 747              		.loc 1 88 14 is_stmt 0 view .LVU205
+ 748 00f2 0125     		movs	r5, #1
+ 749 00f4 B1E7     		b	.L45
+ 750              	.LVL72:
+ 751              	.L50:
+  92:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK)
+ 752              		.loc 1 92 5 is_stmt 1 view .LVU206
+  92:Core/Logic/logic_science.c ****     if (result == SCIENCE_OK)
+ 753              		.loc 1 92 14 is_stmt 0 view .LVU207
+ 754 00f6 2046     		mov	r0, r4
+ 755 00f8 FFF7FEFF 		bl	Logic_Science_Phase_Clean
+ 756              	.LVL73:
+  93:Core/Logic/logic_science.c ****     {
+ 757              		.loc 1 93 5 is_stmt 1 view .LVU208
+  93:Core/Logic/logic_science.c ****     {
+ 758              		.loc 1 93 8 is_stmt 0 view .LVU209
+ 759 00fc 0546     		mov	r5, r0
+ 760              	.LVL74:
+  93:Core/Logic/logic_science.c ****     {
+ 761              		.loc 1 93 8 view .LVU210
+ 762 00fe 0028     		cmp	r0, #0
+ 763 0100 ABD1     		bne	.L45
+  95:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: CLEAN complete!\r\n");
+ 764              		.loc 1 95 7 is_stmt 1 view .LVU211
+  95:Core/Logic/logic_science.c ****       Logic_Log("SCIENCE: CLEAN complete!\r\n");
+ 765              		.loc 1 95 21 is_stmt 0 view .LVU212
+ 766 0102 094B     		ldr	r3, .L59+4
+ 767 0104 0522     		movs	r2, #5
+ 768 0106 1A70     		strb	r2, [r3]
+  96:Core/Logic/logic_science.c ****     }
+ 769              		.loc 1 96 7 is_stmt 1 view .LVU213
+ 770 0108 0E48     		ldr	r0, .L59+32
+ 771              	.LVL75:
+  96:Core/Logic/logic_science.c ****     }
+ 772              		.loc 1 96 7 is_stmt 0 view .LVU214
+ 773 010a FFF7FEFF 		bl	Logic_Log
+ 774              	.LVL76:
+ 775 010e A4E7     		b	.L45
+ 776              	.LVL77:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 22
+
+
+ 777              	.L48:
+ 100:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: Complete\r\n");
+ 778              		.loc 1 100 5 is_stmt 1 view .LVU215
+ 100:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: Complete\r\n");
+ 779              		.loc 1 100 19 is_stmt 0 view .LVU216
+ 780 0110 0025     		movs	r5, #0
+ 781              	.LVL78:
+ 100:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: Complete\r\n");
+ 782              		.loc 1 100 19 view .LVU217
+ 783 0112 054B     		ldr	r3, .L59+4
+ 784 0114 1D70     		strb	r5, [r3]
+ 101:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 785              		.loc 1 101 5 is_stmt 1 view .LVU218
+ 786 0116 0C48     		ldr	r0, .L59+36
+ 787 0118 FFF7FEFF 		bl	Logic_Log
+ 788              	.LVL79:
+ 102:Core/Logic/logic_science.c ****   default:
+ 789              		.loc 1 102 5 view .LVU219
+ 102:Core/Logic/logic_science.c ****   default:
+ 790              		.loc 1 102 12 is_stmt 0 view .LVU220
+ 791 011c 9DE7     		b	.L45
+ 792              	.LVL80:
+ 793              	.L54:
+  58:Core/Logic/logic_science.c ****   {
+ 794              		.loc 1 58 3 view .LVU221
+ 795 011e 0025     		movs	r5, #0
+ 796              	.LVL81:
+  58:Core/Logic/logic_science.c ****   {
+ 797              		.loc 1 58 3 view .LVU222
+ 798 0120 9BE7     		b	.L45
+ 799              	.L60:
+ 800 0122 00BF     		.align	2
+ 801              	.L59:
+ 802 0124 00000000 		.word	.LANCHOR5
+ 803 0128 00000000 		.word	.LANCHOR4
+ 804 012c 00000000 		.word	.LC6
+ 805 0130 1C000000 		.word	.LC7
+ 806 0134 38000000 		.word	.LC8
+ 807 0138 50000000 		.word	.LC9
+ 808 013c 6C000000 		.word	.LC10
+ 809 0140 88000000 		.word	.LC11
+ 810 0144 A8000000 		.word	.LC12
+ 811 0148 C4000000 		.word	.LC13
+ 812              		.cfi_endproc
+ 813              	.LFE148:
+ 815              		.section	.rodata.Logic_Science_Abort.str1.4,"aMS",%progbits,1
+ 816              		.align	2
+ 817              	.LC14:
+ 818 0000 53434945 		.ascii	"SCIENCE: Aborted\015\012\000"
+ 818      4E43453A 
+ 818      2041626F 
+ 818      72746564 
+ 818      0D0A00
+ 819              		.section	.text.Logic_Science_Abort,"ax",%progbits
+ 820              		.align	1
+ 821              		.global	Logic_Science_Abort
+ 822              		.syntax unified
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 23
+
+
+ 823              		.thumb
+ 824              		.thumb_func
+ 826              	Logic_Science_Abort:
+ 827              	.LFB153:
+ 238:Core/Logic/logic_science.c **** 
+ 239:Core/Logic/logic_science.c **** science_error_t Logic_Science_Abort(void)
+ 240:Core/Logic/logic_science.c **** {
+ 828              		.loc 1 240 1 is_stmt 1 view -0
+ 829              		.cfi_startproc
+ 830              		@ args = 0, pretend = 0, frame = 0
+ 831              		@ frame_needed = 0, uses_anonymous_args = 0
+ 832 0000 10B5     		push	{r4, lr}
+ 833              	.LCFI5:
+ 834              		.cfi_def_cfa_offset 8
+ 835              		.cfi_offset 4, -8
+ 836              		.cfi_offset 14, -4
+ 241:Core/Logic/logic_science.c ****     HW_Power_GPS_Off();
+ 837              		.loc 1 241 5 view .LVU224
+ 838 0002 FFF7FEFF 		bl	HW_Power_GPS_Off
+ 839              	.LVL82:
+ 242:Core/Logic/logic_science.c ****     HW_Power_IMU_Off();
+ 840              		.loc 1 242 5 view .LVU225
+ 841 0006 FFF7FEFF 		bl	HW_Power_IMU_Off
+ 842              	.LVL83:
+ 243:Core/Logic/logic_science.c ****     HW_Power_Magnetometer_Off();
+ 843              		.loc 1 243 5 view .LVU226
+ 844 000a FFF7FEFF 		bl	HW_Power_Magnetometer_Off
+ 845              	.LVL84:
+ 244:Core/Logic/logic_science.c ****     HW_Power_Temperature_Off();
+ 846              		.loc 1 244 5 view .LVU227
+ 847 000e FFF7FEFF 		bl	HW_Power_Temperature_Off
+ 848              	.LVL85:
+ 245:Core/Logic/logic_science.c ****     HW_Power_Camera_Off();
+ 849              		.loc 1 245 5 view .LVU228
+ 850 0012 FFF7FEFF 		bl	HW_Power_Camera_Off
+ 851              	.LVL86:
+ 246:Core/Logic/logic_science.c ****     
+ 247:Core/Logic/logic_science.c ****     current_phase = SCIENCE_PHASE_STANDBY;
+ 852              		.loc 1 247 5 view .LVU229
+ 853              		.loc 1 247 19 is_stmt 0 view .LVU230
+ 854 0016 0024     		movs	r4, #0
+ 855 0018 034B     		ldr	r3, .L63
+ 856 001a 1C70     		strb	r4, [r3]
+ 248:Core/Logic/logic_science.c ****     Logic_Log("SCIENCE: Aborted\r\n");
+ 857              		.loc 1 248 5 is_stmt 1 view .LVU231
+ 858 001c 0348     		ldr	r0, .L63+4
+ 859 001e FFF7FEFF 		bl	Logic_Log
+ 860              	.LVL87:
+ 249:Core/Logic/logic_science.c ****     return SCIENCE_OK;
+ 861              		.loc 1 249 5 view .LVU232
+ 250:Core/Logic/logic_science.c **** }
+ 862              		.loc 1 250 1 is_stmt 0 view .LVU233
+ 863 0022 2046     		mov	r0, r4
+ 864 0024 10BD     		pop	{r4, pc}
+ 865              	.L64:
+ 866 0026 00BF     		.align	2
+ 867              	.L63:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 24
+
+
+ 868 0028 00000000 		.word	.LANCHOR4
+ 869 002c 00000000 		.word	.LC14
+ 870              		.cfi_endproc
+ 871              	.LFE153:
+ 873              		.section	.text.Logic_Science_GetPhase,"ax",%progbits
+ 874              		.align	1
+ 875              		.global	Logic_Science_GetPhase
+ 876              		.syntax unified
+ 877              		.thumb
+ 878              		.thumb_func
+ 880              	Logic_Science_GetPhase:
+ 881              	.LFB154:
+ 251:Core/Logic/logic_science.c **** 
+ 252:Core/Logic/logic_science.c **** science_phase_t Logic_Science_GetPhase(void)
+ 253:Core/Logic/logic_science.c **** {
+ 882              		.loc 1 253 1 is_stmt 1 view -0
+ 883              		.cfi_startproc
+ 884              		@ args = 0, pretend = 0, frame = 0
+ 885              		@ frame_needed = 0, uses_anonymous_args = 0
+ 886              		@ link register save eliminated.
+ 254:Core/Logic/logic_science.c ****     return current_phase;
+ 887              		.loc 1 254 5 view .LVU235
+ 255:Core/Logic/logic_science.c **** }
+ 888              		.loc 1 255 1 is_stmt 0 view .LVU236
+ 889 0000 014B     		ldr	r3, .L66
+ 890 0002 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 891 0004 7047     		bx	lr
+ 892              	.L67:
+ 893 0006 00BF     		.align	2
+ 894              	.L66:
+ 895 0008 00000000 		.word	.LANCHOR4
+ 896              		.cfi_endproc
+ 897              	.LFE154:
+ 899              		.section	.text.Logic_Science_GetPhaseTimer,"ax",%progbits
+ 900              		.align	1
+ 901              		.global	Logic_Science_GetPhaseTimer
+ 902              		.syntax unified
+ 903              		.thumb
+ 904              		.thumb_func
+ 906              	Logic_Science_GetPhaseTimer:
+ 907              	.LFB155:
+ 256:Core/Logic/logic_science.c **** 
+ 257:Core/Logic/logic_science.c **** uint32_t Logic_Science_GetPhaseTimer(void)
+ 258:Core/Logic/logic_science.c **** {
+ 908              		.loc 1 258 1 is_stmt 1 view -0
+ 909              		.cfi_startproc
+ 910              		@ args = 0, pretend = 0, frame = 0
+ 911              		@ frame_needed = 0, uses_anonymous_args = 0
+ 912 0000 10B5     		push	{r4, lr}
+ 913              	.LCFI6:
+ 914              		.cfi_def_cfa_offset 8
+ 915              		.cfi_offset 4, -8
+ 916              		.cfi_offset 14, -4
+ 259:Core/Logic/logic_science.c ****     return science_start_tick - HAL_GetTick();
+ 917              		.loc 1 259 5 view .LVU238
+ 918              		.loc 1 259 31 is_stmt 0 view .LVU239
+ 919 0002 034B     		ldr	r3, .L70
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 25
+
+
+ 920 0004 1C68     		ldr	r4, [r3]
+ 921              		.loc 1 259 33 view .LVU240
+ 922 0006 FFF7FEFF 		bl	HAL_GetTick
+ 923              	.LVL88:
+ 260:Core/Logic/logic_science.c **** }...
+ 924              		.loc 1 260 1 view .LVU241
+ 925 000a 201A     		subs	r0, r4, r0
+ 926 000c 10BD     		pop	{r4, pc}
+ 927              	.L71:
+ 928 000e 00BF     		.align	2
+ 929              	.L70:
+ 930 0010 00000000 		.word	.LANCHOR5
+ 931              		.cfi_endproc
+ 932              	.LFE155:
+ 934              		.section	.bss.cleanup_done,"aw",%nobits
+ 935              		.set	.LANCHOR3,. + 0
+ 938              	cleanup_done:
+ 939 0000 00       		.space	1
+ 940              		.section	.bss.count_sensor_ok.0,"aw",%nobits
+ 941              		.align	2
+ 942              		.set	.LANCHOR2,. + 0
+ 945              	count_sensor_ok.0:
+ 946 0000 00000000 		.space	4
+ 947              		.section	.bss.current_phase,"aw",%nobits
+ 948              		.set	.LANCHOR4,. + 0
+ 951              	current_phase:
+ 952 0000 00       		.space	1
+ 953              		.section	.bss.flash_retry_count,"aw",%nobits
+ 954              		.set	.LANCHOR6,. + 0
+ 957              	flash_retry_count:
+ 958 0000 00       		.space	1
+ 959              		.section	.bss.last_battery_read.1,"aw",%nobits
+ 960              		.align	2
+ 961              		.set	.LANCHOR1,. + 0
+ 964              	last_battery_read.1:
+ 965 0000 00000000 		.space	4
+ 966              		.section	.bss.science_start_tick,"aw",%nobits
+ 967              		.align	2
+ 968              		.set	.LANCHOR5,. + 0
+ 971              	science_start_tick:
+ 972 0000 00000000 		.space	4
+ 973              		.section	.bss.sensors_powered.2,"aw",%nobits
+ 974              		.set	.LANCHOR0,. + 0
+ 977              	sensors_powered.2:
+ 978 0000 00       		.space	1
+ 979              		.text
+ 980              	.Letext0:
+ 981              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 982              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 983              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 984              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 985              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 986              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 987              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 988              		.file 9 "Core/Lib/cubesat_data.h"
+ 989              		.file 10 "Core/Lib/axis.h"
+ 990              		.file 11 "Core/Lib/hmc5883l.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 26
+
+
+ 991              		.file 12 "Core/Lib/mpu6050.h"
+ 992              		.file 13 "Core/Lib/neo8m.h"
+ 993              		.file 14 "Core/Logic/logic_science.h"
+ 994              		.file 15 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 995              		.file 16 "Core/Hardware/hardware.h"
+ 996              		.file 17 "Core/Logic/logic.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 27
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 logic_science.c
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:19     .rodata.Logic_Science_Phase_Prep.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:26     .text.Logic_Science_Phase_Prep:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:31     .text.Logic_Science_Phase_Prep:00000000 Logic_Science_Phase_Prep
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:123    .text.Logic_Science_Phase_Prep:00000058 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:130    .rodata.Logic_Science_Phase_Collect.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:137    .text.Logic_Science_Phase_Collect:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:142    .text.Logic_Science_Phase_Collect:00000000 Logic_Science_Phase_Collect
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:348    .text.Logic_Science_Phase_Collect:000000c0 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:359    .rodata.Logic_Science_Phase_Clean.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:363    .text.Logic_Science_Phase_Clean:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:368    .text.Logic_Science_Phase_Clean:00000000 Logic_Science_Phase_Clean
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:426    .text.Logic_Science_Phase_Clean:00000030 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:432    .rodata.Logic_Science_Init.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:436    .text.Logic_Science_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:442    .text.Logic_Science_Init:00000000 Logic_Science_Init
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:481    .text.Logic_Science_Init:00000020 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:489    .rodata.Logic_Science_Process.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:514    .text.Logic_Science_Process:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:520    .text.Logic_Science_Process:00000000 Logic_Science_Process
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:598    .text.Logic_Science_Process:0000004c $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:802    .text.Logic_Science_Process:00000124 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:816    .rodata.Logic_Science_Abort.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:820    .text.Logic_Science_Abort:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:826    .text.Logic_Science_Abort:00000000 Logic_Science_Abort
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:868    .text.Logic_Science_Abort:00000028 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:874    .text.Logic_Science_GetPhase:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:880    .text.Logic_Science_GetPhase:00000000 Logic_Science_GetPhase
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:895    .text.Logic_Science_GetPhase:00000008 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:900    .text.Logic_Science_GetPhaseTimer:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:906    .text.Logic_Science_GetPhaseTimer:00000000 Logic_Science_GetPhaseTimer
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:930    .text.Logic_Science_GetPhaseTimer:00000010 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:938    .bss.cleanup_done:00000000 cleanup_done
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:939    .bss.cleanup_done:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:941    .bss.count_sensor_ok.0:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:945    .bss.count_sensor_ok.0:00000000 count_sensor_ok.0
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:951    .bss.current_phase:00000000 current_phase
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:952    .bss.current_phase:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:957    .bss.flash_retry_count:00000000 flash_retry_count
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:958    .bss.flash_retry_count:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:960    .bss.last_battery_read.1:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:964    .bss.last_battery_read.1:00000000 last_battery_read.1
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:967    .bss.science_start_tick:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:971    .bss.science_start_tick:00000000 science_start_tick
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:977    .bss.sensors_powered.2:00000000 sensors_powered.2
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:978    .bss.sensors_powered.2:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:604    .text.Logic_Science_Process:00000051 $d
+C:\Users\admin\AppData\Local\Temp\cch6ajqW.s:604    .text.Logic_Science_Process:00000052 $t
+
+UNDEFINED SYMBOLS
+Logic_Battery_Check_Low
+HW_Power_GPS_On
+HW_Power_IMU_On
+HW_Power_Magnetometer_On
+HW_Power_Temperature_On
+HW_Power_Camera_On
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cch6ajqW.s 			page 28
+
+
+Logic_Log
+Logic_GetHealth
+HAL_GetTick
+mpu6050_read_all
+hmc5883l_read_mag
+neo8m_get_data
+Logic_Sensor_Mark_Dead
+Logic_Sensor_Check_Critical_Fail
+mpu_handle
+mag_handle
+gps_handle
+HW_Power_GPS_Off
+HW_Power_IMU_Off
+HW_Power_Magnetometer_Off
+HW_Power_Temperature_Off
+HW_Power_Camera_Off
+Logic_GetStatus
+Logic_Battery_Check_Critical
+Logic_Command_Get_Pending
+Logic_Science_Phase_Process

@@ -1,13 +1,4 @@
-build/freertos.o: Core/Src/freertos.c \
- Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
- Core/Inc/FreeRTOSConfig.h \
- Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
- Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
- Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
- Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h \
- Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
- Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
- Middlewares/Third_Party/FreeRTOS/Source/include/list.h Core/Inc/main.h \
+build/lora_e32.o: Core/Lib/lora_e32.c Core/Lib/lora_e32.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  Core/Inc/stm32h7xx_hal_conf.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
@@ -36,16 +27,7 @@ build/freertos.o: Core/Src/freertos.c \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
-Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
-Core/Inc/FreeRTOSConfig.h:
-Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
-Middlewares/Third_Party/FreeRTOS/Source/include/portable.h:
-Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h:
-Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
-Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
-Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
-Core/Inc/main.h:
+Core/Lib/lora_e32.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 Core/Inc/stm32h7xx_hal_conf.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h:

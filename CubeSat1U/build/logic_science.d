@@ -1,5 +1,5 @@
-build/stm32h7xx_hal_uart_ex.o: \
- Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
+build/logic_science.o: Core/Logic/logic_science.c \
+ Core/Logic/logic_science.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  Core/Inc/stm32h7xx_hal_conf.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
@@ -27,7 +27,11 @@ build/stm32h7xx_hal_uart_ex.o: \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
- Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
+ Core/Lib/cubesat_data.h Core/Lib/axis.h Core/Lib/hmc5883l.h \
+ Core/Lib/axis.h Core/Lib/mpu6050.h Core/Lib/neo8m.h Core/Logic/logic.h \
+ Core/Inc/main.h Core/Hardware/hardware.h
+Core/Logic/logic_science.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 Core/Inc/stm32h7xx_hal_conf.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h:
@@ -58,3 +62,12 @@ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h:
+Core/Lib/cubesat_data.h:
+Core/Lib/axis.h:
+Core/Lib/hmc5883l.h:
+Core/Lib/axis.h:
+Core/Lib/mpu6050.h:
+Core/Lib/neo8m.h:
+Core/Logic/logic.h:
+Core/Inc/main.h:
+Core/Hardware/hardware.h:
