@@ -18,6 +18,4 @@ typedef struct
   float y;
   float z;
 }faxis3_t;
-
-
 #endif

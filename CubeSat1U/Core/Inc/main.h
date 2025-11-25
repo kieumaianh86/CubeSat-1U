@@ -75,12 +75,18 @@ void Error_Handler(void);
 #define CAM_D7_GPIO_Port GPIOI
 #define CAM_D3_Pin GPIO_PIN_1
 #define CAM_D3_GPIO_Port GPIOE
+#define INA219_SCL_Pin GPIO_PIN_6
+#define INA219_SCL_GPIO_Port GPIOB
 #define GPS_RX_Pin GPIO_PIN_6
 #define GPS_RX_GPIO_Port GPIOD
 #define CAM_D4_Pin GPIO_PIN_11
 #define CAM_D4_GPIO_Port GPIOC
-#define TEMP_DATA_Pin GPIO_PIN_6
-#define TEMP_DATA_GPIO_Port GPIOK
+#define GATE_GPS_Pin GPIO_PIN_2
+#define GATE_GPS_GPIO_Port GPIOE
+#define INA219_SDA_Pin GPIO_PIN_7
+#define INA219_SDA_GPIO_Port GPIOB
+#define TEMP_DATA_Pin GPIO_PIN_12
+#define TEMP_DATA_GPIO_Port GPIOC
 #define IMC_SDA_Pin GPIO_PIN_9
 #define IMC_SDA_GPIO_Port GPIOB
 #define IMC_SCL_Pin GPIO_PIN_8
@@ -105,12 +111,22 @@ void Error_Handler(void);
 #define CAM_PWDN_GPIO_Port GPIOG
 #define CAM_RST_Pin GPIO_PIN_6
 #define CAM_RST_GPIO_Port GPIOG
+#define GATE_CAM_Pin GPIO_PIN_1
+#define GATE_CAM_GPIO_Port GPIOC
+#define GATE_LORA_Pin GPIO_PIN_2
+#define GATE_LORA_GPIO_Port GPIOC
+#define GATE_IMU_Pin GPIO_PIN_3
+#define GATE_IMU_GPIO_Port GPIOC
 #define DEBUG_RX_Pin GPIO_PIN_11
 #define DEBUG_RX_GPIO_Port GPIOB
 #define CAM_DCLK_Pin GPIO_PIN_6
 #define CAM_DCLK_GPIO_Port GPIOA
 #define CQAM_HRFF_Pin GPIO_PIN_8
 #define CQAM_HRFF_GPIO_Port GPIOH
+#define GATE_TEMP_Pin GPIO_PIN_13
+#define GATE_TEMP_GPIO_Port GPIOB
+#define GATE_MAG_Pin GPIO_PIN_14
+#define GATE_MAG_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

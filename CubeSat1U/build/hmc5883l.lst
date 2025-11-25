@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
   29:Core/Lib/hmc5883l.c **** //mode bits
   30:Core/Lib/hmc5883l.c **** #define HMC5883L_MODE_MS          0x80 //high speed i2c
   31:Core/Lib/hmc5883l.c **** 
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 2
 
 
   32:Core/Lib/hmc5883l.c **** //bit position config
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
   86:Core/Lib/hmc5883l.c ****   }
   87:Core/Lib/hmc5883l.c **** 
   88:Core/Lib/hmc5883l.c ****   //check id
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 3
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 3
 
 
   89:Core/Lib/hmc5883l.c ****   uint8_t id[3];
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  143:Core/Lib/hmc5883l.c ****   {
  144:Core/Lib/hmc5883l.c ****     return HMC5883L_ERROR;
  145:Core/Lib/hmc5883l.c ****   }
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 4
 
 
  146:Core/Lib/hmc5883l.c ****   return HMC5883L_OK;
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  200:Core/Lib/hmc5883l.c ****     //đợi data ready
  201:Core/Lib/hmc5883l.c ****     uint32_t start = HAL_GetTick();
  202:Core/Lib/hmc5883l.c ****     while (!hmc5883l_is_data_ready(hmc))
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 5
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 5
 
 
  203:Core/Lib/hmc5883l.c ****     {
@@ -298,7 +298,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  257:Core/Lib/hmc5883l.c ****   uint32_t samples = 0;
  258:Core/Lib/hmc5883l.c ****   uint32_t last_read = 0;
  259:Core/Lib/hmc5883l.c ****   //read min/max in duration(ms)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 6
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 6
 
 
  260:Core/Lib/hmc5883l.c ****   while (HAL_GetTick() - start < ms)
@@ -358,7 +358,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  314:Core/Lib/hmc5883l.c **** 
  315:Core/Lib/hmc5883l.c ****   //chuyen ve 0-360 (0 - 2pi)
  316:Core/Lib/hmc5883l.c ****   if (heading < 0)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 7
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 7
 
 
  317:Core/Lib/hmc5883l.c ****   {
@@ -418,7 +418,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
   43              		.loc 1 355 7 view .LVU4
   44 0008 0293     		str	r3, [sp, #8]
   45 000a 0123     		movs	r3, #1
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 8
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 8
 
 
   46              	.LVL1:
@@ -478,7 +478,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  368:Core/Lib/hmc5883l.c ****   return HMC5883L_OK;
  369:Core/Lib/hmc5883l.c **** }
  370:Core/Lib/hmc5883l.c **** 
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 9
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 9
 
 
  371:Core/Lib/hmc5883l.c **** static hmc5883l_status_t hmc5883l_read_registers(hmc5883l_handle_t *hmc, uint8_t reg, uint8_t *data
@@ -538,7 +538,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  135              	.L10:
  136              	.LCFI7:
  137              		.cfi_restore_state
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 10
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 10
 
 
  375:Core/Lib/hmc5883l.c ****   }
@@ -598,7 +598,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  184              		.loc 1 364 7 view .LVU32
  185 001e 0068     		ldr	r0, [r0]
  186              	.LVL18:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 11
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 11
 
 
  364:Core/Lib/hmc5883l.c ****   {
@@ -658,7 +658,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  235              		.cfi_offset 6, -12
  236              		.cfi_offset 7, -8
  237              		.cfi_offset 14, -4
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 12
 
 
  238 000a 83B0     		sub	sp, sp, #12
@@ -718,7 +718,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  275 002e 6426     		movs	r6, #100
  276              	.L18:
  277              	.LVL23:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 13
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 13
 
 
   83:Core/Lib/hmc5883l.c ****   {
@@ -778,7 +778,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  319 006c 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
   97:Core/Lib/hmc5883l.c ****       id[1] != HMC5883L_ID_B_VALUE ||
  320              		.loc 1 97 6 view .LVU71
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 14
 
 
  321 0070 482B     		cmp	r3, #72
@@ -838,7 +838,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  362              	.LVL30:
  110:Core/Lib/hmc5883l.c **** 
  363              		.loc 1 110 3 is_stmt 1 view .LVU85
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 15
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 15
 
 
  110:Core/Lib/hmc5883l.c **** 
@@ -898,7 +898,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  125:Core/Lib/hmc5883l.c ****   {
  404              		.loc 1 125 3 is_stmt 1 view .LVU100
  125:Core/Lib/hmc5883l.c ****   {
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 16
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 16
 
 
  405              		.loc 1 125 7 is_stmt 0 view .LVU101
@@ -958,7 +958,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  450 00e8 0320     		movs	r0, #3
  451 00ea CEE7     		b	.L17
  452              	.L25:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 17
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 17
 
 
  101:Core/Lib/hmc5883l.c ****   }
@@ -1018,7 +1018,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  500              	.LVL43:
  156:Core/Lib/hmc5883l.c **** }
  501              		.loc 1 156 60 view .LVU120
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 18
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 18
 
 
  502 0006 0228     		cmp	r0, #2
@@ -1078,7 +1078,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  550 000e 022C     		cmp	r4, #2
  551 0010 03D0     		beq	.L46
  163:Core/Lib/hmc5883l.c ****   }
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 19
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 19
 
 
  552              		.loc 1 163 12 view .LVU129
@@ -1138,7 +1138,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  594 003c A960     		str	r1, [r5, #8]
  174:Core/Lib/hmc5883l.c ****   hmc->raw.y = (int16_t) (buffer[4] << 8) | (buffer[5]);
  595              		.loc 1 174 3 is_stmt 1 view .LVU142
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 20
 
 
  174:Core/Lib/hmc5883l.c ****   hmc->raw.y = (int16_t) (buffer[4] << 8) | (buffer[5]);
@@ -1198,7 +1198,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  179:Core/Lib/hmc5883l.c ****   hmc->mag.y = (float) hmc->raw.y / hmc->gain_scale;
  632              		.loc 1 179 3 is_stmt 1 view .LVU161
  179:Core/Lib/hmc5883l.c ****   hmc->mag.y = (float) hmc->raw.y / hmc->gain_scale;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 21
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 21
 
 
  633              		.loc 1 179 16 is_stmt 0 view .LVU162
@@ -1258,7 +1258,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  677              	.LFB151:
  215:Core/Lib/hmc5883l.c ****   if (hmc == NULL)
  678              		.loc 1 215 1 is_stmt 1 view -0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 22
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 22
 
 
  679              		.cfi_startproc
@@ -1318,7 +1318,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  229:Core/Lib/hmc5883l.c **** 
  722              		.loc 1 229 1 view .LVU187
  723 0024 7047     		bx	lr
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 23
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 23
 
 
  724              	.L50:
@@ -1378,7 +1378,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  770 0014 04D0     		beq	.L64
  771              	.LVL57:
  772              	.L57:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 24
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 24
 
 
  210:Core/Lib/hmc5883l.c ****   
@@ -1438,7 +1438,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  813 0040 001B     		subs	r0, r0, r4
  204:Core/Lib/hmc5883l.c ****       {
  814              		.loc 1 204 10 view .LVU212
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 25
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 25
 
 
  815 0042 6428     		cmp	r0, #100
@@ -1498,7 +1498,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  861              		.cfi_offset 3, -16
  862              		.cfi_offset 4, -12
  863              		.cfi_offset 5, -8
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 26
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 26
 
 
  864              		.cfi_offset 14, -4
@@ -1558,7 +1558,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  907 001e 0220     		movs	r0, #2
  908 0020 FAE7     		b	.L66
  909              		.cfi_endproc
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 27
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 27
 
 
  910              	.LFE152:
@@ -1618,7 +1618,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  253:Core/Lib/hmc5883l.c ****   axis3_t max = {-999999, -999999, -999999};
  959              		.loc 1 253 11 view .LVU241
  960 0020 93E80700 		ldm	r3, {r0, r1, r2}
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 28
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 28
 
 
  961              	.LVL76:
@@ -1678,7 +1678,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  260:Core/Lib/hmc5883l.c ****   {
  1000              		.loc 1 260 9 is_stmt 1 view .LVU257
  260:Core/Lib/hmc5883l.c ****   {
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 29
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 29
 
 
  1001              		.loc 1 260 10 is_stmt 0 view .LVU258
@@ -1738,7 +1738,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1040 0070 00DA     		bge	.L77
  267:Core/Lib/hmc5883l.c ****         if (hmc->mag.y < min.y) min.y = hmc->mag.y;
  1041              		.loc 1 267 33 is_stmt 1 discriminator 1 view .LVU274
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 30
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 30
 
 
  267:Core/Lib/hmc5883l.c ****         if (hmc->mag.y < min.y) min.y = hmc->mag.y;
@@ -1798,7 +1798,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1078              	.L80:
  272:Core/Lib/hmc5883l.c ****         if (hmc->mag.z > min.z) min.z = hmc->mag.z;
  1079              		.loc 1 272 9 is_stmt 1 view .LVU293
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 31
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 31
 
 
  272:Core/Lib/hmc5883l.c ****         if (hmc->mag.z > min.z) min.z = hmc->mag.z;
@@ -1858,7 +1858,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  287:Core/Lib/hmc5883l.c ****   offset->y = (max.y + min.y) / 2.0f;
  1118              		.loc 1 287 13 view .LVU310
  1119 00c2 BDEEC77A 		vcvt.s32.f32	s14, s14
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 32
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 32
 
 
  1120 00c6 8BED007A 		vstr.32	s14, [fp]	@ int
@@ -1918,7 +1918,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1157 0104 07EE900A 		vmov	s15, r0	@ int
  1158 0108 F8EEE77A 		vcvt.f32.s32	s15, s15
  292:Core/Lib/hmc5883l.c ****   scale->x = avg_delta / (max.x - min.x);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 33
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 33
 
 
  1159              		.loc 1 292 9 view .LVU328
@@ -1978,7 +1978,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1201              		.cfi_def_cfa_offset 0
  1202              		.cfi_restore 4
  1203              		.cfi_restore 5
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 34
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 34
 
 
  1204              		.cfi_restore 6
@@ -2038,7 +2038,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1255              	.LVL96:
  1256              	.LFB154:
  302:Core/Lib/hmc5883l.c ****   if (hmc == NULL)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 35
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 35
 
 
  1257              		.loc 1 302 1 is_stmt 1 view -0
@@ -2098,7 +2098,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1297              		.loc 1 322 1 view .LVU360
  1298 003a 08BD     		pop	{r3, pc}
  1299              	.LVL99:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 36
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 36
 
 
  1300              	.L104:
@@ -2158,7 +2158,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1348              		.loc 1 326 3 view .LVU368
  326:Core/Lib/hmc5883l.c ****   {
  1349              		.loc 1 326 6 is_stmt 0 view .LVU369
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 37
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 37
 
 
  1350 0000 0028     		cmp	r0, #0
@@ -2218,7 +2218,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1392              	.LVL107:
  336:Core/Lib/hmc5883l.c ****   float sin_pitch = sinf(pitch_rad);
  1393              		.loc 1 336 21 view .LVU382
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 38
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 38
 
 
  1394 003c B0EE408A 		vmov.f32	s16, s0
@@ -2278,7 +2278,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  342:Core/Lib/hmc5883l.c ****   float heading = atan2f(mag_y_comp, mag_x_comp);
  1434              		.loc 1 342 44 view .LVU397
  1435 007c 67EEA87A 		vmul.f32	s15, s15, s17
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 39
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 39
 
 
  342:Core/Lib/hmc5883l.c ****   float heading = atan2f(mag_y_comp, mag_x_comp);
@@ -2338,7 +2338,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  349:Core/Lib/hmc5883l.c ****   
  1475              		.loc 1 349 27 view .LVU413
  1476 00c2 B7EEC00B 		vcvt.f32.f64	s0, d0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 40
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 40
 
 
  351:Core/Lib/hmc5883l.c **** 
@@ -2398,7 +2398,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1523 00ec FB210940 		.word	1074340347
  1524 00f0 00000000 		.word	0
  1525 00f4 00806640 		.word	1080459264
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 41
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 41
 
 
  1526 00f8 182D4454 		.word	1413754136
@@ -2442,42 +2442,42 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 1
  1567              		.file 9 "Core/Lib/hmc5883l.h"
  1568              		.file 10 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
  1569              		.file 11 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s 			page 42
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s 			page 42
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 hmc5883l.c
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:19     .text.hmc5883l_read_register:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:24     .text.hmc5883l_read_register:00000000 hmc5883l_read_register
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:81     .text.hmc5883l_read_registers:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:86     .text.hmc5883l_read_registers:00000000 hmc5883l_read_registers
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:145    .text.hmc5883l_write_register:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:150    .text.hmc5883l_write_register:00000000 hmc5883l_write_register
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:210    .text.hmc5883l_init:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:216    .text.hmc5883l_init:00000000 hmc5883l_init
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:475    .text.hmc5883l_init:00000100 $d
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:480    .text.hmc5883l_is_ready:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:486    .text.hmc5883l_is_ready:00000000 hmc5883l_is_ready
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:518    .text.hmc5883l_read_mag:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:524    .text.hmc5883l_read_mag:00000000 hmc5883l_read_mag
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:669    .text.hmc5883l_is_data_ready:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:675    .text.hmc5883l_is_data_ready:00000000 hmc5883l_is_data_ready
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:735    .text.hmc5883l_read_mag_blocking:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:741    .text.hmc5883l_read_mag_blocking:00000000 hmc5883l_read_mag_blocking
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:841    .text.hmc5883l_set_mode:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:847    .text.hmc5883l_set_mode:00000000 hmc5883l_set_mode
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:913    .text.hmc5883l_calibrate:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:919    .text.hmc5883l_calibrate:00000000 hmc5883l_calibrate
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1242   .text.hmc5883l_calibrate:00000164 $d
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1248   .text.hmc5883l_get_heading:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1254   .text.hmc5883l_get_heading:00000000 hmc5883l_get_heading
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1325   .text.hmc5883l_get_heading:00000058 $d
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1335   .text.hmc5883l_get_tilt_compensated_heading:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1341   .text.hmc5883l_get_tilt_compensated_heading:00000000 hmc5883l_get_tilt_compensated_heading
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1522   .text.hmc5883l_get_tilt_compensated_heading:000000e8 $d
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1534   .rodata:00000000 $d
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1545   .rodata.gain_table:00000000 $d
-C:\Users\admin\AppData\Local\Temp\ccMJ14yd.s:1549   .rodata.gain_table:00000000 gain_table
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:19     .text.hmc5883l_read_register:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:24     .text.hmc5883l_read_register:00000000 hmc5883l_read_register
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:81     .text.hmc5883l_read_registers:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:86     .text.hmc5883l_read_registers:00000000 hmc5883l_read_registers
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:145    .text.hmc5883l_write_register:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:150    .text.hmc5883l_write_register:00000000 hmc5883l_write_register
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:210    .text.hmc5883l_init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:216    .text.hmc5883l_init:00000000 hmc5883l_init
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:475    .text.hmc5883l_init:00000100 $d
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:480    .text.hmc5883l_is_ready:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:486    .text.hmc5883l_is_ready:00000000 hmc5883l_is_ready
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:518    .text.hmc5883l_read_mag:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:524    .text.hmc5883l_read_mag:00000000 hmc5883l_read_mag
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:669    .text.hmc5883l_is_data_ready:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:675    .text.hmc5883l_is_data_ready:00000000 hmc5883l_is_data_ready
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:735    .text.hmc5883l_read_mag_blocking:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:741    .text.hmc5883l_read_mag_blocking:00000000 hmc5883l_read_mag_blocking
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:841    .text.hmc5883l_set_mode:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:847    .text.hmc5883l_set_mode:00000000 hmc5883l_set_mode
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:913    .text.hmc5883l_calibrate:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:919    .text.hmc5883l_calibrate:00000000 hmc5883l_calibrate
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1242   .text.hmc5883l_calibrate:00000164 $d
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1248   .text.hmc5883l_get_heading:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1254   .text.hmc5883l_get_heading:00000000 hmc5883l_get_heading
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1325   .text.hmc5883l_get_heading:00000058 $d
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1335   .text.hmc5883l_get_tilt_compensated_heading:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1341   .text.hmc5883l_get_tilt_compensated_heading:00000000 hmc5883l_get_tilt_compensated_heading
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1522   .text.hmc5883l_get_tilt_compensated_heading:000000e8 $d
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1534   .rodata:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1545   .rodata.gain_table:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccGtp0Sk.s:1549   .rodata.gain_table:00000000 gain_table
 
 UNDEFINED SYMBOLS
 HAL_I2C_Mem_Read

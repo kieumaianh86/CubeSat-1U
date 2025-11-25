@@ -32,7 +32,7 @@ const uint8_t ina_reg_power           =      (0x03);
 const uint8_t ina_reg_current         =      (0x04);
 const uint8_t ina_reg_calibration     =      (0x05);
 
-const uint8_t ina_config_reset        =      (0x8000);
+const uint16_t ina_config_reset        =      (0x8000);
 
 typedef enum {
     BRNG_16V = 0x0000,
@@ -131,7 +131,7 @@ INA219_STATUS_t ina219_ReadPower(ina219_t *ina219);
 
 INA219_STATUS_t ina219_reset(ina219_t *ina219);
 INA219_STATUS_t ina219_setCalibration(ina219_t *ina219, uint16_t Calibration);
-INA219_STATUS_t ina219_getConfig(ina219_t *ina219);
+INA219_STATUS_t ina219_getConfig(ina219_t *ina219, uint16_t *Config);
 INA219_STATUS_t ina219_setConfig(ina219_t *ina219, uint16_t Config);
 INA219_STATUS_t ina219_Config(ina219_t *ina219);
 INA219_STATUS_t set_PowerMode(ina219_t *ina219, ina_config_operatingmode mode);

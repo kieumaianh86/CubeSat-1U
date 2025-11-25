@@ -50,6 +50,8 @@ Core/Hardware/hardware.c\
 \
 Core/Logic/logic_science.c\
 Core/Logic/logic_comm.c\
+Core/Logic/logic_safe.c\
+Core/Logic/logic_sleep.c\
 \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \

@@ -192,8 +192,4 @@ float hmc5883l_get_heading(const hmc5883l_handle_t *hmc);
  */
 
 float hmc5883l_get_tilt_compensated_heading(const hmc5883l_handle_t *hmc, float pitch, float roll);
-
-
-
-
 #endif

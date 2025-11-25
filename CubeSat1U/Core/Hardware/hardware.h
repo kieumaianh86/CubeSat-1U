@@ -1,9 +1,13 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 
+#include "main.h"
 #include "mpu6050.h"
 #include "hmc5883l.h"
 #include "neo8m.h"
+#include "INA219.h"
+#include "OV2640.h"
+#include "cubesat_data.h"
 
 typedef enum {
   HW_OK = 0,
@@ -20,10 +24,14 @@ typedef struct
   mpu6050_handle_t mpu;
   hmc5883l_handle_t mag;
   neo8m_handle_t gps;
+  ina219_t ina219;
 
   uint8_t mpu_ready;
   uint8_t mag_ready;
   uint8_t gps_ready;
+
+  uint8_t sensor_ready[SENSOR_COUNT]; 
+  uint8_t working_count;
 } hardware_t;
 
 //external peripheral handles
@@ -40,6 +48,9 @@ uint8_t hardware_is_ready(const hardware_t *hw);
 hw_status_t hardware_read_imu(hardware_t *hw);
 hw_status_t hardware_read_mag(hardware_t *hw);
 hw_status_t hardware_process_gps(hardware_t *hw, uint8_t byte);
+
+/* hw_status_t hardware_read_imu_safe(hardware_t *hw);
+hw_status_t hardware_read_mag_safe(hardware_t *hw); */
 
 //get data pointers
 const mpu6050_handle_t* hardware_get_mpu(const hardware_t *hw);

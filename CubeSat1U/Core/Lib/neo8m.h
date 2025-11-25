@@ -138,5 +138,4 @@ float neo8m_calculate_distance(double lat1, double lon1, double lat2, double lon
  * 
  */
 float neo8m_calculate_bearing(double lat1, double lon1, double lat2, double lon2);
-
 #endif

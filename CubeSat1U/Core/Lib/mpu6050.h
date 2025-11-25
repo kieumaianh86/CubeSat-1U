@@ -155,6 +155,4 @@ mpu6050_status_t mpu6050_read_temp(mpu6050_handle_t *mpu);
  * @note sau khi reset, cần gọi lại mpu_init và mpu_init_process
  */
 mpu6050_status_t mpu6050_reset(mpu6050_handle_t *mpu);
-
-
 #endif

@@ -4,6 +4,10 @@
 
 #define MPU6050_ADDR 0x68
 #define HMC5883L_ADDR 0x1E
+
+#define MOSFET_ON   GPIO_PIN_SET
+#define MOSFET_OFF  GPIO_PIN_RESET
+
 hw_status_t hardware_init(hardware_t *hw)
 {
   if (hw == NULL)
@@ -11,11 +15,12 @@ hw_status_t hardware_init(hardware_t *hw)
     return HW_ERROR;
   }
 
-  //clear hardware structure
+  // Clear hardware structure
   memset(hw, 0, sizeof(hardware_t));
 
   hw_status_t status = HW_OK;
-  //1.initialize mpu6050
+  
+  // 1. Initialize mpu6050
   mpu6050_config_t mpu_config = {
     .hi2c = &hi2c1,
     .device_addr = MPU6050_ADDR,
@@ -33,12 +38,13 @@ hw_status_t hardware_init(hardware_t *hw)
   {
     hw->mpu_ready = 0;
   }
-  else {
+  else 
+  {
     hw->mpu_ready = 0;
     status = HW_IN_PROGRESS;
   }
 
-  //2. initialize hmc5883l
+  // 2. Initialize hmc5883l
   hmc5883l_config_t mag_config = {
     .hi2c = &hi2c1,
     .device_addr = HMC5883L_ADDR,
@@ -53,37 +59,44 @@ hw_status_t hardware_init(hardware_t *hw)
   if (mag_status == HMC5883L_OK)
   {
     hw->mag_ready = 1;
-  } else if (mag_status == HMC5883L_NOT_READY) 
+  } 
+  else if (mag_status == HMC5883L_NOT_READY) 
   {
     hw->mag_ready = 0;
-  } else 
+  } 
+  else 
   {
     hw->mag_ready = 0;
     status = HW_IN_PROGRESS;
   }
 
-  //3. initialize gps
+  // 3. Initialize gps
   neo8m_config_t gps_config = {
     .huart = &huart2
   };
+  
   neo8m_status_t gps_status = neo8m_init(&hw->gps, &gps_config);
   if (gps_status == NEO8M_OK)
   {
     hw->gps_ready = 1;
-  } else if (gps_status == NEO8M_ERROR)
+  } 
+  else if (gps_status == NEO8M_ERROR)
   {
     hw->gps_ready = 0;
-  } else
+  } 
+  else
   {
     hw->gps_ready = 0;
     status = HW_IN_PROGRESS;
   }
+  
   return status;  
 }
 
-//bien dem sensor
-int count = 0;
-//process hardware initialization
+// Bi?n d?m sensor
+static int sensor_count = 0;
+
+// Process hardware initialization
 hw_status_t hardware_init_process(hardware_t *hw)
 {
   if (hw == NULL)
@@ -91,7 +104,7 @@ hw_status_t hardware_init_process(hardware_t *hw)
     return HW_ERROR;
   }
   
-  //check if mpu6050 need wakeup processing
+  // Check if mpu6050 needs wakeup processing
   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
   {
     mpu6050_status_t status = mpu6050_init_process(&hw->mpu);
@@ -99,45 +112,50 @@ hw_status_t hardware_init_process(hardware_t *hw)
     {
       hw->mpu_ready = 1;
     }
-    
   }
 
-  //check overall readiness
+  // Reset count before checking
+  sensor_count = 0;
+  
+  // Check overall readiness
   if (hw->mag_ready)
   {
-    count++;
-  } else 
+    sensor_count++;
+  } 
+  else 
   {
     Hardware_UART_Printf("Mag ERROR\r\n");
   }
+  
   if (hw->mpu_ready)
   {
-    count++;
+    sensor_count++;
   } 
   else
   {
     Hardware_UART_Printf("Mpu ERROR\r\n");
   }
+  
   if (hw->gps_ready)
   {
-    count++;
+    sensor_count++;
   }
   else 
   {
     Hardware_UART_Printf("GPS ERROR\r\n");
   }
-  //...
-  if (count >= 3)
+  
+  // Return based on sensor count
+  if (sensor_count >= 3)
   {
-    Hardware_UART_Printf("Sensors OK: %d\r\n", count);
+    Hardware_UART_Printf("Sensors OK: %d\r\n", sensor_count);
     return HW_OK;
   }
   else
   {
-    Hardware_UART_Printf("Sensors Fail: %d\r\n", count);
-    return HW_ERROR;
+    Hardware_UART_Printf("Sensors Fail: %d\r\n", sensor_count);
+    return HW_IN_PROGRESS;
   }
-  return HW_IN_PROGRESS;
 }
 
 uint8_t hardware_is_ready(const hardware_t *hw)
@@ -146,7 +164,7 @@ uint8_t hardware_is_ready(const hardware_t *hw)
   {
     return 0;
   }
-  return (count >= 3) ? 1 : 0;
+  return (sensor_count >= 3) ? 1 : 0;
 }
 
 hw_status_t hardware_read_imu(hardware_t *hw)
@@ -155,13 +173,14 @@ hw_status_t hardware_read_imu(hardware_t *hw)
   {
     return HW_ERROR;
   }
+  
   if (mpu6050_read_all(&hw->mpu) != MPU6050_OK)
   {
     Hardware_UART_Printf("MPU read ERROR\r\n");
     return HW_MPU_ERROR;
   }
-  return HW_OK;
   
+  return HW_OK;
 }
 
 hw_status_t hardware_read_mag(hardware_t *hw)
@@ -170,11 +189,13 @@ hw_status_t hardware_read_mag(hardware_t *hw)
   {
     return HW_ERROR;
   }
+  
   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
   {
     Hardware_UART_Printf("MAG read ERROR\r\n");
     return HW_MAG_ERROR;
   }
+  
   return HW_OK;
 }
 
@@ -184,11 +205,13 @@ hw_status_t hardware_process_gps(hardware_t *hw, uint8_t byte)
   {
     return HW_ERROR;
   }
+  
   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
   {
     Hardware_UART_Printf("GPS read ERROR\r\n");
     return HW_ERROR;
   }
+  
   return HW_OK;  
 }
 
@@ -199,8 +222,8 @@ const mpu6050_handle_t* hardware_get_mpu(const hardware_t *hw)
     return NULL;
   }
   return &hw->mpu;
-  
 }
+
 const hmc5883l_handle_t* hardware_get_mag(const hardware_t *hw)
 {
   if (hw == NULL)
@@ -208,8 +231,8 @@ const hmc5883l_handle_t* hardware_get_mag(const hardware_t *hw)
     return NULL;
   }
   return &hw->mag;
-  
 }
+
 const neo8m_handle_t* hardware_get_gps(const hardware_t *hw)
 {
   if (hw == NULL)
@@ -217,13 +240,9 @@ const neo8m_handle_t* hardware_get_gps(const hardware_t *hw)
     return NULL;
   }
   return &hw->gps;
-  
 }
 
-
-
-
-void Hardware_UART_Printf(const char *format,...)
+void Hardware_UART_Printf(const char *format, ...)
 {
   char buffer[256];
   va_list args;
@@ -231,6 +250,80 @@ void Hardware_UART_Printf(const char *format,...)
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
 
-  HAL_UART_Transmit(&huart3, (uint8_t *) buffer, strlen(buffer), 100);
-  
+  HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 100);
+}
+
+
+void HW_Power_GPS_On(void)
+{
+  HAL_GPIO_WritePin(GATE_GPS_GPIO_Port, GATE_GPS_Pin, MOSFET_ON);
+}
+
+void HW_Power_GPS_Off(void)
+{
+  HAL_GPIO_WritePin(GATE_GPS_GPIO_Port, GATE_GPS_Pin, MOSFET_OFF);
+}
+
+void HW_Power_Camera_On(void)
+{
+  HAL_GPIO_WritePin(GATE_CAM_GPIO_Port, GATE_CAM_Pin, MOSFET_ON);
+  HAL_Delay(10);
+  HAL_GPIO_WritePin(CAM_PWDN_GPIO_Port, CAM_PWDN_Pin, GPIO_PIN_RESET);
+}
+
+void HW_Power_Camera_Off(void)
+{
+  HAL_GPIO_WritePin(CAM_PWDN_GPIO_Port, CAM_PWDN_Pin, GPIO_PIN_SET);
+  HAL_Delay(10);
+  HAL_GPIO_WritePin(GATE_CAM_GPIO_Port, GATE_CAM_Pin, MOSFET_OFF);
+}
+
+void HW_Power_LoRa_On(void)
+{
+  HAL_GPIO_WritePin(GATE_LORA_GPIO_Port, GATE_LORA_Pin, MOSFET_ON);
+}
+
+void HW_Power_LoRa_Off(void)
+{
+  HAL_GPIO_WritePin(GATE_LORA_GPIO_Port, GATE_LORA_Pin, MOSFET_OFF);
+}
+
+void HW_Power_IMU_On(void)
+{
+  HAL_GPIO_WritePin(GATE_IMU_GPIO_Port, GATE_IMU_Pin, MOSFET_ON);
+}
+
+void HW_Power_IMU_Off(void)
+{
+  HAL_GPIO_WritePin(GATE_IMU_GPIO_Port, GATE_IMU_Pin, MOSFET_OFF);
+}
+
+void HW_Power_Magnetometer_On(void)
+{
+  HAL_GPIO_WritePin(GATE_MAG_GPIO_Port, GATE_MAG_Pin, MOSFET_ON);
+}
+
+void HW_Power_Magnetometer_Off(void)
+{
+  HAL_GPIO_WritePin(GATE_MAG_GPIO_Port, GATE_MAG_Pin, MOSFET_OFF);
+}
+
+void HW_Power_Temperature_On(void)
+{
+  HAL_GPIO_WritePin(GATE_TEMP_GPIO_Port, GATE_TEMP_Pin, MOSFET_ON);
+}
+
+void HW_Power_Temperature_Off(void)
+{
+  HAL_GPIO_WritePin(GATE_TEMP_GPIO_Port, GATE_TEMP_Pin, MOSFET_OFF);
+}
+
+void HW_Power_All_Sensors_Off(void)
+{
+  HW_Power_GPS_Off();
+  HW_Power_Camera_Off();
+  HW_Power_LoRa_Off();
+  HW_Power_IMU_Off();
+  HW_Power_Magnetometer_Off();
+  HW_Power_Temperature_Off();
 }

@@ -73,7 +73,8 @@ typedef enum {
   SENSOR_MPU6050,
   SENSOR_HMC5883L,
   SENSOR_CAMERA,
-  SENSOR_COUNT
+  SENSOR_INA219,      
+  SENSOR_COUNT = 6    
 } sensor_id_t;
 
 typedef enum {
