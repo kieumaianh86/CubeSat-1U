@@ -25,14 +25,14 @@ typedef enum {
 } ina_address_A0_A1;
 
 //Registor AddressAddress
-const uint8_t ina_reg_config          =      (0x00);
-const uint8_t ina_reg_shuntvoltage    =      (0x01);
-const uint8_t ina_reg_bus_voltage     =      (0x02);
-const uint8_t ina_reg_power           =      (0x03);
-const uint8_t ina_reg_current         =      (0x04);
-const uint8_t ina_reg_calibration     =      (0x05);
+#define ina_reg_config              0x00
+#define ina_reg_shuntvoltage        0x01
+#define ina_reg_bus_voltage         0x02
+#define ina_reg_power               0x03
+#define ina_reg_current             0x04
+#define ina_reg_calibration         0x05
 
-const uint16_t ina_config_reset        =      (0x8000);
+#define ina_config_reset            0x8000
 
 typedef enum {
     BRNG_16V = 0x0000,
