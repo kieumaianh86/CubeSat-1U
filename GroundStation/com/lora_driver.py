@@ -15,96 +15,98 @@ from util.logger import Logger
 
 log = Logger()
 class LoRa:
-    def __init__(self, settings_path="config/settings.json"):
+    def __init__(self, port, baudrate=9600, timeout=0.2):
         """Khởi tạo driver LoRa dựa trên file cấu hình settings.json"""
-        with open(settings_path, "r", encoding="utf-8") as f:
-            cfg = json.load(f)
+        self.port = port
+        self.baudrate = baudrate
+        self.timeout = timeout
 
-        comm = cfg["communication"]
-        self.port = comm["com_port"]
-        self.baudrate = comm["baudrate"]
-        self.sat_id = comm["satellite_id"]
-        self.ground_id = cfg["station"]["ground_id"]
-        self.timeout = comm.get("timeout_ms", 1500) / 1000
-        
-        # If pyserial is not installed or serial is None, continue without hardware
-        if serial is None:
-            print("Lưu ý: pyserial không được cài hoặc không thể import; chế độ LoRa sẽ không hoạt động.")
-            self.ser = None
-        else:
-            try:
-                self.ser = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
-                print(f" Đã mở kết nối LoRa tại {self.port} ({self.baudrate} bps)")
-            except Exception:
-                # Do not raise; allow app to continue in a 'no-hardware' mode
-                print(f" Không thể mở cổng {self.port}; chuyển sang chế độ không có phần cứng.")
-                self.ser = None
-
-        self.log_dir = Path(cfg["telemetry"]["log_folder"])
-        self.log_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.ser = serial.Serial(
+                port=self.port,
+                baudrate=self.baudrate,
+                timeout=0,
+                write_timeout=0
+            )
+            print(f"[LoRa] Đã mở cổng {port}")
+        except Exception as e:
+            raise RuntimeError(f"[LoRa] Không mở được cổng {port}: {e}")
+        # Định danh trạm mặt đất và vệ tinh
+        self.ground_id = 0x01  # ID trạm mặt đất
+        self.sat_id = 0x10     # ID vệ tinh
 
     # ----------------------------
     # 1️ Đóng gói dữ liệu
     # ----------------------------
-    def build_packet(self, pkg_type, data: bytes):
-        """Tạo gói dữ liệu đầy đủ theo chuẩn AA55...CRC16"""
-        header = b'\xAA\x55'
-        src = self.ground_id
-        dst = self.sat_id
-        length = len(data)
-        frame = header + bytes([pkg_type, src, dst, length]) + data
-        crc = crc16(frame).to_bytes(2, 'little')
-        return frame + crc
+    def build_packet(self, packet_type: int, payload: bytes):
+        """Tạo gói dữ liệu đầy đủ theo chuẩn LoRa:
+        [0xAA][TYPE][SRC][DST][LEN][DATA...][CRC16]
+        """
+        header = bytes([0xAA])
+        no_crc = header + bytes([packet_type]) + payload
+        crc = crc16(no_crc).to_bytes(2, "little")
+        return no_crc + crc
     
     # ----------------------------
     # 2️ Gửi dữ liệu
     # ----------------------------
-    def send(self, pkg_type, data: bytes):
-        """Gửi gói dữ liệu qua LoRa"""
-        packet = self.build_packet(pkg_type, data)
+    def send(self, packet_type: int, payload: bytes = b""):
+        """
+        Gửi frame theo format:
+        [0xAA][TYPE][PAYLOAD...][CRC16]
+        """
+
+        packet = self.build_packet(packet_type, payload)
+
         if not self.ser:
-            print("[LoRa] Không có kết nối serial. Bỏ qua gửi gói.")
-            log.warn("Không có kết nối serial; bỏ qua gửi gói.")
+            log.warn("Không có serial — bỏ qua gửi.")
             return
+
         try:
             self.ser.write(packet)
-            log.cmd(f"Gửi gói type={pkg_type:#02x}, len={len(data)} byte", direction="TX")
-            print(f" Gửi gói type={pkg_type:#02x}, len={len(data)} byte")
             self.ser.flush()
+            log.cmd(f"Gửi TYPE=0x{packet_type:02X}, {len(payload)} bytes", direction="TX")
+            print(f"Gửi TYPE=0x{packet_type:02X}, {len(payload)} bytes")
         except Exception as e:
-            log.error(f"Lỗi khi gửi gói: {e}")
-            print(f" Lỗi khi gửi gói: {e}")
+            log.error(f"Lỗi gửi LoRa: {e}")
+            print(f"Lỗi gửi: {e}")
 
     # ----------------------------
     # 3️ Nhận dữ liệu
     # ----------------------------
     def receive(self):
-        """Nhận và giải mã gói dữ liệu"""
+        """Nhận và giải mã gói theo format mới.
+        Vì không có LENGTH → dùng extract_frame() để phân tách frame.
+        Trả về dict nếu nhận được gói hợp lệ, ngược lại trả None."""
+        if not self.ser:
+            return None
+
         start = time.time()
         buffer = bytearray()
-
-        if not self.ser:
-            # No serial device; return None immediately
-            return None
 
         while time.time() - start < self.timeout:
             try:
                 if not self.ser.in_waiting:
                     continue
-                
                 buffer.extend(self.ser.read(self.ser.in_waiting))
             except Exception:
                 return None
+
             frame = extract_frame(buffer)
             if frame:
                 parsed = parse_frame(frame)
+                buffer.clear()
+
                 if parsed:
-                    log.cmd(f"Nhận gói type={parsed['type']:#02x}, len={parsed['len']} byte", direction="RX")
+                    log.cmd(
+                        f"Nhận TYPE=0x{parsed['type']:02X}, payload={len(parsed['payload'])} bytes",
+                        direction="RX"
+                    )
+                    print(f"Nhận TYPE=0x{parsed['type']:02X}")
                     return parsed
                 else:
-                    log.warn("CRC sai – bỏ gói", direction="RX")
-                    print("⚠️ CRC sai – bỏ gói.")
-                    buffer.clear()
+                    log.warn("CRC sai — bỏ gói", direction="RX")
+                    print("⚠ CRC sai — bỏ gói")
 
         return None
 
@@ -113,14 +115,15 @@ class LoRa:
     # ----------------------------
     def send_command(self, command: str):
         """Gửi lệnh điều khiển (ví dụ: SCIENCE, SAFE, COMM, CONFIG...)"""
-        cmd = command.upper().encode()
-        self.send(pkg_type=0x02, data=cmd)
-        print(f" Đã gửi lệnh: {command}")
+        payload = text.upper().encode()
+        self.send(packet_type=0x02, payload=payload)
+        print(f"Đã gửi lệnh: {text}")
+
         ack = self.receive()
         if ack and ack["type"] == 0x03:
-            print(" Đã nhận ACK từ vệ tinh.")
+            print("Vệ tinh ACK lệnh.")
         else:
-            print(" Không nhận được ACK.")
+            print("Không nhận được ACK.")
 
     # ----------------------------
     # 5️Ghi log dữ liệu Telemetry
@@ -138,15 +141,17 @@ class LoRa:
         """Gửi gói ping và chờ phản hồi"""
         # If no serial, assume no link but do not raise
         if not self.ser:
-            print(" Không phản hồi từ vệ tinh (không có kết nối serial).")
+            print("Không có serial — không thể ping.")
             return False
 
-        self.send(pkg_type=0x02, data=b'PING')
+        self.send(0x02, b"PING")
         reply = self.receive()
-        if reply and reply["data"] == b'ACK_PING':
-            print(" Kết nối vệ tinh OK.")
+
+        if reply and reply["payload"] == b"ACK_PING":
+            print("Kết nối OK.")
             return True
-        print(" Không phản hồi từ vệ tinh.")
+
+        print("Không phản hồi PING.")
         return False
     
     # ----------------------------
@@ -160,3 +165,4 @@ class LoRa:
                 print("Đã đóng kết nối LoRa.")
             except Exception:
                 pass
+

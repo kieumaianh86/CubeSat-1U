@@ -1,0 +1,49 @@
+{
+  "station": {
+    "ground_id": 0,
+    "station_name": "UET_GroundStation",
+    "operator": "Team CubeLab",
+    "auto_connect": true
+  },
+
+  "communication": {
+    "com_port": "COM3",
+    "baudrate": 9600,
+    "satellite_id": 1,
+    "packet_header": "AA55",
+    "max_retry": 3,
+    "timeout_ms": 1500
+  },
+
+  "telemetry": {
+    "save_raw": true,
+    "save_csv": true,
+    "log_folder": "./data/logs",
+    "telemetry_interval_s": 2,
+    "time_sync": true
+  },
+
+  "download": {
+    "image_folder": "./data/images",
+    "max_packet_per_frame": 64,
+    "enable_auto_reassemble": true
+  },
+
+  "command": {
+    "available_modes": ["SCIENCE", "COMM", "SAFE", "SLEEP", "CONFIG"],
+    "default_mode": "STANDBY",
+    "ack_timeout_ms": 2000
+  },
+
+  "config": {
+    "default_settings": true,
+    "auto_save_changes": true,
+    "flash_sync": false
+  },
+
+  "visualization": {
+    "enable_realtime_graph": true,
+    "graph_refresh_rate_ms": 500,
+    "theme": "dark"
+  }
+}
