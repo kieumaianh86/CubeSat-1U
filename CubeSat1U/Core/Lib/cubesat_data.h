@@ -20,10 +20,12 @@
 #define TEMP_MAX_SAFE   70
 #define TEMP_MIN_SAFE   -10
 
+
+
 //timeout values (ms)
 #define TIMEOUT_INIT              15000
-#define TIMEOUT_SCIENCE_TOTAL     60000
-#define TIMEOUT_COMM_TOTAL        40000
+#define TIMEOUT_SCIENCE_TOTAL     120000
+#define TIMEOUT_COMM_TOTAL        120000
 #define TIMEOUT_SENSOR_INIT       2000
 #define TIMEOUT_SENSOR_READ_MIN   1000
 #define TIMEOUT_SENSOR_READ_MAX   5000
@@ -33,13 +35,14 @@
 #define TIMEOUT_SLEEP_WAKE_LOW    1800000 //30p
 #define TIMEOUT_LORA_INIT         3000
 #define TIMEOUT_BEACON_TX         2000
-#define TIMEOUT_RX_LISTEN         15000
-#define TIMEOUT_PACKET_TX         500
+#define TIMEOUT_RX_LISTEN         30000
+#define TIMEOUT_PACKET_TX         1000
+#define TIMEOUT_ACK_TX            3000
 
 //retry counts
 #define RETRY_SENSOR              3
 #define RETRY_FLASH               3
-#define RETRY_LORA                1
+#define RETRY_LORA                3
 #define RETRY_BEACON              3
 #define RETRY_PACKET_FAIL_MAX     5
 
@@ -51,8 +54,8 @@
 #define GCS_RX_TIMEOUT            2000 //2s
 #define SAFE_CHECK_INTERVAL       10000 //10s
 
-//flash
-#define FLASH_MIN_FREE_KB         5
+// Thay FLASH constants
+#define SD_MIN_FREE_KB         100  // Was: FLASH_MIN_FREE_KB 5
 
 //lora
 #define LORA_PACKET_MAX_SIZE      240
@@ -118,6 +121,7 @@ typedef struct {
   uint8_t working_sensor_count;
   bool lora_ok;
   uint8_t lora_fail_count;
+  bool charging;
 } system_health_t;
 
 typedef struct 

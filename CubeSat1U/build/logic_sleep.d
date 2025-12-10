@@ -16,6 +16,7 @@ build/logic_sleep.o: Core/Logic/logic_sleep.c Core/Logic/logic_sleep.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma_ex.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dcmi.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_exti.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h \
@@ -25,10 +26,37 @@ build/logic_sleep.o: Core/Logic/logic_sleep.c Core/Logic/logic_sleep.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc_ex.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_sdmmc.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_delayblock.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd_ex.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h \
+ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h \
  Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
- Core/Logic/logic.h Core/Inc/main.h Core/Hardware/hardware.h \
- Core/Lib/mpu6050.h Core/Lib/axis.h Core/Lib/hmc5883l.h Core/Lib/neo8m.h
+ Core/Logic/logic.h Core/Hardware/hardware.h Core/Inc/main.h \
+ Core/Lib/mpu6050.h Core/Lib/axis.h Core/Lib/hmc5883l.h Core/Lib/neo8m.h \
+ Core/Lib/INA219.h Core/Lib/OV2640.h Core/Lib/sdcard.h FATFS/App/fatfs.h \
+ Middlewares/Third_Party/FatFs/src/ff.h \
+ Middlewares/Third_Party/FatFs/src/integer.h FATFS/Target/ffconf.h \
+ FATFS/Target/bsp_driver_sd.h \
+ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
+ Core/Inc/FreeRTOSConfig.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
+ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
+ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
+ Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
+ Middlewares/Third_Party/FatFs/src/diskio.h \
+ Middlewares/Third_Party/FatFs/src/ff.h FATFS/Target/sd_diskio.h \
+ Core/Lib/lora_e32.h
 Core/Logic/logic_sleep.h:
 Core/Lib/cubesat_data.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
@@ -50,6 +78,7 @@ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio_ex.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma_ex.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dcmi.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_exti.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h:
@@ -59,12 +88,44 @@ Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc_ex.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_sdmmc.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_delayblock.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd_ex.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h:
+Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h:
 Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h:
 Core/Logic/logic.h:
-Core/Inc/main.h:
 Core/Hardware/hardware.h:
+Core/Inc/main.h:
 Core/Lib/mpu6050.h:
 Core/Lib/axis.h:
 Core/Lib/hmc5883l.h:
 Core/Lib/neo8m.h:
+Core/Lib/INA219.h:
+Core/Lib/OV2640.h:
+Core/Lib/sdcard.h:
+FATFS/App/fatfs.h:
+Middlewares/Third_Party/FatFs/src/ff.h:
+Middlewares/Third_Party/FatFs/src/integer.h:
+FATFS/Target/ffconf.h:
+FATFS/Target/bsp_driver_sd.h:
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
+Core/Inc/FreeRTOSConfig.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/portable.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
+Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
+Middlewares/Third_Party/FatFs/src/diskio.h:
+Middlewares/Third_Party/FatFs/src/ff.h:
+FATFS/Target/sd_diskio.h:
+Core/Lib/lora_e32.h:

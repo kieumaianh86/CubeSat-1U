@@ -1,0 +1,1296 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"OV2640.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text._write_reg,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	_write_reg:
+  25              	.LVL0:
+  26              	.LFB153:
+  27              		.file 1 "Core/Lib/OV2640.c"
+   1:Core/Lib/OV2640.c **** #include "OV2640.h"
+   2:Core/Lib/OV2640.c **** #include "main.h"
+   3:Core/Lib/OV2640.c **** #include <string.h>
+   4:Core/Lib/OV2640.c **** 
+   5:Core/Lib/OV2640.c **** /* =============================
+   6:Core/Lib/OV2640.c ****  *  Cấu hình thời gian & cache
+   7:Core/Lib/OV2640.c ****  * ============================= */
+   8:Core/Lib/OV2640.c **** #ifndef OV2640_I2C_TIMEOUT_MS
+   9:Core/Lib/OV2640.c **** #define OV2640_I2C_TIMEOUT_MS   100U
+  10:Core/Lib/OV2640.c **** #endif
+  11:Core/Lib/OV2640.c **** 
+  12:Core/Lib/OV2640.c **** #ifndef OV2640_RESET_DELAY_MS
+  13:Core/Lib/OV2640.c **** #define OV2640_RESET_DELAY_MS   100U
+  14:Core/Lib/OV2640.c **** #endif
+  15:Core/Lib/OV2640.c **** 
+  16:Core/Lib/OV2640.c **** /* Bật 1 nếu muốn Invalidate D-Cache sau khi DMA nhận xong (H7, CM7) */
+  17:Core/Lib/OV2640.c **** #ifndef OV2640_DCACHE_MAINTENANCE
+  18:Core/Lib/OV2640.c **** #define OV2640_DCACHE_MAINTENANCE  1
+  19:Core/Lib/OV2640.c **** #endif
+  20:Core/Lib/OV2640.c **** 
+  21:Core/Lib/OV2640.c **** /* =============================
+  22:Core/Lib/OV2640.c ****  *  Static helpers (riêng .c)
+  23:Core/Lib/OV2640.c ****  * ============================= */
+  24:Core/Lib/OV2640.c **** static ov2640_status_t _write_reg(OV2640_Handle *cam, uint8_t reg, uint8_t val);
+  25:Core/Lib/OV2640.c **** static ov2640_status_t _read_reg (OV2640_Handle *cam, uint8_t reg, uint8_t *val);
+  26:Core/Lib/OV2640.c **** static ov2640_status_t _apply_table(OV2640_Handle *cam, const ov2640_regval_t *tbl);
+  27:Core/Lib/OV2640.c **** 
+  28:Core/Lib/OV2640.c **** /* =============================
+  29:Core/Lib/OV2640.c ****  *  Public API
+  30:Core/Lib/OV2640.c ****  * ============================= */
+  31:Core/Lib/OV2640.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 2
+
+
+  32:Core/Lib/OV2640.c **** ov2640_status_t OV2640_Init(OV2640_Handle *cam,
+  33:Core/Lib/OV2640.c ****                             I2C_HandleTypeDef *hi2c,
+  34:Core/Lib/OV2640.c ****                             DCMI_HandleTypeDef *hdcmi)
+  35:Core/Lib/OV2640.c **** {
+  36:Core/Lib/OV2640.c ****     if (!cam || !hi2c || !hdcmi) return OV2640_INVALID_PARAM;
+  37:Core/Lib/OV2640.c **** 
+  38:Core/Lib/OV2640.c ****     memset(cam, 0, sizeof(*cam));
+  39:Core/Lib/OV2640.c ****     cam->hi2c  = hi2c;
+  40:Core/Lib/OV2640.c ****     cam->hdcmi = hdcmi;
+  41:Core/Lib/OV2640.c **** 
+  42:Core/Lib/OV2640.c ****     /* Mặc định (QVGA RGB565)  */
+  43:Core/Lib/OV2640.c ****     cam->width  = 320;
+  44:Core/Lib/OV2640.c ****     cam->height = 240;
+  45:Core/Lib/OV2640.c ****     cam->bpp    = 2;
+  46:Core/Lib/OV2640.c **** 
+  47:Core/Lib/OV2640.c ****     /* Kiểm tra thiết bị trên bus */
+  48:Core/Lib/OV2640.c ****     return OV2640_Ping(cam);
+  49:Core/Lib/OV2640.c **** }
+  50:Core/Lib/OV2640.c **** 
+  51:Core/Lib/OV2640.c **** ov2640_status_t OV2640_Ping(OV2640_Handle *cam)
+  52:Core/Lib/OV2640.c **** {
+  53:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c) return OV2640_INVALID_PARAM;
+  54:Core/Lib/OV2640.c **** 
+  55:Core/Lib/OV2640.c ****     if (HAL_I2C_IsDeviceReady(cam->hi2c, (OV2640_I2C_ADDR_7BIT << 1),
+  56:Core/Lib/OV2640.c ****                               2, OV2640_I2C_TIMEOUT_MS) == HAL_OK) {
+  57:Core/Lib/OV2640.c ****         return OV2640_OK;
+  58:Core/Lib/OV2640.c ****     }
+  59:Core/Lib/OV2640.c ****     return OV2640_DEVICE_NOT_FOUND;
+  60:Core/Lib/OV2640.c **** }
+  61:Core/Lib/OV2640.c **** 
+  62:Core/Lib/OV2640.c **** ov2640_status_t OV2640_Reset(OV2640_Handle *cam)
+  63:Core/Lib/OV2640.c **** {
+  64:Core/Lib/OV2640.c ****     if (!cam) return OV2640_INVALID_PARAM;
+  65:Core/Lib/OV2640.c **** 
+  66:Core/Lib/OV2640.c ****     /* Chọn bank 1, ghi reset mềm */
+  67:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0xFF, 0x01) != OV2640_OK) return OV2640_I2C_ERROR;
+  68:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0x12, 0x80) != OV2640_OK) return OV2640_I2C_ERROR;
+  69:Core/Lib/OV2640.c **** 
+  70:Core/Lib/OV2640.c ****     HAL_Delay(OV2640_RESET_DELAY_MS);
+  71:Core/Lib/OV2640.c ****     return OV2640_OK;
+  72:Core/Lib/OV2640.c **** }
+  73:Core/Lib/OV2640.c **** 
+  74:Core/Lib/OV2640.c **** ov2640_status_t OV2640_WriteReg(OV2640_Handle *cam, uint8_t reg, uint8_t val)
+  75:Core/Lib/OV2640.c **** {
+  76:Core/Lib/OV2640.c ****     return _write_reg(cam, reg, val);
+  77:Core/Lib/OV2640.c **** }
+  78:Core/Lib/OV2640.c **** 
+  79:Core/Lib/OV2640.c **** ov2640_status_t OV2640_ReadReg(OV2640_Handle *cam, uint8_t reg, uint8_t *val)
+  80:Core/Lib/OV2640.c **** {
+  81:Core/Lib/OV2640.c ****     return _read_reg(cam, reg, val);
+  82:Core/Lib/OV2640.c **** }
+  83:Core/Lib/OV2640.c **** 
+  84:Core/Lib/OV2640.c **** ov2640_status_t OV2640_ApplyTable(OV2640_Handle *cam, const ov2640_regval_t *tbl)
+  85:Core/Lib/OV2640.c **** {
+  86:Core/Lib/OV2640.c ****     return _apply_table(cam, tbl);
+  87:Core/Lib/OV2640.c **** }
+  88:Core/Lib/OV2640.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 3
+
+
+  89:Core/Lib/OV2640.c **** ov2640_status_t OV2640_StartSnapshot(OV2640_Handle *cam, void *buf, uint32_t buf_len_bytes)
+  90:Core/Lib/OV2640.c **** {
+  91:Core/Lib/OV2640.c ****     if (!cam || !cam->hdcmi || !buf) return OV2640_INVALID_PARAM;
+  92:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+  93:Core/Lib/OV2640.c **** 
+  94:Core/Lib/OV2640.c ****     uint32_t total_bytes = cam->width * cam->height * cam->bpp;
+  95:Core/Lib/OV2640.c ****     if (buf_len_bytes < total_bytes) return OV2640_ERROR;
+  96:Core/Lib/OV2640.c **** 
+  97:Core/Lib/OV2640.c ****     /* DCMI DMA: length = số WORD 32-bit cần nhận */
+  98:Core/Lib/OV2640.c ****     uint32_t len_words = (total_bytes + 3U) / 4U;
+  99:Core/Lib/OV2640.c **** 
+ 100:Core/Lib/OV2640.c ****     cam->frame_ready = 0;
+ 101:Core/Lib/OV2640.c **** 
+ 102:Core/Lib/OV2640.c ****     /* Nếu cần, làm sạch cache trước khi nhận (tuỳ cấu hình hệ thống) */
+ 103:Core/Lib/OV2640.c **** #if (OV2640_DCACHE_MAINTENANCE)
+ 104:Core/Lib/OV2640.c ****   #if defined (SCB_CleanInvalidateDCache) || defined (SCB_CleanDCache)
+ 105:Core/Lib/OV2640.c ****     /* Với H7, nếu buffer ở DCache-able region và dùng DMA, cân nhắc Clean trước khi 
+ 106:Core/Lib/OV2640.c ****        Ở đây ta thường chỉ cần Invalidate SAU khi nhận xong. */
+ 107:Core/Lib/OV2640.c ****   #endif
+ 108:Core/Lib/OV2640.c **** #endif
+ 109:Core/Lib/OV2640.c **** 
+ 110:Core/Lib/OV2640.c ****     if (HAL_DCMI_Start_DMA(cam->hdcmi, DCMI_MODE_SNAPSHOT,
+ 111:Core/Lib/OV2640.c ****                            (uint32_t)buf, len_words) != HAL_OK) {
+ 112:Core/Lib/OV2640.c ****         return OV2640_ERROR;
+ 113:Core/Lib/OV2640.c ****     }
+ 114:Core/Lib/OV2640.c ****     return OV2640_OK;
+ 115:Core/Lib/OV2640.c **** }
+ 116:Core/Lib/OV2640.c **** 
+ 117:Core/Lib/OV2640.c **** ov2640_status_t OV2640_WaitFrame(OV2640_Handle *cam, uint32_t timeout_ms)
+ 118:Core/Lib/OV2640.c **** {
+ 119:Core/Lib/OV2640.c ****     if (!cam || !cam->hdcmi) return OV2640_INVALID_PARAM;
+ 120:Core/Lib/OV2640.c **** 
+ 121:Core/Lib/OV2640.c ****     uint32_t t0 = HAL_GetTick();
+ 122:Core/Lib/OV2640.c ****     while (!cam->frame_ready) {
+ 123:Core/Lib/OV2640.c ****         if (timeout_ms && (HAL_GetTick() - t0 >= timeout_ms)) {
+ 124:Core/Lib/OV2640.c ****             HAL_DCMI_Stop(cam->hdcmi);
+ 125:Core/Lib/OV2640.c ****             return OV2640_TIMEOUT;
+ 126:Core/Lib/OV2640.c ****         }
+ 127:Core/Lib/OV2640.c ****     }
+ 128:Core/Lib/OV2640.c **** 
+ 129:Core/Lib/OV2640.c ****     /* Dừng DCMI sau khi xong khung */
+ 130:Core/Lib/OV2640.c ****     HAL_DCMI_Stop(cam->hdcmi);
+ 131:Core/Lib/OV2640.c **** 
+ 132:Core/Lib/OV2640.c ****     /* Invalidate D-Cache để CPU thấy dữ liệu DMA mới */
+ 133:Core/Lib/OV2640.c **** #if (OV2640_DCACHE_MAINTENANCE)
+ 134:Core/Lib/OV2640.c ****   #if defined (SCB_InvalidateDCache_by_Addr)
+ 135:Core/Lib/OV2640.c ****     /* CHÚ Ý: địa chỉ phải 32-byte aligned khi gọi Invalidate theo vùng */
+ 136:Core/Lib/OV2640.c ****     /* Không có con trỏ buffer ở đây; người gọi biết địa chỉ buffer -> nên Inv
+ 137:Core/Lib/OV2640.c ****        nơi gọi OV2640_WaitFrame, khi có sẵn pointer buffer. */
+ 138:Core/Lib/OV2640.c ****   #endif
+ 139:Core/Lib/OV2640.c **** #endif
+ 140:Core/Lib/OV2640.c **** 
+ 141:Core/Lib/OV2640.c ****     return OV2640_OK;
+ 142:Core/Lib/OV2640.c **** }
+ 143:Core/Lib/OV2640.c **** 
+ 144:Core/Lib/OV2640.c **** void OV2640_OnFrameEvent(OV2640_Handle *cam)
+ 145:Core/Lib/OV2640.c **** {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 4
+
+
+ 146:Core/Lib/OV2640.c ****     if (cam) cam->frame_ready = 1;
+ 147:Core/Lib/OV2640.c **** }
+ 148:Core/Lib/OV2640.c **** 
+ 149:Core/Lib/OV2640.c **** /* =============================
+ 150:Core/Lib/OV2640.c ****  *  Static helpers
+ 151:Core/Lib/OV2640.c ****  * ============================= */
+ 152:Core/Lib/OV2640.c **** static ov2640_status_t _write_reg(OV2640_Handle *cam, uint8_t reg, uint8_t val)
+ 153:Core/Lib/OV2640.c **** {
+  28              		.loc 1 153 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 153 1 is_stmt 0 view .LVU1
+  33 0000 00B5     		push	{lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 4
+  36              		.cfi_offset 14, -4
+  37 0002 87B0     		sub	sp, sp, #28
+  38              	.LCFI1:
+  39              		.cfi_def_cfa_offset 32
+  40 0004 8DF81720 		strb	r2, [sp, #23]
+ 154:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c) return OV2640_INVALID_PARAM;
+  41              		.loc 1 154 5 is_stmt 1 view .LVU2
+  42              		.loc 1 154 8 is_stmt 0 view .LVU3
+  43 0008 80B1     		cbz	r0, .L3
+  44              		.loc 1 154 21 discriminator 2 view .LVU4
+  45 000a 0068     		ldr	r0, [r0]
+  46              	.LVL1:
+  47              		.loc 1 154 14 discriminator 2 view .LVU5
+  48 000c 80B1     		cbz	r0, .L4
+ 155:Core/Lib/OV2640.c **** 
+ 156:Core/Lib/OV2640.c ****     if (HAL_I2C_Mem_Write(cam->hi2c, (OV2640_I2C_ADDR_7BIT << 1),
+  49              		.loc 1 156 5 is_stmt 1 view .LVU6
+  50              		.loc 1 156 9 is_stmt 0 view .LVU7
+  51 000e 6423     		movs	r3, #100
+  52 0010 0293     		str	r3, [sp, #8]
+  53 0012 0123     		movs	r3, #1
+  54 0014 0193     		str	r3, [sp, #4]
+  55 0016 0DF11702 		add	r2, sp, #23
+  56              	.LVL2:
+  57              		.loc 1 156 9 view .LVU8
+  58 001a 0092     		str	r2, [sp]
+  59 001c 0A46     		mov	r2, r1
+  60              	.LVL3:
+  61              		.loc 1 156 9 view .LVU9
+  62 001e 6021     		movs	r1, #96
+  63              	.LVL4:
+  64              		.loc 1 156 9 view .LVU10
+  65 0020 FFF7FEFF 		bl	HAL_I2C_Mem_Write
+  66              	.LVL5:
+  67              		.loc 1 156 8 view .LVU11
+  68 0024 30B9     		cbnz	r0, .L7
+  69              	.L2:
+ 157:Core/Lib/OV2640.c ****                           reg, I2C_MEMADD_SIZE_8BIT,
+ 158:Core/Lib/OV2640.c ****                           &val, 1, OV2640_I2C_TIMEOUT_MS) != HAL_OK) {
+ 159:Core/Lib/OV2640.c ****         return OV2640_I2C_ERROR;
+ 160:Core/Lib/OV2640.c ****     }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 5
+
+
+ 161:Core/Lib/OV2640.c ****     return OV2640_OK;
+ 162:Core/Lib/OV2640.c **** }
+  70              		.loc 1 162 1 view .LVU12
+  71 0026 07B0     		add	sp, sp, #28
+  72              	.LCFI2:
+  73              		.cfi_remember_state
+  74              		.cfi_def_cfa_offset 4
+  75              		@ sp needed
+  76 0028 5DF804FB 		ldr	pc, [sp], #4
+  77              	.LVL6:
+  78              	.L3:
+  79              	.LCFI3:
+  80              		.cfi_restore_state
+ 154:Core/Lib/OV2640.c **** 
+  81              		.loc 1 154 36 view .LVU13
+  82 002c 0520     		movs	r0, #5
+  83              	.LVL7:
+ 154:Core/Lib/OV2640.c **** 
+  84              		.loc 1 154 36 view .LVU14
+  85 002e FAE7     		b	.L2
+  86              	.L4:
+  87 0030 0520     		movs	r0, #5
+  88 0032 F8E7     		b	.L2
+  89              	.LVL8:
+  90              	.L7:
+ 159:Core/Lib/OV2640.c ****     }
+  91              		.loc 1 159 16 view .LVU15
+  92 0034 0220     		movs	r0, #2
+  93 0036 F6E7     		b	.L2
+  94              		.cfi_endproc
+  95              	.LFE153:
+  97              		.section	.text._apply_table,"ax",%progbits
+  98              		.align	1
+  99              		.syntax unified
+ 100              		.thumb
+ 101              		.thumb_func
+ 103              	_apply_table:
+ 104              	.LVL9:
+ 105              	.LFB155:
+ 163:Core/Lib/OV2640.c **** 
+ 164:Core/Lib/OV2640.c **** static ov2640_status_t _read_reg(OV2640_Handle *cam, uint8_t reg, uint8_t *val)
+ 165:Core/Lib/OV2640.c **** {
+ 166:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c || !val) return OV2640_INVALID_PARAM;
+ 167:Core/Lib/OV2640.c **** 
+ 168:Core/Lib/OV2640.c ****     if (HAL_I2C_Mem_Read(cam->hi2c, (OV2640_I2C_ADDR_7BIT << 1),
+ 169:Core/Lib/OV2640.c ****                          reg, I2C_MEMADD_SIZE_8BIT,
+ 170:Core/Lib/OV2640.c ****                          val, 1, OV2640_I2C_TIMEOUT_MS) != HAL_OK) {
+ 171:Core/Lib/OV2640.c ****         return OV2640_I2C_ERROR;
+ 172:Core/Lib/OV2640.c ****     }
+ 173:Core/Lib/OV2640.c ****     return OV2640_OK;
+ 174:Core/Lib/OV2640.c **** }
+ 175:Core/Lib/OV2640.c **** 
+ 176:Core/Lib/OV2640.c **** static ov2640_status_t _apply_table(OV2640_Handle *cam, const ov2640_regval_t *tbl)
+ 177:Core/Lib/OV2640.c **** {
+ 106              		.loc 1 177 1 is_stmt 1 view -0
+ 107              		.cfi_startproc
+ 108              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 6
+
+
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110              		.loc 1 177 1 is_stmt 0 view .LVU17
+ 111 0000 38B5     		push	{r3, r4, r5, lr}
+ 112              	.LCFI4:
+ 113              		.cfi_def_cfa_offset 16
+ 114              		.cfi_offset 3, -16
+ 115              		.cfi_offset 4, -12
+ 116              		.cfi_offset 5, -8
+ 117              		.cfi_offset 14, -4
+ 178:Core/Lib/OV2640.c ****     if (!cam || !tbl) return OV2640_INVALID_PARAM;
+ 118              		.loc 1 178 5 is_stmt 1 view .LVU18
+ 119              		.loc 1 178 9 is_stmt 0 view .LVU19
+ 120 0002 0546     		mov	r5, r0
+ 121              		.loc 1 178 17 view .LVU20
+ 122 0004 0C46     		mov	r4, r1
+ 123              		.loc 1 178 8 view .LVU21
+ 124 0006 0029     		cmp	r1, #0
+ 125 0008 18BF     		it	ne
+ 126 000a 0028     		cmpne	r0, #0
+ 127 000c 0BD1     		bne	.L10
+ 128              		.loc 1 178 30 view .LVU22
+ 129 000e 0523     		movs	r3, #5
+ 130 0010 10E0     		b	.L9
+ 131              	.LVL10:
+ 132              	.L11:
+ 133              	.LBB2:
+ 134              	.LBB3:
+ 179:Core/Lib/OV2640.c **** 
+ 180:Core/Lib/OV2640.c ****     for (const ov2640_regval_t *p = tbl; !(p->reg == 0xFF && p->val == 0xFF); ++p) {
+ 181:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ 135              		.loc 1 181 9 is_stmt 1 view .LVU23
+ 136              		.loc 1 181 30 is_stmt 0 view .LVU24
+ 137 0012 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 138 0014 2846     		mov	r0, r5
+ 139 0016 FFF7FEFF 		bl	_write_reg
+ 140              	.LVL11:
+ 182:Core/Lib/OV2640.c ****         if (st != OV2640_OK) return st;
+ 141              		.loc 1 182 9 is_stmt 1 view .LVU25
+ 142              		.loc 1 182 12 is_stmt 0 view .LVU26
+ 143 001a 0346     		mov	r3, r0
+ 144 001c 50B9     		cbnz	r0, .L9
+ 183:Core/Lib/OV2640.c ****         HAL_Delay(1); /* nhỏ để sensor theo kịp */
+ 145              		.loc 1 183 9 is_stmt 1 discriminator 2 view .LVU27
+ 146 001e 0120     		movs	r0, #1
+ 147              	.LVL12:
+ 148              		.loc 1 183 9 is_stmt 0 discriminator 2 view .LVU28
+ 149 0020 FFF7FEFF 		bl	HAL_Delay
+ 150              	.LVL13:
+ 151              	.LBE3:
+ 180:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ 152              		.loc 1 180 79 is_stmt 1 discriminator 2 view .LVU29
+ 153 0024 0234     		adds	r4, r4, #2
+ 154              	.LVL14:
+ 155              	.L10:
+ 180:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ 156              		.loc 1 180 42 discriminator 1 view .LVU30
+ 180:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 7
+
+
+ 157              		.loc 1 180 45 is_stmt 0 discriminator 1 view .LVU31
+ 158 0026 2178     		ldrb	r1, [r4]	@ zero_extendqisi2
+ 180:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ 159              		.loc 1 180 5 discriminator 1 view .LVU32
+ 160 0028 FF29     		cmp	r1, #255
+ 161 002a F2D1     		bne	.L11
+ 180:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ 162              		.loc 1 180 63 discriminator 3 view .LVU33
+ 163 002c 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 180:Core/Lib/OV2640.c ****         ov2640_status_t st = _write_reg(cam, p->reg, p->val);
+ 164              		.loc 1 180 42 discriminator 3 view .LVU34
+ 165 002e FF2B     		cmp	r3, #255
+ 166 0030 EFD1     		bne	.L11
+ 167              	.LBE2:
+ 184:Core/Lib/OV2640.c ****     }
+ 185:Core/Lib/OV2640.c ****     return OV2640_OK;
+ 168              		.loc 1 185 12 view .LVU35
+ 169 0032 0023     		movs	r3, #0
+ 170              	.LVL15:
+ 171              	.L9:
+ 186:Core/Lib/OV2640.c **** }
+ 172              		.loc 1 186 1 view .LVU36
+ 173 0034 1846     		mov	r0, r3
+ 174 0036 38BD     		pop	{r3, r4, r5, pc}
+ 175              		.loc 1 186 1 view .LVU37
+ 176              		.cfi_endproc
+ 177              	.LFE155:
+ 179              		.section	.text._read_reg,"ax",%progbits
+ 180              		.align	1
+ 181              		.syntax unified
+ 182              		.thumb
+ 183              		.thumb_func
+ 185              	_read_reg:
+ 186              	.LVL16:
+ 187              	.LFB154:
+ 165:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c || !val) return OV2640_INVALID_PARAM;
+ 188              		.loc 1 165 1 is_stmt 1 view -0
+ 189              		.cfi_startproc
+ 190              		@ args = 0, pretend = 0, frame = 0
+ 191              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166:Core/Lib/OV2640.c **** 
+ 192              		.loc 1 166 5 view .LVU39
+ 166:Core/Lib/OV2640.c **** 
+ 193              		.loc 1 166 8 is_stmt 0 view .LVU40
+ 194 0000 88B1     		cbz	r0, .L16
+ 166:Core/Lib/OV2640.c **** 
+ 195              		.loc 1 166 21 discriminator 2 view .LVU41
+ 196 0002 0068     		ldr	r0, [r0]
+ 197              	.LVL17:
+ 166:Core/Lib/OV2640.c **** 
+ 198              		.loc 1 166 14 discriminator 2 view .LVU42
+ 199 0004 88B1     		cbz	r0, .L17
+ 166:Core/Lib/OV2640.c **** 
+ 200              		.loc 1 166 28 discriminator 4 view .LVU43
+ 201 0006 92B1     		cbz	r2, .L18
+ 165:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c || !val) return OV2640_INVALID_PARAM;
+ 202              		.loc 1 165 1 view .LVU44
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 8
+
+
+ 203 0008 00B5     		push	{lr}
+ 204              	.LCFI5:
+ 205              		.cfi_def_cfa_offset 4
+ 206              		.cfi_offset 14, -4
+ 207 000a 85B0     		sub	sp, sp, #20
+ 208              	.LCFI6:
+ 209              		.cfi_def_cfa_offset 24
+ 168:Core/Lib/OV2640.c ****                          reg, I2C_MEMADD_SIZE_8BIT,
+ 210              		.loc 1 168 5 is_stmt 1 view .LVU45
+ 168:Core/Lib/OV2640.c ****                          reg, I2C_MEMADD_SIZE_8BIT,
+ 211              		.loc 1 168 9 is_stmt 0 view .LVU46
+ 212 000c 6423     		movs	r3, #100
+ 213 000e 0293     		str	r3, [sp, #8]
+ 214 0010 0123     		movs	r3, #1
+ 215 0012 0193     		str	r3, [sp, #4]
+ 216 0014 0092     		str	r2, [sp]
+ 217 0016 0A46     		mov	r2, r1
+ 218              	.LVL18:
+ 168:Core/Lib/OV2640.c ****                          reg, I2C_MEMADD_SIZE_8BIT,
+ 219              		.loc 1 168 9 view .LVU47
+ 220 0018 6021     		movs	r1, #96
+ 221              	.LVL19:
+ 168:Core/Lib/OV2640.c ****                          reg, I2C_MEMADD_SIZE_8BIT,
+ 222              		.loc 1 168 9 view .LVU48
+ 223 001a FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 224              	.LVL20:
+ 168:Core/Lib/OV2640.c ****                          reg, I2C_MEMADD_SIZE_8BIT,
+ 225              		.loc 1 168 8 view .LVU49
+ 226 001e 40B9     		cbnz	r0, .L24
+ 227              	.L15:
+ 174:Core/Lib/OV2640.c **** 
+ 228              		.loc 1 174 1 view .LVU50
+ 229 0020 05B0     		add	sp, sp, #20
+ 230              	.LCFI7:
+ 231              		.cfi_def_cfa_offset 4
+ 232              		@ sp needed
+ 233 0022 5DF804FB 		ldr	pc, [sp], #4
+ 234              	.LVL21:
+ 235              	.L16:
+ 236              	.LCFI8:
+ 237              		.cfi_def_cfa_offset 0
+ 238              		.cfi_restore 14
+ 166:Core/Lib/OV2640.c **** 
+ 239              		.loc 1 166 44 view .LVU51
+ 240 0026 0520     		movs	r0, #5
+ 241              	.LVL22:
+ 166:Core/Lib/OV2640.c **** 
+ 242              		.loc 1 166 44 view .LVU52
+ 243 0028 7047     		bx	lr
+ 244              	.L17:
+ 245 002a 0520     		movs	r0, #5
+ 246 002c 7047     		bx	lr
+ 247              	.L18:
+ 248 002e 0520     		movs	r0, #5
+ 174:Core/Lib/OV2640.c **** 
+ 249              		.loc 1 174 1 view .LVU53
+ 250 0030 7047     		bx	lr
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 9
+
+
+ 251              	.LVL23:
+ 252              	.L24:
+ 253              	.LCFI9:
+ 254              		.cfi_def_cfa_offset 24
+ 255              		.cfi_offset 14, -4
+ 171:Core/Lib/OV2640.c ****     }
+ 256              		.loc 1 171 16 view .LVU54
+ 257 0032 0220     		movs	r0, #2
+ 258 0034 F4E7     		b	.L15
+ 259              		.cfi_endproc
+ 260              	.LFE154:
+ 262              		.section	.text.OV2640_Ping,"ax",%progbits
+ 263              		.align	1
+ 264              		.global	OV2640_Ping
+ 265              		.syntax unified
+ 266              		.thumb
+ 267              		.thumb_func
+ 269              	OV2640_Ping:
+ 270              	.LVL24:
+ 271              	.LFB145:
+  52:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c) return OV2640_INVALID_PARAM;
+ 272              		.loc 1 52 1 is_stmt 1 view -0
+ 273              		.cfi_startproc
+ 274              		@ args = 0, pretend = 0, frame = 0
+ 275              		@ frame_needed = 0, uses_anonymous_args = 0
+  53:Core/Lib/OV2640.c **** 
+ 276              		.loc 1 53 5 view .LVU56
+  53:Core/Lib/OV2640.c **** 
+ 277              		.loc 1 53 8 is_stmt 0 view .LVU57
+ 278 0000 50B1     		cbz	r0, .L27
+  52:Core/Lib/OV2640.c ****     if (!cam || !cam->hi2c) return OV2640_INVALID_PARAM;
+ 279              		.loc 1 52 1 discriminator 2 view .LVU58
+ 280 0002 08B5     		push	{r3, lr}
+ 281              	.LCFI10:
+ 282              		.cfi_def_cfa_offset 8
+ 283              		.cfi_offset 3, -8
+ 284              		.cfi_offset 14, -4
+  53:Core/Lib/OV2640.c **** 
+ 285              		.loc 1 53 21 discriminator 2 view .LVU59
+ 286 0004 0068     		ldr	r0, [r0]
+ 287              	.LVL25:
+  53:Core/Lib/OV2640.c **** 
+ 288              		.loc 1 53 14 discriminator 2 view .LVU60
+ 289 0006 48B1     		cbz	r0, .L28
+  55:Core/Lib/OV2640.c ****                               2, OV2640_I2C_TIMEOUT_MS) == HAL_OK) {
+ 290              		.loc 1 55 5 is_stmt 1 view .LVU61
+  55:Core/Lib/OV2640.c ****                               2, OV2640_I2C_TIMEOUT_MS) == HAL_OK) {
+ 291              		.loc 1 55 9 is_stmt 0 view .LVU62
+ 292 0008 6423     		movs	r3, #100
+ 293 000a 0222     		movs	r2, #2
+ 294 000c 6021     		movs	r1, #96
+ 295 000e FFF7FEFF 		bl	HAL_I2C_IsDeviceReady
+ 296              	.LVL26:
+  55:Core/Lib/OV2640.c ****                               2, OV2640_I2C_TIMEOUT_MS) == HAL_OK) {
+ 297              		.loc 1 55 8 view .LVU63
+ 298 0012 00B1     		cbz	r0, .L26
+  59:Core/Lib/OV2640.c **** }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 10
+
+
+ 299              		.loc 1 59 12 view .LVU64
+ 300 0014 0320     		movs	r0, #3
+ 301              	.L26:
+  60:Core/Lib/OV2640.c **** 
+ 302              		.loc 1 60 1 view .LVU65
+ 303 0016 08BD     		pop	{r3, pc}
+ 304              	.LVL27:
+ 305              	.L27:
+ 306              	.LCFI11:
+ 307              		.cfi_def_cfa_offset 0
+ 308              		.cfi_restore 3
+ 309              		.cfi_restore 14
+  53:Core/Lib/OV2640.c **** 
+ 310              		.loc 1 53 36 view .LVU66
+ 311 0018 0520     		movs	r0, #5
+ 312              	.LVL28:
+  60:Core/Lib/OV2640.c **** 
+ 313              		.loc 1 60 1 view .LVU67
+ 314 001a 7047     		bx	lr
+ 315              	.L28:
+ 316              	.LCFI12:
+ 317              		.cfi_def_cfa_offset 8
+ 318              		.cfi_offset 3, -8
+ 319              		.cfi_offset 14, -4
+  53:Core/Lib/OV2640.c **** 
+ 320              		.loc 1 53 36 view .LVU68
+ 321 001c 0520     		movs	r0, #5
+ 322 001e FAE7     		b	.L26
+ 323              		.cfi_endproc
+ 324              	.LFE145:
+ 326              		.section	.text.OV2640_Init,"ax",%progbits
+ 327              		.align	1
+ 328              		.global	OV2640_Init
+ 329              		.syntax unified
+ 330              		.thumb
+ 331              		.thumb_func
+ 333              	OV2640_Init:
+ 334              	.LVL29:
+ 335              	.LFB144:
+  35:Core/Lib/OV2640.c ****     if (!cam || !hi2c || !hdcmi) return OV2640_INVALID_PARAM;
+ 336              		.loc 1 35 1 is_stmt 1 view -0
+ 337              		.cfi_startproc
+ 338              		@ args = 0, pretend = 0, frame = 0
+ 339              		@ frame_needed = 0, uses_anonymous_args = 0
+  36:Core/Lib/OV2640.c **** 
+ 340              		.loc 1 36 5 view .LVU70
+  36:Core/Lib/OV2640.c **** 
+ 341              		.loc 1 36 8 is_stmt 0 view .LVU71
+ 342 0000 0029     		cmp	r1, #0
+ 343 0002 18BF     		it	ne
+ 344 0004 0028     		cmpne	r0, #0
+ 345 0006 14D0     		beq	.L35
+  35:Core/Lib/OV2640.c ****     if (!cam || !hi2c || !hdcmi) return OV2640_INVALID_PARAM;
+ 346              		.loc 1 35 1 discriminator 2 view .LVU72
+ 347 0008 10B5     		push	{r4, lr}
+ 348              	.LCFI13:
+ 349              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 11
+
+
+ 350              		.cfi_offset 4, -8
+ 351              		.cfi_offset 14, -4
+ 352 000a 0C46     		mov	r4, r1
+  36:Core/Lib/OV2640.c **** 
+ 353              		.loc 1 36 23 discriminator 2 view .LVU73
+ 354 000c 9AB1     		cbz	r2, .L36
+  38:Core/Lib/OV2640.c ****     cam->hi2c  = hi2c;
+ 355              		.loc 1 38 5 is_stmt 1 view .LVU74
+ 356 000e 0021     		movs	r1, #0
+ 357              	.LVL30:
+  38:Core/Lib/OV2640.c ****     cam->hi2c  = hi2c;
+ 358              		.loc 1 38 5 is_stmt 0 view .LVU75
+ 359 0010 0160     		str	r1, [r0]	@ unaligned
+ 360 0012 4160     		str	r1, [r0, #4]	@ unaligned
+ 361 0014 8160     		str	r1, [r0, #8]	@ unaligned
+ 362 0016 C160     		str	r1, [r0, #12]	@ unaligned
+ 363 0018 0161     		str	r1, [r0, #16]	@ unaligned
+  39:Core/Lib/OV2640.c ****     cam->hdcmi = hdcmi;
+ 364              		.loc 1 39 5 is_stmt 1 view .LVU76
+  39:Core/Lib/OV2640.c ****     cam->hdcmi = hdcmi;
+ 365              		.loc 1 39 16 is_stmt 0 view .LVU77
+ 366 001a 0460     		str	r4, [r0]
+  40:Core/Lib/OV2640.c **** 
+ 367              		.loc 1 40 5 is_stmt 1 view .LVU78
+  40:Core/Lib/OV2640.c **** 
+ 368              		.loc 1 40 16 is_stmt 0 view .LVU79
+ 369 001c 4260     		str	r2, [r0, #4]
+  43:Core/Lib/OV2640.c ****     cam->height = 240;
+ 370              		.loc 1 43 5 is_stmt 1 view .LVU80
+  43:Core/Lib/OV2640.c ****     cam->height = 240;
+ 371              		.loc 1 43 17 is_stmt 0 view .LVU81
+ 372 001e 4FF4A072 		mov	r2, #320
+ 373              	.LVL31:
+  43:Core/Lib/OV2640.c ****     cam->height = 240;
+ 374              		.loc 1 43 17 view .LVU82
+ 375 0022 8260     		str	r2, [r0, #8]
+  44:Core/Lib/OV2640.c ****     cam->bpp    = 2;
+ 376              		.loc 1 44 5 is_stmt 1 view .LVU83
+  44:Core/Lib/OV2640.c ****     cam->bpp    = 2;
+ 377              		.loc 1 44 17 is_stmt 0 view .LVU84
+ 378 0024 F022     		movs	r2, #240
+ 379 0026 C260     		str	r2, [r0, #12]
+  45:Core/Lib/OV2640.c **** 
+ 380              		.loc 1 45 5 is_stmt 1 view .LVU85
+  45:Core/Lib/OV2640.c **** 
+ 381              		.loc 1 45 17 is_stmt 0 view .LVU86
+ 382 0028 0222     		movs	r2, #2
+ 383 002a 0274     		strb	r2, [r0, #16]
+  48:Core/Lib/OV2640.c **** }
+ 384              		.loc 1 48 5 is_stmt 1 view .LVU87
+  48:Core/Lib/OV2640.c **** }
+ 385              		.loc 1 48 12 is_stmt 0 view .LVU88
+ 386 002c FFF7FEFF 		bl	OV2640_Ping
+ 387              	.LVL32:
+ 388              	.L34:
+  49:Core/Lib/OV2640.c **** 
+ 389              		.loc 1 49 1 view .LVU89
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 12
+
+
+ 390 0030 10BD     		pop	{r4, pc}
+ 391              	.LVL33:
+ 392              	.L35:
+ 393              	.LCFI14:
+ 394              		.cfi_def_cfa_offset 0
+ 395              		.cfi_restore 4
+ 396              		.cfi_restore 14
+  36:Core/Lib/OV2640.c **** 
+ 397              		.loc 1 36 41 view .LVU90
+ 398 0032 0520     		movs	r0, #5
+ 399              	.LVL34:
+  49:Core/Lib/OV2640.c **** 
+ 400              		.loc 1 49 1 view .LVU91
+ 401 0034 7047     		bx	lr
+ 402              	.LVL35:
+ 403              	.L36:
+ 404              	.LCFI15:
+ 405              		.cfi_def_cfa_offset 8
+ 406              		.cfi_offset 4, -8
+ 407              		.cfi_offset 14, -4
+  36:Core/Lib/OV2640.c **** 
+ 408              		.loc 1 36 41 view .LVU92
+ 409 0036 0520     		movs	r0, #5
+ 410              	.LVL36:
+  36:Core/Lib/OV2640.c **** 
+ 411              		.loc 1 36 41 view .LVU93
+ 412 0038 FAE7     		b	.L34
+ 413              		.cfi_endproc
+ 414              	.LFE144:
+ 416              		.section	.text.OV2640_Reset,"ax",%progbits
+ 417              		.align	1
+ 418              		.global	OV2640_Reset
+ 419              		.syntax unified
+ 420              		.thumb
+ 421              		.thumb_func
+ 423              	OV2640_Reset:
+ 424              	.LVL37:
+ 425              	.LFB146:
+  63:Core/Lib/OV2640.c ****     if (!cam) return OV2640_INVALID_PARAM;
+ 426              		.loc 1 63 1 is_stmt 1 view -0
+ 427              		.cfi_startproc
+ 428              		@ args = 0, pretend = 0, frame = 0
+ 429              		@ frame_needed = 0, uses_anonymous_args = 0
+  63:Core/Lib/OV2640.c ****     if (!cam) return OV2640_INVALID_PARAM;
+ 430              		.loc 1 63 1 is_stmt 0 view .LVU95
+ 431 0000 10B5     		push	{r4, lr}
+ 432              	.LCFI16:
+ 433              		.cfi_def_cfa_offset 8
+ 434              		.cfi_offset 4, -8
+ 435              		.cfi_offset 14, -4
+  64:Core/Lib/OV2640.c **** 
+ 436              		.loc 1 64 5 is_stmt 1 view .LVU96
+  64:Core/Lib/OV2640.c **** 
+ 437              		.loc 1 64 8 is_stmt 0 view .LVU97
+ 438 0002 88B1     		cbz	r0, .L43
+ 439 0004 0446     		mov	r4, r0
+  67:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0x12, 0x80) != OV2640_OK) return OV2640_I2C_ERROR;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 13
+
+
+ 440              		.loc 1 67 5 is_stmt 1 view .LVU98
+  67:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0x12, 0x80) != OV2640_OK) return OV2640_I2C_ERROR;
+ 441              		.loc 1 67 9 is_stmt 0 view .LVU99
+ 442 0006 0122     		movs	r2, #1
+ 443 0008 FF21     		movs	r1, #255
+ 444 000a FFF7FEFF 		bl	_write_reg
+ 445              	.LVL38:
+  67:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0x12, 0x80) != OV2640_OK) return OV2640_I2C_ERROR;
+ 446              		.loc 1 67 8 view .LVU100
+ 447 000e 68B9     		cbnz	r0, .L44
+  68:Core/Lib/OV2640.c **** 
+ 448              		.loc 1 68 5 is_stmt 1 view .LVU101
+  68:Core/Lib/OV2640.c **** 
+ 449              		.loc 1 68 9 is_stmt 0 view .LVU102
+ 450 0010 8022     		movs	r2, #128
+ 451 0012 1221     		movs	r1, #18
+ 452 0014 2046     		mov	r0, r4
+ 453 0016 FFF7FEFF 		bl	_write_reg
+ 454              	.LVL39:
+  68:Core/Lib/OV2640.c **** 
+ 455              		.loc 1 68 8 view .LVU103
+ 456 001a 0446     		mov	r4, r0
+ 457              	.LVL40:
+  68:Core/Lib/OV2640.c **** 
+ 458              		.loc 1 68 8 view .LVU104
+ 459 001c 40B9     		cbnz	r0, .L45
+  70:Core/Lib/OV2640.c ****     return OV2640_OK;
+ 460              		.loc 1 70 5 is_stmt 1 view .LVU105
+ 461 001e 6420     		movs	r0, #100
+ 462 0020 FFF7FEFF 		bl	HAL_Delay
+ 463              	.LVL41:
+  71:Core/Lib/OV2640.c **** }
+ 464              		.loc 1 71 5 view .LVU106
+ 465              	.L42:
+  72:Core/Lib/OV2640.c **** 
+ 466              		.loc 1 72 1 is_stmt 0 view .LVU107
+ 467 0024 2046     		mov	r0, r4
+ 468 0026 10BD     		pop	{r4, pc}
+ 469              	.LVL42:
+ 470              	.L43:
+  64:Core/Lib/OV2640.c **** 
+ 471              		.loc 1 64 22 view .LVU108
+ 472 0028 0524     		movs	r4, #5
+ 473 002a FBE7     		b	.L42
+ 474              	.LVL43:
+ 475              	.L44:
+  67:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0x12, 0x80) != OV2640_OK) return OV2640_I2C_ERROR;
+ 476              		.loc 1 67 58 view .LVU109
+ 477 002c 0224     		movs	r4, #2
+ 478              	.LVL44:
+  67:Core/Lib/OV2640.c ****     if (_write_reg(cam, 0x12, 0x80) != OV2640_OK) return OV2640_I2C_ERROR;
+ 479              		.loc 1 67 58 view .LVU110
+ 480 002e F9E7     		b	.L42
+ 481              	.L45:
+  68:Core/Lib/OV2640.c **** 
+ 482              		.loc 1 68 58 view .LVU111
+ 483 0030 0224     		movs	r4, #2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 14
+
+
+ 484 0032 F7E7     		b	.L42
+ 485              		.cfi_endproc
+ 486              	.LFE146:
+ 488              		.section	.text.OV2640_WriteReg,"ax",%progbits
+ 489              		.align	1
+ 490              		.global	OV2640_WriteReg
+ 491              		.syntax unified
+ 492              		.thumb
+ 493              		.thumb_func
+ 495              	OV2640_WriteReg:
+ 496              	.LVL45:
+ 497              	.LFB147:
+  75:Core/Lib/OV2640.c ****     return _write_reg(cam, reg, val);
+ 498              		.loc 1 75 1 is_stmt 1 view -0
+ 499              		.cfi_startproc
+ 500              		@ args = 0, pretend = 0, frame = 0
+ 501              		@ frame_needed = 0, uses_anonymous_args = 0
+  75:Core/Lib/OV2640.c ****     return _write_reg(cam, reg, val);
+ 502              		.loc 1 75 1 is_stmt 0 view .LVU113
+ 503 0000 08B5     		push	{r3, lr}
+ 504              	.LCFI17:
+ 505              		.cfi_def_cfa_offset 8
+ 506              		.cfi_offset 3, -8
+ 507              		.cfi_offset 14, -4
+  76:Core/Lib/OV2640.c **** }
+ 508              		.loc 1 76 5 is_stmt 1 view .LVU114
+  76:Core/Lib/OV2640.c **** }
+ 509              		.loc 1 76 12 is_stmt 0 view .LVU115
+ 510 0002 FFF7FEFF 		bl	_write_reg
+ 511              	.LVL46:
+  77:Core/Lib/OV2640.c **** 
+ 512              		.loc 1 77 1 view .LVU116
+ 513 0006 08BD     		pop	{r3, pc}
+ 514              		.cfi_endproc
+ 515              	.LFE147:
+ 517              		.section	.text.OV2640_ReadReg,"ax",%progbits
+ 518              		.align	1
+ 519              		.global	OV2640_ReadReg
+ 520              		.syntax unified
+ 521              		.thumb
+ 522              		.thumb_func
+ 524              	OV2640_ReadReg:
+ 525              	.LVL47:
+ 526              	.LFB148:
+  80:Core/Lib/OV2640.c ****     return _read_reg(cam, reg, val);
+ 527              		.loc 1 80 1 is_stmt 1 view -0
+ 528              		.cfi_startproc
+ 529              		@ args = 0, pretend = 0, frame = 0
+ 530              		@ frame_needed = 0, uses_anonymous_args = 0
+  80:Core/Lib/OV2640.c ****     return _read_reg(cam, reg, val);
+ 531              		.loc 1 80 1 is_stmt 0 view .LVU118
+ 532 0000 08B5     		push	{r3, lr}
+ 533              	.LCFI18:
+ 534              		.cfi_def_cfa_offset 8
+ 535              		.cfi_offset 3, -8
+ 536              		.cfi_offset 14, -4
+  81:Core/Lib/OV2640.c **** }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 15
+
+
+ 537              		.loc 1 81 5 is_stmt 1 view .LVU119
+  81:Core/Lib/OV2640.c **** }
+ 538              		.loc 1 81 12 is_stmt 0 view .LVU120
+ 539 0002 FFF7FEFF 		bl	_read_reg
+ 540              	.LVL48:
+  82:Core/Lib/OV2640.c **** 
+ 541              		.loc 1 82 1 view .LVU121
+ 542 0006 08BD     		pop	{r3, pc}
+ 543              		.cfi_endproc
+ 544              	.LFE148:
+ 546              		.section	.text.OV2640_ApplyTable,"ax",%progbits
+ 547              		.align	1
+ 548              		.global	OV2640_ApplyTable
+ 549              		.syntax unified
+ 550              		.thumb
+ 551              		.thumb_func
+ 553              	OV2640_ApplyTable:
+ 554              	.LVL49:
+ 555              	.LFB149:
+  85:Core/Lib/OV2640.c ****     return _apply_table(cam, tbl);
+ 556              		.loc 1 85 1 is_stmt 1 view -0
+ 557              		.cfi_startproc
+ 558              		@ args = 0, pretend = 0, frame = 0
+ 559              		@ frame_needed = 0, uses_anonymous_args = 0
+  85:Core/Lib/OV2640.c ****     return _apply_table(cam, tbl);
+ 560              		.loc 1 85 1 is_stmt 0 view .LVU123
+ 561 0000 08B5     		push	{r3, lr}
+ 562              	.LCFI19:
+ 563              		.cfi_def_cfa_offset 8
+ 564              		.cfi_offset 3, -8
+ 565              		.cfi_offset 14, -4
+  86:Core/Lib/OV2640.c **** }
+ 566              		.loc 1 86 5 is_stmt 1 view .LVU124
+  86:Core/Lib/OV2640.c **** }
+ 567              		.loc 1 86 12 is_stmt 0 view .LVU125
+ 568 0002 FFF7FEFF 		bl	_apply_table
+ 569              	.LVL50:
+  87:Core/Lib/OV2640.c **** 
+ 570              		.loc 1 87 1 view .LVU126
+ 571 0006 08BD     		pop	{r3, pc}
+ 572              		.cfi_endproc
+ 573              	.LFE149:
+ 575              		.section	.text.OV2640_StartSnapshot,"ax",%progbits
+ 576              		.align	1
+ 577              		.global	OV2640_StartSnapshot
+ 578              		.syntax unified
+ 579              		.thumb
+ 580              		.thumb_func
+ 582              	OV2640_StartSnapshot:
+ 583              	.LVL51:
+ 584              	.LFB150:
+  90:Core/Lib/OV2640.c ****     if (!cam || !cam->hdcmi || !buf) return OV2640_INVALID_PARAM;
+ 585              		.loc 1 90 1 is_stmt 1 view -0
+ 586              		.cfi_startproc
+ 587              		@ args = 0, pretend = 0, frame = 0
+ 588              		@ frame_needed = 0, uses_anonymous_args = 0
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 16
+
+
+ 589              		.loc 1 91 5 view .LVU128
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 590              		.loc 1 91 8 is_stmt 0 view .LVU129
+ 591 0000 10B3     		cbz	r0, .L55
+ 592 0002 8446     		mov	ip, r0
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 593              		.loc 1 91 21 discriminator 2 view .LVU130
+ 594 0004 4068     		ldr	r0, [r0, #4]
+ 595              	.LVL52:
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 596              		.loc 1 91 14 discriminator 2 view .LVU131
+ 597 0006 08B3     		cbz	r0, .L56
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 598              		.loc 1 91 29 discriminator 4 view .LVU132
+ 599 0008 11B3     		cbz	r1, .L57
+  90:Core/Lib/OV2640.c ****     if (!cam || !cam->hdcmi || !buf) return OV2640_INVALID_PARAM;
+ 600              		.loc 1 90 1 view .LVU133
+ 601 000a 38B5     		push	{r3, r4, r5, lr}
+ 602              	.LCFI20:
+ 603              		.cfi_def_cfa_offset 16
+ 604              		.cfi_offset 3, -16
+ 605              		.cfi_offset 4, -12
+ 606              		.cfi_offset 5, -8
+ 607              		.cfi_offset 14, -4
+  92:Core/Lib/OV2640.c **** 
+ 608              		.loc 1 92 5 is_stmt 1 view .LVU134
+  92:Core/Lib/OV2640.c **** 
+ 609              		.loc 1 92 12 is_stmt 0 view .LVU135
+ 610 000c DCF80830 		ldr	r3, [ip, #8]
+  92:Core/Lib/OV2640.c **** 
+ 611              		.loc 1 92 8 view .LVU136
+ 612 0010 03B3     		cbz	r3, .L58
+  92:Core/Lib/OV2640.c **** 
+ 613              		.loc 1 92 31 discriminator 2 view .LVU137
+ 614 0012 DCF80C40 		ldr	r4, [ip, #12]
+  92:Core/Lib/OV2640.c **** 
+ 615              		.loc 1 92 25 discriminator 2 view .LVU138
+ 616 0016 FCB1     		cbz	r4, .L59
+  92:Core/Lib/OV2640.c **** 
+ 617              		.loc 1 92 51 discriminator 4 view .LVU139
+ 618 0018 9CF81050 		ldrb	r5, [ip, #16]	@ zero_extendqisi2
+  92:Core/Lib/OV2640.c **** 
+ 619              		.loc 1 92 45 discriminator 4 view .LVU140
+ 620 001c F5B1     		cbz	r5, .L60
+  94:Core/Lib/OV2640.c ****     if (buf_len_bytes < total_bytes) return OV2640_ERROR;
+ 621              		.loc 1 94 5 is_stmt 1 view .LVU141
+  94:Core/Lib/OV2640.c ****     if (buf_len_bytes < total_bytes) return OV2640_ERROR;
+ 622              		.loc 1 94 39 is_stmt 0 view .LVU142
+ 623 001e 04FB03F3 		mul	r3, r4, r3
+  94:Core/Lib/OV2640.c ****     if (buf_len_bytes < total_bytes) return OV2640_ERROR;
+ 624              		.loc 1 94 14 view .LVU143
+ 625 0022 05FB03F3 		mul	r3, r5, r3
+ 626              	.LVL53:
+  95:Core/Lib/OV2640.c **** 
+ 627              		.loc 1 95 5 is_stmt 1 view .LVU144
+  95:Core/Lib/OV2640.c **** 
+ 628              		.loc 1 95 8 is_stmt 0 view .LVU145
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 17
+
+
+ 629 0026 9342     		cmp	r3, r2
+ 630 0028 01D9     		bls	.L67
+  95:Core/Lib/OV2640.c **** 
+ 631              		.loc 1 95 45 view .LVU146
+ 632 002a 0120     		movs	r0, #1
+ 633              	.LVL54:
+ 634              	.L54:
+ 115:Core/Lib/OV2640.c **** 
+ 635              		.loc 1 115 1 view .LVU147
+ 636 002c 38BD     		pop	{r3, r4, r5, pc}
+ 637              	.LVL55:
+ 638              	.L67:
+  98:Core/Lib/OV2640.c **** 
+ 639              		.loc 1 98 5 is_stmt 1 view .LVU148
+  98:Core/Lib/OV2640.c **** 
+ 640              		.loc 1 98 39 is_stmt 0 view .LVU149
+ 641 002e 0333     		adds	r3, r3, #3
+ 642              	.LVL56:
+ 100:Core/Lib/OV2640.c **** 
+ 643              		.loc 1 100 5 is_stmt 1 view .LVU150
+ 100:Core/Lib/OV2640.c **** 
+ 644              		.loc 1 100 22 is_stmt 0 view .LVU151
+ 645 0030 0022     		movs	r2, #0
+ 646              	.LVL57:
+ 100:Core/Lib/OV2640.c **** 
+ 647              		.loc 1 100 22 view .LVU152
+ 648 0032 8CF81120 		strb	r2, [ip, #17]
+ 110:Core/Lib/OV2640.c ****                            (uint32_t)buf, len_words) != HAL_OK) {
+ 649              		.loc 1 110 5 is_stmt 1 view .LVU153
+ 110:Core/Lib/OV2640.c ****                            (uint32_t)buf, len_words) != HAL_OK) {
+ 650              		.loc 1 110 9 is_stmt 0 view .LVU154
+ 651 0036 9B08     		lsrs	r3, r3, #2
+ 652              	.LVL58:
+ 110:Core/Lib/OV2640.c ****                            (uint32_t)buf, len_words) != HAL_OK) {
+ 653              		.loc 1 110 9 view .LVU155
+ 654 0038 0A46     		mov	r2, r1
+ 655 003a 0221     		movs	r1, #2
+ 656              	.LVL59:
+ 110:Core/Lib/OV2640.c ****                            (uint32_t)buf, len_words) != HAL_OK) {
+ 657              		.loc 1 110 9 view .LVU156
+ 658 003c FFF7FEFF 		bl	HAL_DCMI_Start_DMA
+ 659              	.LVL60:
+ 110:Core/Lib/OV2640.c ****                            (uint32_t)buf, len_words) != HAL_OK) {
+ 660              		.loc 1 110 8 view .LVU157
+ 661 0040 0028     		cmp	r0, #0
+ 662 0042 F3D0     		beq	.L54
+ 112:Core/Lib/OV2640.c ****     }
+ 663              		.loc 1 112 16 view .LVU158
+ 664 0044 0120     		movs	r0, #1
+ 665 0046 F1E7     		b	.L54
+ 666              	.LVL61:
+ 667              	.L55:
+ 668              	.LCFI21:
+ 669              		.cfi_def_cfa_offset 0
+ 670              		.cfi_restore 3
+ 671              		.cfi_restore 4
+ 672              		.cfi_restore 5
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 18
+
+
+ 673              		.cfi_restore 14
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 674              		.loc 1 91 45 view .LVU159
+ 675 0048 0520     		movs	r0, #5
+ 676              	.LVL62:
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 677              		.loc 1 91 45 view .LVU160
+ 678 004a 7047     		bx	lr
+ 679              	.LVL63:
+ 680              	.L56:
+  91:Core/Lib/OV2640.c ****     if (cam->width == 0 || cam->height == 0 || cam->bpp == 0) return OV2640_INVALID_PARAM;
+ 681              		.loc 1 91 45 view .LVU161
+ 682 004c 0520     		movs	r0, #5
+ 683 004e 7047     		bx	lr
+ 684              	.L57:
+ 685 0050 0520     		movs	r0, #5
+ 115:Core/Lib/OV2640.c **** 
+ 686              		.loc 1 115 1 view .LVU162
+ 687 0052 7047     		bx	lr
+ 688              	.L58:
+ 689              	.LCFI22:
+ 690              		.cfi_def_cfa_offset 16
+ 691              		.cfi_offset 3, -16
+ 692              		.cfi_offset 4, -12
+ 693              		.cfi_offset 5, -8
+ 694              		.cfi_offset 14, -4
+  92:Core/Lib/OV2640.c **** 
+ 695              		.loc 1 92 70 view .LVU163
+ 696 0054 0520     		movs	r0, #5
+ 697 0056 E9E7     		b	.L54
+ 698              	.L59:
+ 699 0058 0520     		movs	r0, #5
+ 700 005a E7E7     		b	.L54
+ 701              	.L60:
+ 702 005c 0520     		movs	r0, #5
+ 703 005e E5E7     		b	.L54
+ 704              		.cfi_endproc
+ 705              	.LFE150:
+ 707              		.section	.text.OV2640_WaitFrame,"ax",%progbits
+ 708              		.align	1
+ 709              		.global	OV2640_WaitFrame
+ 710              		.syntax unified
+ 711              		.thumb
+ 712              		.thumb_func
+ 714              	OV2640_WaitFrame:
+ 715              	.LVL64:
+ 716              	.LFB151:
+ 118:Core/Lib/OV2640.c ****     if (!cam || !cam->hdcmi) return OV2640_INVALID_PARAM;
+ 717              		.loc 1 118 1 is_stmt 1 view -0
+ 718              		.cfi_startproc
+ 719              		@ args = 0, pretend = 0, frame = 0
+ 720              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119:Core/Lib/OV2640.c **** 
+ 721              		.loc 1 119 5 view .LVU165
+ 119:Core/Lib/OV2640.c **** 
+ 722              		.loc 1 119 8 is_stmt 0 view .LVU166
+ 723 0000 D0B1     		cbz	r0, .L73
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 19
+
+
+ 118:Core/Lib/OV2640.c ****     if (!cam || !cam->hdcmi) return OV2640_INVALID_PARAM;
+ 724              		.loc 1 118 1 discriminator 2 view .LVU167
+ 725 0002 70B5     		push	{r4, r5, r6, lr}
+ 726              	.LCFI23:
+ 727              		.cfi_def_cfa_offset 16
+ 728              		.cfi_offset 4, -16
+ 729              		.cfi_offset 5, -12
+ 730              		.cfi_offset 6, -8
+ 731              		.cfi_offset 14, -4
+ 732 0004 0C46     		mov	r4, r1
+ 733 0006 0546     		mov	r5, r0
+ 119:Core/Lib/OV2640.c **** 
+ 734              		.loc 1 119 21 discriminator 2 view .LVU168
+ 735 0008 4368     		ldr	r3, [r0, #4]
+ 119:Core/Lib/OV2640.c **** 
+ 736              		.loc 1 119 14 discriminator 2 view .LVU169
+ 737 000a BBB1     		cbz	r3, .L74
+ 121:Core/Lib/OV2640.c ****     while (!cam->frame_ready) {
+ 738              		.loc 1 121 5 is_stmt 1 view .LVU170
+ 121:Core/Lib/OV2640.c ****     while (!cam->frame_ready) {
+ 739              		.loc 1 121 19 is_stmt 0 view .LVU171
+ 740 000c FFF7FEFF 		bl	HAL_GetTick
+ 741              	.LVL65:
+ 121:Core/Lib/OV2640.c ****     while (!cam->frame_ready) {
+ 742              		.loc 1 121 19 view .LVU172
+ 743 0010 0646     		mov	r6, r0
+ 744              	.LVL66:
+ 122:Core/Lib/OV2640.c ****         if (timeout_ms && (HAL_GetTick() - t0 >= timeout_ms)) {
+ 745              		.loc 1 122 5 is_stmt 1 view .LVU173
+ 746              	.L71:
+ 122:Core/Lib/OV2640.c ****         if (timeout_ms && (HAL_GetTick() - t0 >= timeout_ms)) {
+ 747              		.loc 1 122 11 view .LVU174
+ 122:Core/Lib/OV2640.c ****         if (timeout_ms && (HAL_GetTick() - t0 >= timeout_ms)) {
+ 748              		.loc 1 122 16 is_stmt 0 view .LVU175
+ 749 0012 6B7C     		ldrb	r3, [r5, #17]	@ zero_extendqisi2
+ 122:Core/Lib/OV2640.c ****         if (timeout_ms && (HAL_GetTick() - t0 >= timeout_ms)) {
+ 750              		.loc 1 122 11 view .LVU176
+ 751 0014 5BB9     		cbnz	r3, .L79
+ 123:Core/Lib/OV2640.c ****             HAL_DCMI_Stop(cam->hdcmi);
+ 752              		.loc 1 123 9 is_stmt 1 view .LVU177
+ 123:Core/Lib/OV2640.c ****             HAL_DCMI_Stop(cam->hdcmi);
+ 753              		.loc 1 123 12 is_stmt 0 view .LVU178
+ 754 0016 002C     		cmp	r4, #0
+ 755 0018 FBD0     		beq	.L71
+ 123:Core/Lib/OV2640.c ****             HAL_DCMI_Stop(cam->hdcmi);
+ 756              		.loc 1 123 28 discriminator 1 view .LVU179
+ 757 001a FFF7FEFF 		bl	HAL_GetTick
+ 758              	.LVL67:
+ 123:Core/Lib/OV2640.c ****             HAL_DCMI_Stop(cam->hdcmi);
+ 759              		.loc 1 123 42 discriminator 1 view .LVU180
+ 760 001e 801B     		subs	r0, r0, r6
+ 123:Core/Lib/OV2640.c ****             HAL_DCMI_Stop(cam->hdcmi);
+ 761              		.loc 1 123 24 discriminator 1 view .LVU181
+ 762 0020 A042     		cmp	r0, r4
+ 763 0022 F6D3     		bcc	.L71
+ 124:Core/Lib/OV2640.c ****             return OV2640_TIMEOUT;
+ 764              		.loc 1 124 13 is_stmt 1 view .LVU182
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 20
+
+
+ 765 0024 6868     		ldr	r0, [r5, #4]
+ 766 0026 FFF7FEFF 		bl	HAL_DCMI_Stop
+ 767              	.LVL68:
+ 125:Core/Lib/OV2640.c ****         }
+ 768              		.loc 1 125 13 view .LVU183
+ 125:Core/Lib/OV2640.c ****         }
+ 769              		.loc 1 125 20 is_stmt 0 view .LVU184
+ 770 002a 0420     		movs	r0, #4
+ 771 002c 03E0     		b	.L69
+ 772              	.L79:
+ 130:Core/Lib/OV2640.c **** 
+ 773              		.loc 1 130 5 is_stmt 1 view .LVU185
+ 774 002e 6868     		ldr	r0, [r5, #4]
+ 775 0030 FFF7FEFF 		bl	HAL_DCMI_Stop
+ 776              	.LVL69:
+ 141:Core/Lib/OV2640.c **** }
+ 777              		.loc 1 141 5 view .LVU186
+ 141:Core/Lib/OV2640.c **** }
+ 778              		.loc 1 141 12 is_stmt 0 view .LVU187
+ 779 0034 0020     		movs	r0, #0
+ 780              	.LVL70:
+ 781              	.L69:
+ 142:Core/Lib/OV2640.c **** 
+ 782              		.loc 1 142 1 view .LVU188
+ 783 0036 70BD     		pop	{r4, r5, r6, pc}
+ 784              	.LVL71:
+ 785              	.L73:
+ 786              	.LCFI24:
+ 787              		.cfi_def_cfa_offset 0
+ 788              		.cfi_restore 4
+ 789              		.cfi_restore 5
+ 790              		.cfi_restore 6
+ 791              		.cfi_restore 14
+ 119:Core/Lib/OV2640.c **** 
+ 792              		.loc 1 119 37 view .LVU189
+ 793 0038 0520     		movs	r0, #5
+ 794              	.LVL72:
+ 142:Core/Lib/OV2640.c **** 
+ 795              		.loc 1 142 1 view .LVU190
+ 796 003a 7047     		bx	lr
+ 797              	.LVL73:
+ 798              	.L74:
+ 799              	.LCFI25:
+ 800              		.cfi_def_cfa_offset 16
+ 801              		.cfi_offset 4, -16
+ 802              		.cfi_offset 5, -12
+ 803              		.cfi_offset 6, -8
+ 804              		.cfi_offset 14, -4
+ 119:Core/Lib/OV2640.c **** 
+ 805              		.loc 1 119 37 view .LVU191
+ 806 003c 0520     		movs	r0, #5
+ 807              	.LVL74:
+ 119:Core/Lib/OV2640.c **** 
+ 808              		.loc 1 119 37 view .LVU192
+ 809 003e FAE7     		b	.L69
+ 810              		.cfi_endproc
+ 811              	.LFE151:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 21
+
+
+ 813              		.section	.text.OV2640_OnFrameEvent,"ax",%progbits
+ 814              		.align	1
+ 815              		.global	OV2640_OnFrameEvent
+ 816              		.syntax unified
+ 817              		.thumb
+ 818              		.thumb_func
+ 820              	OV2640_OnFrameEvent:
+ 821              	.LVL75:
+ 822              	.LFB152:
+ 145:Core/Lib/OV2640.c ****     if (cam) cam->frame_ready = 1;
+ 823              		.loc 1 145 1 is_stmt 1 view -0
+ 824              		.cfi_startproc
+ 825              		@ args = 0, pretend = 0, frame = 0
+ 826              		@ frame_needed = 0, uses_anonymous_args = 0
+ 827              		@ link register save eliminated.
+ 146:Core/Lib/OV2640.c **** }
+ 828              		.loc 1 146 5 view .LVU194
+ 146:Core/Lib/OV2640.c **** }
+ 829              		.loc 1 146 8 is_stmt 0 view .LVU195
+ 830 0000 08B1     		cbz	r0, .L80
+ 146:Core/Lib/OV2640.c **** }
+ 831              		.loc 1 146 14 is_stmt 1 discriminator 1 view .LVU196
+ 146:Core/Lib/OV2640.c **** }
+ 832              		.loc 1 146 31 is_stmt 0 discriminator 1 view .LVU197
+ 833 0002 0122     		movs	r2, #1
+ 834 0004 4274     		strb	r2, [r0, #17]
+ 835              	.L80:
+ 147:Core/Lib/OV2640.c **** 
+ 836              		.loc 1 147 1 view .LVU198
+ 837 0006 7047     		bx	lr
+ 838              		.cfi_endproc
+ 839              	.LFE152:
+ 841              		.global	OV2640_QVGA_RGB565
+ 842              		.section	.rodata.OV2640_QVGA_RGB565,"a"
+ 843              		.align	2
+ 846              	OV2640_QVGA_RGB565:
+ 847 0000 FF       		.byte	-1
+ 848 0001 01       		.byte	1
+ 849 0002 12       		.byte	18
+ 850 0003 80       		.byte	-128
+ 851 0004 FF       		.byte	-1
+ 852 0005 FF       		.byte	-1
+ 853              		.text
+ 854              	.Letext0:
+ 855              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 856              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 857              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 858              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 859              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 860              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dcmi.h"
+ 861              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 862              		.file 9 "Core/Lib/OV2640.h"
+ 863              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cccojm4B.s 			page 22
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 OV2640.c
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:19     .text._write_reg:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:24     .text._write_reg:00000000 _write_reg
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:98     .text._apply_table:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:103    .text._apply_table:00000000 _apply_table
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:180    .text._read_reg:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:185    .text._read_reg:00000000 _read_reg
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:263    .text.OV2640_Ping:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:269    .text.OV2640_Ping:00000000 OV2640_Ping
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:327    .text.OV2640_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:333    .text.OV2640_Init:00000000 OV2640_Init
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:417    .text.OV2640_Reset:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:423    .text.OV2640_Reset:00000000 OV2640_Reset
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:489    .text.OV2640_WriteReg:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:495    .text.OV2640_WriteReg:00000000 OV2640_WriteReg
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:518    .text.OV2640_ReadReg:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:524    .text.OV2640_ReadReg:00000000 OV2640_ReadReg
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:547    .text.OV2640_ApplyTable:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:553    .text.OV2640_ApplyTable:00000000 OV2640_ApplyTable
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:576    .text.OV2640_StartSnapshot:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:582    .text.OV2640_StartSnapshot:00000000 OV2640_StartSnapshot
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:708    .text.OV2640_WaitFrame:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:714    .text.OV2640_WaitFrame:00000000 OV2640_WaitFrame
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:814    .text.OV2640_OnFrameEvent:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:820    .text.OV2640_OnFrameEvent:00000000 OV2640_OnFrameEvent
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:846    .rodata.OV2640_QVGA_RGB565:00000000 OV2640_QVGA_RGB565
+C:\Users\admin\AppData\Local\Temp\cccojm4B.s:843    .rodata.OV2640_QVGA_RGB565:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_I2C_Mem_Write
+HAL_Delay
+HAL_I2C_Mem_Read
+HAL_I2C_IsDeviceReady
+HAL_DCMI_Start_DMA
+HAL_GetTick
+HAL_DCMI_Stop

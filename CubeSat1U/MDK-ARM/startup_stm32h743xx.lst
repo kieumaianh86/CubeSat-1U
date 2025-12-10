@@ -1280,11 +1280,10 @@ ARM Macro Assembler    Page 20
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M7.fp.dp --apcs=
 interwork --depend=cubesat1u\startup_stm32h743xx.d -ocubesat1u\startup_stm32h74
-3xx.o -I../Drivers/CMSIS/Include -I.\RTE\_CubeSat1U -IC:\Users\admin\AppData\Lo
-cal\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include --predefine="__EVAL SETA 1" --
-predefine="__UVISION_VERSION SETA 531" --predefine="_RTE_ SETA 1" --predefine="
-STM32H743xx SETA 1" --predefine="_RTE_ SETA 1" --list=startup_stm32h743xx.lst s
-tartup_stm32h743xx.s
+3xx.o -I.\RTE\_CubeSat1U -IC:\Users\admin\AppData\Local\Arm\Packs\ARM\CMSIS\5.7
+.0\CMSIS\Core\Include --predefine="__UVISION_VERSION SETA 531" --predefine="_RT
+E_ SETA 1" --predefine="STM32H743xx SETA 1" --predefine="_RTE_ SETA 1" --list=s
+tartup_stm32h743xx.lst startup_stm32h743xx.s
 
 
 
@@ -2973,4 +2972,4 @@ Symbol: __use_two_region_memory
       None
 Comment: __use_two_region_memory unused
 4 symbols
-508 symbols in table
+507 symbols in table

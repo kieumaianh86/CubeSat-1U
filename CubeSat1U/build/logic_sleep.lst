@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -18,436 +18,844 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 1
   15              		.text
   16              	.Ltext0:
   17              		.cfi_sections	.debug_frame
-  18              		.section	.rodata.Logic_Sleep_WakeUp.str1.4,"aMS",%progbits,1
-  19              		.align	2
-  20              	.LC0:
-  21 0000 534C4545 		.ascii	"SLEEP: Wake-up from %d\015\012\000"
-  21      503A2057 
-  21      616B652D 
-  21      75702066 
-  21      726F6D20 
-  22 0019 000000   		.align	2
-  23              	.LC1:
-  24 001c 534C4545 		.ascii	"SLEEP: Battery < 20%%, sleep again\015\012\000"
-  24      503A2042 
-  24      61747465 
-  24      7279203C 
-  24      20323025 
-  25 0041 000000   		.align	2
-  26              	.LC2:
-  27 0044 534C4545 		.ascii	"SLEEP: bat=%d%%, sensors=%d\015\012\000"
-  27      503A2062 
-  27      61743D25 
-  27      6425252C 
-  27      2073656E 
-  28 0062 0000     		.align	2
-  29              	.LC3:
-  30 0064 534C4545 		.ascii	"SLEEP: Exit to STANDBY\015\012\000"
-  30      503A2045 
-  30      78697420 
-  30      746F2053 
-  30      54414E44 
-  31 007d 000000   		.align	2
-  32              	.LC4:
-  33 0080 534C4545 		.ascii	"SLEEP: Exit to SAFE (sensor fail)\015\012\000"
-  33      503A2045 
-  33      78697420 
-  33      746F2053 
-  33      41464520 
-  34              		.section	.text.Logic_Sleep_WakeUp,"ax",%progbits
-  35              		.align	1
-  36              		.global	Logic_Sleep_WakeUp
-  37              		.syntax unified
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 2
-
-
-  38              		.thumb
-  39              		.thumb_func
-  41              	Logic_Sleep_WakeUp:
-  42              	.LVL0:
-  43              	.LFB148:
-  44              		.file 1 "Core/Logic/logic_sleep.c"
+  18              		.section	.text.Logic_Sleep_DetectWakeSource,"ax",%progbits
+  19              		.align	1
+  20              		.global	Logic_Sleep_DetectWakeSource
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Logic_Sleep_DetectWakeSource:
+  26              	.LFB152:
+  27              		.file 1 "Core/Logic/logic_sleep.c"
    1:Core/Logic/logic_sleep.c **** #include "logic_sleep.h"
    2:Core/Logic/logic_sleep.c **** #include "logic.h"
    3:Core/Logic/logic_sleep.c **** #include "hardware.h"
-   4:Core/Logic/logic_sleep.c **** 
-   5:Core/Logic/logic_sleep.c **** sleep_error_t Logic_Sleep_Enter(void)
-   6:Core/Logic/logic_sleep.c **** {
-   7:Core/Logic/logic_sleep.c ****     system_health_t* health = Logic_GetHealth();
-   8:Core/Logic/logic_sleep.c ****     
-   9:Core/Logic/logic_sleep.c ****     HW_Power_All_Sensors_Off();
-  10:Core/Logic/logic_sleep.c ****     
-  11:Core/Logic/logic_sleep.c ****     uint32_t wake_interval = Logic_Sleep_GetWakeInterval();
-  12:Core/Logic/logic_sleep.c ****     
-  13:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: Entering, wake in %lu ms\r\n", wake_interval);
-  14:Core/Logic/logic_sleep.c ****     
-  15:Core/Logic/logic_sleep.c ****     HAL_SuspendTick();
-  16:Core/Logic/logic_sleep.c ****     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+   4:Core/Logic/logic_sleep.c **** #include "sdcard.h"
+   5:Core/Logic/logic_sleep.c **** 
+   6:Core/Logic/logic_sleep.c **** extern RTC_HandleTypeDef hrtc;
+   7:Core/Logic/logic_sleep.c **** extern void SystemClock_Config(void);
+   8:Core/Logic/logic_sleep.c **** 
+   9:Core/Logic/logic_sleep.c **** sleep_error_t Logic_Sleep_Enter(void)
+  10:Core/Logic/logic_sleep.c **** {
+  11:Core/Logic/logic_sleep.c ****     HW_Power_All_Sensors_Off();
+  12:Core/Logic/logic_sleep.c ****     uint32_t wake_ms = Logic_Sleep_GetWakeInterval();
+  13:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: Entering, wake in %lu ms\r\n", wake_ms);
+  14:Core/Logic/logic_sleep.c **** 
+  15:Core/Logic/logic_sleep.c ****     RTC_TimeTypeDef current_time;
+  16:Core/Logic/logic_sleep.c ****     RTC_DateTypeDef current_date;
+  17:Core/Logic/logic_sleep.c ****     RTC_AlarmTypeDef alarm = {0};
+  18:Core/Logic/logic_sleep.c ****     
+  19:Core/Logic/logic_sleep.c ****     HAL_RTC_GetTime(&hrtc, &current_time, RTC_FORMAT_BIN);
+  20:Core/Logic/logic_sleep.c ****     HAL_RTC_GetDate(&hrtc, &current_date, RTC_FORMAT_BIN);
+  21:Core/Logic/logic_sleep.c ****     
+  22:Core/Logic/logic_sleep.c ****     uint32_t total_seconds = current_time.Hours * 3600 + 
+  23:Core/Logic/logic_sleep.c ****                             current_time.Minutes * 60 + 
+  24:Core/Logic/logic_sleep.c ****                             current_time.Seconds + (wake_ms / 1000);
+  25:Core/Logic/logic_sleep.c ****     
+  26:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Hours = (total_seconds / 3600) % 24;
+  27:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Minutes = (total_seconds / 60) % 60;
+  28:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Seconds = total_seconds % 60;
+  29:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.SubSeconds = 0;
+  30:Core/Logic/logic_sleep.c ****     alarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+  31:Core/Logic/logic_sleep.c ****     alarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 2
+
+
+  32:Core/Logic/logic_sleep.c ****     alarm.Alarm = RTC_ALARM_A;
+  33:Core/Logic/logic_sleep.c ****     
+  34:Core/Logic/logic_sleep.c ****     HAL_RTC_SetAlarm_IT(&hrtc, &alarm, RTC_FORMAT_BIN);
+  35:Core/Logic/logic_sleep.c ****     HAL_SuspendTick();
+  36:Core/Logic/logic_sleep.c ****     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+  37:Core/Logic/logic_sleep.c ****     HAL_ResumeTick();
+  38:Core/Logic/logic_sleep.c ****     SystemClock_Config();
+  39:Core/Logic/logic_sleep.c ****     return SLEEP_OK;
+  40:Core/Logic/logic_sleep.c **** }
+  41:Core/Logic/logic_sleep.c **** 
+  42:Core/Logic/logic_sleep.c **** wake_source_t Logic_Sleep_DetectWakeSource(void)
+  43:Core/Logic/logic_sleep.c **** {
+  28              		.loc 1 43 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  44:Core/Logic/logic_sleep.c ****     if (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF)) {
+  33              		.loc 1 44 5 view .LVU1
+  34              		.loc 1 44 9 is_stmt 0 view .LVU2
+  35 0000 074B     		ldr	r3, .L5
+  36 0002 1B68     		ldr	r3, [r3]
+  37 0004 DA68     		ldr	r2, [r3, #12]
+  38              		.loc 1 44 8 view .LVU3
+  39 0006 12F4807F 		tst	r2, #256
+  40 000a 01D1     		bne	.L4
+  45:Core/Logic/logic_sleep.c ****         __HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
+  46:Core/Logic/logic_sleep.c ****         return WAKE_SOURCE_RTC;
+  47:Core/Logic/logic_sleep.c ****     }
+  48:Core/Logic/logic_sleep.c ****     return WAKE_SOURCE_WATCHDOG;
+  41              		.loc 1 48 12 view .LVU4
+  42 000c 0220     		movs	r0, #2
+  49:Core/Logic/logic_sleep.c **** }
+  43              		.loc 1 49 1 view .LVU5
+  44 000e 7047     		bx	lr
+  45              	.L4:
+  45:Core/Logic/logic_sleep.c ****         __HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
+  46              		.loc 1 45 9 is_stmt 1 view .LVU6
+  47 0010 DA68     		ldr	r2, [r3, #12]
+  48 0012 D2B2     		uxtb	r2, r2
+  49 0014 62F4C072 		orn	r2, r2, #384
+  50 0018 DA60     		str	r2, [r3, #12]
+  46:Core/Logic/logic_sleep.c ****     }
+  51              		.loc 1 46 9 view .LVU7
+  46:Core/Logic/logic_sleep.c ****     }
+  52              		.loc 1 46 16 is_stmt 0 view .LVU8
+  53 001a 0020     		movs	r0, #0
+  54 001c 7047     		bx	lr
+  55              	.L6:
+  56 001e 00BF     		.align	2
+  57              	.L5:
+  58 0020 00000000 		.word	hrtc
+  59              		.cfi_endproc
+  60              	.LFE152:
+  62              		.section	.rodata.Logic_Sleep_WakeUp.str1.4,"aMS",%progbits,1
+  63              		.align	2
+  64              	.LC0:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 3
+
+
+  65 0000 534C4545 		.ascii	"SLEEP: Wake-up from %d\015\012\000"
+  65      503A2057 
+  65      616B652D 
+  65      75702066 
+  65      726F6D20 
+  66 0019 000000   		.align	2
+  67              	.LC1:
+  68 001c 534C4545 		.ascii	"SLEEP: RTC alarm (scheduled)\015\012\000"
+  68      503A2052 
+  68      54432061 
+  68      6C61726D 
+  68      20287363 
+  69 003b 00       		.align	2
+  70              	.LC2:
+  71 003c 534C4545 		.ascii	"SLEEP: Battery charging!\015\012\000"
+  71      503A2042 
+  71      61747465 
+  71      72792063 
+  71      68617267 
+  72 0057 00       		.align	2
+  73              	.LC3:
+  74 0058 534C4545 		.ascii	"SLEEP: Charged %d%%, fast exit\015\012\000"
+  74      503A2043 
+  74      68617267 
+  74      65642025 
+  74      6425252C 
+  75 0079 000000   		.align	2
+  76              	.LC4:
+  77 007c 534C4545 		.ascii	"SLEEP: Watchdog reset!\015\012\000"
+  77      503A2057 
+  77      61746368 
+  77      646F6720 
+  77      72657365 
+  78 0095 000000   		.align	2
+  79              	.LC5:
+  80 0098 5744542C 		.ascii	"WDT,%lu,%d\015\012\000"
+  80      256C752C 
+  80      25640D0A 
+  80      00
+  81 00a5 000000   		.align	2
+  82              	.LC6:
+  83 00a8 534C4545 		.ascii	"SLEEP: Battery <20%%, stay asleep\015\012\000"
+  83      503A2042 
+  83      61747465 
+  83      7279203C 
+  83      32302525 
+  84              		.align	2
+  85              	.LC7:
+  86 00cc 534C4545 		.ascii	"SLEEP: bat=%d%%, sensors=%d\015\012\000"
+  86      503A2062 
+  86      61743D25 
+  86      6425252C 
+  86      2073656E 
+  87              		.section	.text.Logic_Sleep_WakeUp,"ax",%progbits
+  88              		.align	1
+  89              		.global	Logic_Sleep_WakeUp
+  90              		.syntax unified
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 4
+
+
+  91              		.thumb
+  92              		.thumb_func
+  94              	Logic_Sleep_WakeUp:
+  95              	.LVL0:
+  96              	.LFB153:
+  50:Core/Logic/logic_sleep.c **** 
+  51:Core/Logic/logic_sleep.c **** sleep_error_t Logic_Sleep_WakeUp(wake_source_t source)
+  52:Core/Logic/logic_sleep.c **** {
+  97              		.loc 1 52 1 is_stmt 1 view -0
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 64
+ 100              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101              		.loc 1 52 1 is_stmt 0 view .LVU10
+ 102 0000 70B5     		push	{r4, r5, r6, lr}
+ 103              	.LCFI0:
+ 104              		.cfi_def_cfa_offset 16
+ 105              		.cfi_offset 4, -16
+ 106              		.cfi_offset 5, -12
+ 107              		.cfi_offset 6, -8
+ 108              		.cfi_offset 14, -4
+ 109 0002 92B0     		sub	sp, sp, #72
+ 110              	.LCFI1:
+ 111              		.cfi_def_cfa_offset 88
+ 112 0004 0446     		mov	r4, r0
+  53:Core/Logic/logic_sleep.c ****     system_health_t* health = Logic_GetHealth();
+ 113              		.loc 1 53 5 is_stmt 1 view .LVU11
+ 114              		.loc 1 53 31 is_stmt 0 view .LVU12
+ 115 0006 FFF7FEFF 		bl	Logic_GetHealth
+ 116              	.LVL1:
+ 117              		.loc 1 53 31 view .LVU13
+ 118 000a 0546     		mov	r5, r0
+ 119              	.LVL2:
+  54:Core/Logic/logic_sleep.c ****     cubesat_status_t* status = Logic_GetStatus();
+ 120              		.loc 1 54 5 is_stmt 1 view .LVU14
+ 121              		.loc 1 54 32 is_stmt 0 view .LVU15
+ 122 000c FFF7FEFF 		bl	Logic_GetStatus
+ 123              	.LVL3:
+ 124              		.loc 1 54 32 view .LVU16
+ 125 0010 0646     		mov	r6, r0
+ 126              	.LVL4:
+  55:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: Wake-up from %d\r\n", source);
+ 127              		.loc 1 55 5 is_stmt 1 view .LVU17
+ 128 0012 2146     		mov	r1, r4
+ 129 0014 2948     		ldr	r0, .L20
+ 130              	.LVL5:
+ 131              		.loc 1 55 5 is_stmt 0 view .LVU18
+ 132 0016 FFF7FEFF 		bl	Logic_Log
+ 133              	.LVL6:
+  56:Core/Logic/logic_sleep.c **** 
+  57:Core/Logic/logic_sleep.c ****     // IMPROVED: Handle wake sources with ACTUAL ACTIONS
+  58:Core/Logic/logic_sleep.c ****     switch (source) {
+ 134              		.loc 1 58 5 is_stmt 1 view .LVU19
+ 135 001a 012C     		cmp	r4, #1
+ 136 001c 1ED0     		beq	.L8
+ 137 001e 022C     		cmp	r4, #2
+ 138 0020 2BD0     		beq	.L9
+ 139 0022 BCB1     		cbz	r4, .L18
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 5
+
+
+ 140              	.L10:
+  59:Core/Logic/logic_sleep.c ****     case WAKE_SOURCE_RTC:
+  60:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: RTC alarm (scheduled)\r\n");
+  61:Core/Logic/logic_sleep.c ****         // Normal scheduled wake, no action needed
+  62:Core/Logic/logic_sleep.c ****         break;
+  63:Core/Logic/logic_sleep.c ****         
+  64:Core/Logic/logic_sleep.c ****     case WAKE_SOURCE_PIN_CHARGE:
+  65:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: Battery charging!\r\n");
+  66:Core/Logic/logic_sleep.c ****         health->charging = true;
+  67:Core/Logic/logic_sleep.c ****         // Fast exit if charged
+  68:Core/Logic/logic_sleep.c ****         uint8_t quick_bat = Logic_Battery_Read();
+  69:Core/Logic/logic_sleep.c ****         if (quick_bat >= BATTERY_LOW) {
+  70:Core/Logic/logic_sleep.c ****             Logic_Log("SLEEP: Charged %d%%, fast exit\r\n", quick_bat);
+  71:Core/Logic/logic_sleep.c ****             return SLEEP_EXIT_TO_STANDBY;
+  72:Core/Logic/logic_sleep.c ****         }
+  73:Core/Logic/logic_sleep.c ****         break;
+  74:Core/Logic/logic_sleep.c ****         
+  75:Core/Logic/logic_sleep.c ****     case WAKE_SOURCE_WATCHDOG:
+  76:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: Watchdog reset!\r\n");
+  77:Core/Logic/logic_sleep.c ****         status->error_code = 0x50;
+  78:Core/Logic/logic_sleep.c ****         // Log to SD for debugging
+  79:Core/Logic/logic_sleep.c ****         char err[64];
+  80:Core/Logic/logic_sleep.c ****         snprintf(err, sizeof(err), "WDT,%lu,%d\r\n", HAL_GetTick(), health->battery_percent);
+  81:Core/Logic/logic_sleep.c ****         SD_WriteScience((uint8_t*)err, strlen(err));
+  82:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;  // Force SAFE after watchdog
+  83:Core/Logic/logic_sleep.c ****     }
+  84:Core/Logic/logic_sleep.c ****     
+  85:Core/Logic/logic_sleep.c ****     uint8_t battery = Logic_Battery_Read();
+ 141              		.loc 1 85 5 view .LVU20
+ 142              		.loc 1 85 23 is_stmt 0 view .LVU21
+ 143 0024 FFF7FEFF 		bl	Logic_Battery_Read
+ 144              	.LVL7:
+ 145 0028 0446     		mov	r4, r0
+ 146              	.LVL8:
+  86:Core/Logic/logic_sleep.c ****     health->battery_percent = battery;
+ 147              		.loc 1 86 5 is_stmt 1 view .LVU22
+ 148              		.loc 1 86 29 is_stmt 0 view .LVU23
+ 149 002a 2870     		strb	r0, [r5]
+  87:Core/Logic/logic_sleep.c **** 
+  88:Core/Logic/logic_sleep.c ****     if (battery < BATTERY_CRITICAL) {
+ 150              		.loc 1 88 5 is_stmt 1 view .LVU24
+ 151              		.loc 1 88 8 is_stmt 0 view .LVU25
+ 152 002c 1328     		cmp	r0, #19
+ 153 002e 3CD9     		bls	.L19
+  89:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: Battery <20%%, stay asleep\r\n");
+  90:Core/Logic/logic_sleep.c ****         return SLEEP_STAY_ASLEEP;
+  91:Core/Logic/logic_sleep.c ****     }
+  92:Core/Logic/logic_sleep.c ****     
+  93:Core/Logic/logic_sleep.c ****     uint8_t working = Logic_Sensor_Count_Working();
+ 154              		.loc 1 93 5 is_stmt 1 view .LVU26
+ 155              		.loc 1 93 23 is_stmt 0 view .LVU27
+ 156 0030 FFF7FEFF 		bl	Logic_Sensor_Count_Working
+ 157              	.LVL9:
+ 158              		.loc 1 93 23 view .LVU28
+ 159 0034 0646     		mov	r6, r0
+ 160              	.LVL10:
+  94:Core/Logic/logic_sleep.c ****     health->working_sensor_count = working;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 6
+
+
+ 161              		.loc 1 94 5 is_stmt 1 view .LVU29
+ 162              		.loc 1 94 34 is_stmt 0 view .LVU30
+ 163 0036 2876     		strb	r0, [r5, #24]
+  95:Core/Logic/logic_sleep.c ****     //bool sd_ok = Logic_Flash_Check_Min_Free();
+  96:Core/Logic/logic_sleep.c ****     
+  97:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: bat=%d%%, sensors=%d\r\n", battery, working);
+ 164              		.loc 1 97 5 is_stmt 1 view .LVU31
+ 165 0038 0246     		mov	r2, r0
+ 166 003a 2146     		mov	r1, r4
+ 167 003c 2048     		ldr	r0, .L20+4
+ 168              	.LVL11:
+ 169              		.loc 1 97 5 is_stmt 0 view .LVU32
+ 170 003e FFF7FEFF 		bl	Logic_Log
+ 171              	.LVL12:
+  98:Core/Logic/logic_sleep.c ****     
+  99:Core/Logic/logic_sleep.c ****     if (battery >= BATTERY_LOW && working >= SENSOR_MIN_WORKING) {
+ 172              		.loc 1 99 5 is_stmt 1 view .LVU33
+ 173              		.loc 1 99 8 is_stmt 0 view .LVU34
+ 174 0042 1D2C     		cmp	r4, #29
+ 175 0044 88BF     		it	hi
+ 176 0046 022E     		cmphi	r6, #2
+ 177 0048 34D8     		bhi	.L15
+ 100:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_STANDBY;
+ 101:Core/Logic/logic_sleep.c ****     }
+ 102:Core/Logic/logic_sleep.c ****     
+ 103:Core/Logic/logic_sleep.c ****     if (battery >= BATTERY_CRITICAL && working < SENSOR_MIN_WORKING) {
+ 178              		.loc 1 103 5 is_stmt 1 view .LVU35
+ 179              		.loc 1 103 8 is_stmt 0 view .LVU36
+ 180 004a 022E     		cmp	r6, #2
+ 181 004c 34D9     		bls	.L16
+ 104:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;
+ 105:Core/Logic/logic_sleep.c ****     }
+ 106:Core/Logic/logic_sleep.c ****     
+ 107:Core/Logic/logic_sleep.c ****     return SLEEP_STAY_ASLEEP;
+ 182              		.loc 1 107 12 view .LVU37
+ 183 004e 0120     		movs	r0, #1
+ 184              	.L13:
+ 108:Core/Logic/logic_sleep.c **** }
+ 185              		.loc 1 108 1 view .LVU38
+ 186 0050 12B0     		add	sp, sp, #72
+ 187              	.LCFI2:
+ 188              		.cfi_remember_state
+ 189              		.cfi_def_cfa_offset 16
+ 190              		@ sp needed
+ 191 0052 70BD     		pop	{r4, r5, r6, pc}
+ 192              	.LVL13:
+ 193              	.L18:
+ 194              	.LCFI3:
+ 195              		.cfi_restore_state
+ 196              	.LBB2:
+  60:Core/Logic/logic_sleep.c ****         // Normal scheduled wake, no action needed
+ 197              		.loc 1 60 9 is_stmt 1 view .LVU39
+ 198 0054 1B48     		ldr	r0, .L20+8
+ 199 0056 FFF7FEFF 		bl	Logic_Log
+ 200              	.LVL14:
+  62:Core/Logic/logic_sleep.c ****         
+ 201              		.loc 1 62 9 view .LVU40
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 7
+
+
+ 202 005a E3E7     		b	.L10
+ 203              	.L8:
+  65:Core/Logic/logic_sleep.c ****         health->charging = true;
+ 204              		.loc 1 65 9 view .LVU41
+ 205 005c 1A48     		ldr	r0, .L20+12
+ 206 005e FFF7FEFF 		bl	Logic_Log
+ 207              	.LVL15:
+  66:Core/Logic/logic_sleep.c ****         // Fast exit if charged
+ 208              		.loc 1 66 9 view .LVU42
+  66:Core/Logic/logic_sleep.c ****         // Fast exit if charged
+ 209              		.loc 1 66 26 is_stmt 0 view .LVU43
+ 210 0062 0123     		movs	r3, #1
+ 211 0064 EB76     		strb	r3, [r5, #27]
+  68:Core/Logic/logic_sleep.c ****         if (quick_bat >= BATTERY_LOW) {
+ 212              		.loc 1 68 9 is_stmt 1 view .LVU44
+  68:Core/Logic/logic_sleep.c ****         if (quick_bat >= BATTERY_LOW) {
+ 213              		.loc 1 68 29 is_stmt 0 view .LVU45
+ 214 0066 FFF7FEFF 		bl	Logic_Battery_Read
+ 215              	.LVL16:
+  69:Core/Logic/logic_sleep.c ****             Logic_Log("SLEEP: Charged %d%%, fast exit\r\n", quick_bat);
+ 216              		.loc 1 69 9 is_stmt 1 view .LVU46
+  69:Core/Logic/logic_sleep.c ****             Logic_Log("SLEEP: Charged %d%%, fast exit\r\n", quick_bat);
+ 217              		.loc 1 69 12 is_stmt 0 view .LVU47
+ 218 006a 1D28     		cmp	r0, #29
+ 219 006c DAD9     		bls	.L10
+  70:Core/Logic/logic_sleep.c ****             return SLEEP_EXIT_TO_STANDBY;
+ 220              		.loc 1 70 13 is_stmt 1 view .LVU48
+ 221 006e 0146     		mov	r1, r0
+ 222 0070 1648     		ldr	r0, .L20+16
+ 223              	.LVL17:
+  70:Core/Logic/logic_sleep.c ****             return SLEEP_EXIT_TO_STANDBY;
+ 224              		.loc 1 70 13 is_stmt 0 view .LVU49
+ 225 0072 FFF7FEFF 		bl	Logic_Log
+ 226              	.LVL18:
+  71:Core/Logic/logic_sleep.c ****         }
+ 227              		.loc 1 71 13 is_stmt 1 view .LVU50
+  71:Core/Logic/logic_sleep.c ****         }
+ 228              		.loc 1 71 20 is_stmt 0 view .LVU51
+ 229 0076 0220     		movs	r0, #2
+ 230 0078 EAE7     		b	.L13
+ 231              	.L9:
+  76:Core/Logic/logic_sleep.c ****         status->error_code = 0x50;
+ 232              		.loc 1 76 9 is_stmt 1 view .LVU52
+ 233 007a 1548     		ldr	r0, .L20+20
+ 234 007c FFF7FEFF 		bl	Logic_Log
+ 235              	.LVL19:
+  77:Core/Logic/logic_sleep.c ****         // Log to SD for debugging
+ 236              		.loc 1 77 9 view .LVU53
+  77:Core/Logic/logic_sleep.c ****         // Log to SD for debugging
+ 237              		.loc 1 77 28 is_stmt 0 view .LVU54
+ 238 0080 5023     		movs	r3, #80
+ 239 0082 F382     		strh	r3, [r6, #22]	@ movhi
+  79:Core/Logic/logic_sleep.c ****         snprintf(err, sizeof(err), "WDT,%lu,%d\r\n", HAL_GetTick(), health->battery_percent);
+ 240              		.loc 1 79 9 is_stmt 1 view .LVU55
+  80:Core/Logic/logic_sleep.c ****         SD_WriteScience((uint8_t*)err, strlen(err));
+ 241              		.loc 1 80 9 view .LVU56
+ 242 0084 FFF7FEFF 		bl	HAL_GetTick
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 8
+
+
+ 243              	.LVL20:
+ 244 0088 0346     		mov	r3, r0
+  80:Core/Logic/logic_sleep.c ****         SD_WriteScience((uint8_t*)err, strlen(err));
+ 245              		.loc 1 80 75 is_stmt 0 view .LVU57
+ 246 008a 2A78     		ldrb	r2, [r5]	@ zero_extendqisi2
+  80:Core/Logic/logic_sleep.c ****         SD_WriteScience((uint8_t*)err, strlen(err));
+ 247              		.loc 1 80 9 view .LVU58
+ 248 008c 0092     		str	r2, [sp]
+ 249 008e 114A     		ldr	r2, .L20+24
+ 250 0090 4021     		movs	r1, #64
+ 251 0092 02A8     		add	r0, sp, #8
+ 252 0094 FFF7FEFF 		bl	snprintf
+ 253              	.LVL21:
+  81:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;  // Force SAFE after watchdog
+ 254              		.loc 1 81 9 is_stmt 1 view .LVU59
+  81:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;  // Force SAFE after watchdog
+ 255              		.loc 1 81 40 is_stmt 0 view .LVU60
+ 256 0098 02A8     		add	r0, sp, #8
+ 257 009a FFF7FEFF 		bl	strlen
+ 258              	.LVL22:
+ 259 009e 0146     		mov	r1, r0
+  81:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;  // Force SAFE after watchdog
+ 260              		.loc 1 81 9 view .LVU61
+ 261 00a0 02A8     		add	r0, sp, #8
+ 262 00a2 FFF7FEFF 		bl	SD_WriteScience
+ 263              	.LVL23:
+  82:Core/Logic/logic_sleep.c ****     }
+ 264              		.loc 1 82 9 is_stmt 1 view .LVU62
+  82:Core/Logic/logic_sleep.c ****     }
+ 265              		.loc 1 82 16 is_stmt 0 view .LVU63
+ 266 00a6 0320     		movs	r0, #3
+ 267 00a8 D2E7     		b	.L13
+ 268              	.LVL24:
+ 269              	.L19:
+  82:Core/Logic/logic_sleep.c ****     }
+ 270              		.loc 1 82 16 view .LVU64
+ 271              	.LBE2:
+  89:Core/Logic/logic_sleep.c ****         return SLEEP_STAY_ASLEEP;
+ 272              		.loc 1 89 9 is_stmt 1 view .LVU65
+ 273 00aa 0B48     		ldr	r0, .L20+28
+ 274              	.LVL25:
+  89:Core/Logic/logic_sleep.c ****         return SLEEP_STAY_ASLEEP;
+ 275              		.loc 1 89 9 is_stmt 0 view .LVU66
+ 276 00ac FFF7FEFF 		bl	Logic_Log
+ 277              	.LVL26:
+  90:Core/Logic/logic_sleep.c ****     }
+ 278              		.loc 1 90 9 is_stmt 1 view .LVU67
+  90:Core/Logic/logic_sleep.c ****     }
+ 279              		.loc 1 90 16 is_stmt 0 view .LVU68
+ 280 00b0 0120     		movs	r0, #1
+ 281 00b2 CDE7     		b	.L13
+ 282              	.LVL27:
+ 283              	.L15:
+ 100:Core/Logic/logic_sleep.c ****     }
+ 284              		.loc 1 100 16 view .LVU69
+ 285 00b4 0220     		movs	r0, #2
+ 286 00b6 CBE7     		b	.L13
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 9
+
+
+ 287              	.L16:
+ 104:Core/Logic/logic_sleep.c ****     }
+ 288              		.loc 1 104 16 view .LVU70
+ 289 00b8 0320     		movs	r0, #3
+ 290 00ba C9E7     		b	.L13
+ 291              	.L21:
+ 292              		.align	2
+ 293              	.L20:
+ 294 00bc 00000000 		.word	.LC0
+ 295 00c0 CC000000 		.word	.LC7
+ 296 00c4 1C000000 		.word	.LC1
+ 297 00c8 3C000000 		.word	.LC2
+ 298 00cc 58000000 		.word	.LC3
+ 299 00d0 7C000000 		.word	.LC4
+ 300 00d4 98000000 		.word	.LC5
+ 301 00d8 A8000000 		.word	.LC6
+ 302              		.cfi_endproc
+ 303              	.LFE153:
+ 305              		.section	.text.Logic_Sleep_GetWakeInterval,"ax",%progbits
+ 306              		.align	1
+ 307              		.global	Logic_Sleep_GetWakeInterval
+ 308              		.syntax unified
+ 309              		.thumb
+ 310              		.thumb_func
+ 312              	Logic_Sleep_GetWakeInterval:
+ 313              	.LFB154:
+ 109:Core/Logic/logic_sleep.c **** 
+ 110:Core/Logic/logic_sleep.c **** uint32_t Logic_Sleep_GetWakeInterval(void)
+ 111:Core/Logic/logic_sleep.c **** {
+ 314              		.loc 1 111 1 is_stmt 1 view -0
+ 315              		.cfi_startproc
+ 316              		@ args = 0, pretend = 0, frame = 0
+ 317              		@ frame_needed = 0, uses_anonymous_args = 0
+ 318 0000 08B5     		push	{r3, lr}
+ 319              	.LCFI4:
+ 320              		.cfi_def_cfa_offset 8
+ 321              		.cfi_offset 3, -8
+ 322              		.cfi_offset 14, -4
+ 112:Core/Logic/logic_sleep.c ****     system_health_t* health = Logic_GetHealth();
+ 323              		.loc 1 112 5 view .LVU72
+ 324              		.loc 1 112 31 is_stmt 0 view .LVU73
+ 325 0002 FFF7FEFF 		bl	Logic_GetHealth
+ 326              	.LVL28:
+ 113:Core/Logic/logic_sleep.c ****     if (health->battery_percent >= BATTERY_SLEEP && 
+ 327              		.loc 1 113 5 is_stmt 1 view .LVU74
+ 328              		.loc 1 113 15 is_stmt 0 view .LVU75
+ 329 0006 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 330              		.loc 1 113 50 view .LVU76
+ 331 0008 0F3B     		subs	r3, r3, #15
+ 332 000a DBB2     		uxtb	r3, r3
+ 333              		.loc 1 113 8 view .LVU77
+ 334 000c 0E2B     		cmp	r3, #14
+ 335 000e 01D9     		bls	.L24
+ 114:Core/Logic/logic_sleep.c ****         health->battery_percent < BATTERY_LOW) {
+ 115:Core/Logic/logic_sleep.c ****         return SLEEP_WAKE_INTERVAL_HIGH;
+ 116:Core/Logic/logic_sleep.c ****     }
+ 117:Core/Logic/logic_sleep.c ****     return SLEEP_WAKE_INTERVAL_LOW;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 10
+
+
+ 336              		.loc 1 117 12 view .LVU78
+ 337 0010 0148     		ldr	r0, .L26
+ 338              	.LVL29:
+ 339              	.L22:
+ 118:Core/Logic/logic_sleep.c **** }
+ 340              		.loc 1 118 1 view .LVU79
+ 341 0012 08BD     		pop	{r3, pc}
+ 342              	.LVL30:
+ 343              	.L24:
+ 115:Core/Logic/logic_sleep.c ****     }
+ 344              		.loc 1 115 16 view .LVU80
+ 345 0014 0148     		ldr	r0, .L26+4
+ 346              	.LVL31:
+ 115:Core/Logic/logic_sleep.c ****     }
+ 347              		.loc 1 115 16 view .LVU81
+ 348 0016 FCE7     		b	.L22
+ 349              	.L27:
+ 350              		.align	2
+ 351              	.L26:
+ 352 0018 40771B00 		.word	1800000
+ 353 001c C0270900 		.word	600000
+ 354              		.cfi_endproc
+ 355              	.LFE154:
+ 357              		.section	.rodata.Logic_Sleep_Enter.str1.4,"aMS",%progbits,1
+ 358              		.align	2
+ 359              	.LC8:
+ 360 0000 534C4545 		.ascii	"SLEEP: Entering, wake in %lu ms\015\012\000"
+ 360      503A2045 
+ 360      6E746572 
+ 360      696E672C 
+ 360      2077616B 
+ 361              		.section	.text.Logic_Sleep_Enter,"ax",%progbits
+ 362              		.align	1
+ 363              		.global	Logic_Sleep_Enter
+ 364              		.syntax unified
+ 365              		.thumb
+ 366              		.thumb_func
+ 368              	Logic_Sleep_Enter:
+ 369              	.LFB151:
+  10:Core/Logic/logic_sleep.c ****     HW_Power_All_Sensors_Off();
+ 370              		.loc 1 10 1 is_stmt 1 view -0
+ 371              		.cfi_startproc
+ 372              		@ args = 0, pretend = 0, frame = 64
+ 373              		@ frame_needed = 0, uses_anonymous_args = 0
+ 374 0000 30B5     		push	{r4, r5, lr}
+ 375              	.LCFI5:
+ 376              		.cfi_def_cfa_offset 12
+ 377              		.cfi_offset 4, -12
+ 378              		.cfi_offset 5, -8
+ 379              		.cfi_offset 14, -4
+ 380 0002 91B0     		sub	sp, sp, #68
+ 381              	.LCFI6:
+ 382              		.cfi_def_cfa_offset 80
+  11:Core/Logic/logic_sleep.c ****     uint32_t wake_ms = Logic_Sleep_GetWakeInterval();
+ 383              		.loc 1 11 5 view .LVU83
+ 384 0004 FFF7FEFF 		bl	HW_Power_All_Sensors_Off
+ 385              	.LVL32:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 11
+
+
+  12:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: Entering, wake in %lu ms\r\n", wake_ms);
+ 386              		.loc 1 12 5 view .LVU84
+  12:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: Entering, wake in %lu ms\r\n", wake_ms);
+ 387              		.loc 1 12 24 is_stmt 0 view .LVU85
+ 388 0008 FFF7FEFF 		bl	Logic_Sleep_GetWakeInterval
+ 389              	.LVL33:
+ 390 000c 0546     		mov	r5, r0
+ 391              	.LVL34:
+  13:Core/Logic/logic_sleep.c **** 
+ 392              		.loc 1 13 5 is_stmt 1 view .LVU86
+ 393 000e 0146     		mov	r1, r0
+ 394 0010 3048     		ldr	r0, .L30
+ 395              	.LVL35:
+  13:Core/Logic/logic_sleep.c **** 
+ 396              		.loc 1 13 5 is_stmt 0 view .LVU87
+ 397 0012 FFF7FEFF 		bl	Logic_Log
+ 398              	.LVL36:
+  15:Core/Logic/logic_sleep.c ****     RTC_DateTypeDef current_date;
+ 399              		.loc 1 15 5 is_stmt 1 view .LVU88
+  16:Core/Logic/logic_sleep.c ****     RTC_AlarmTypeDef alarm = {0};
+ 400              		.loc 1 16 5 view .LVU89
   17:Core/Logic/logic_sleep.c ****     
-  18:Core/Logic/logic_sleep.c ****     return SLEEP_OK;
-  19:Core/Logic/logic_sleep.c **** }
-  20:Core/Logic/logic_sleep.c **** 
-  21:Core/Logic/logic_sleep.c **** sleep_error_t Logic_Sleep_WakeUp(wake_source_t source)
-  22:Core/Logic/logic_sleep.c **** {
-  45              		.loc 1 22 1 view -0
-  46              		.cfi_startproc
-  47              		@ args = 0, pretend = 0, frame = 0
-  48              		@ frame_needed = 0, uses_anonymous_args = 0
-  49              		.loc 1 22 1 is_stmt 0 view .LVU1
-  50 0000 70B5     		push	{r4, r5, r6, lr}
-  51              	.LCFI0:
-  52              		.cfi_def_cfa_offset 16
-  53              		.cfi_offset 4, -16
-  54              		.cfi_offset 5, -12
-  55              		.cfi_offset 6, -8
-  56              		.cfi_offset 14, -4
-  57 0002 0446     		mov	r4, r0
-  23:Core/Logic/logic_sleep.c ****     system_health_t* health = Logic_GetHealth();
-  58              		.loc 1 23 5 is_stmt 1 view .LVU2
-  59              		.loc 1 23 31 is_stmt 0 view .LVU3
-  60 0004 FFF7FEFF 		bl	Logic_GetHealth
-  61              	.LVL1:
-  62              		.loc 1 23 31 view .LVU4
-  63 0008 0546     		mov	r5, r0
-  64              	.LVL2:
+ 401              		.loc 1 17 5 view .LVU90
+  17:Core/Logic/logic_sleep.c ****     
+ 402              		.loc 1 17 22 is_stmt 0 view .LVU91
+ 403 0016 2822     		movs	r2, #40
+ 404 0018 0021     		movs	r1, #0
+ 405 001a 6846     		mov	r0, sp
+ 406 001c FFF7FEFF 		bl	memset
+ 407              	.LVL37:
+  19:Core/Logic/logic_sleep.c ****     HAL_RTC_GetDate(&hrtc, &current_date, RTC_FORMAT_BIN);
+ 408              		.loc 1 19 5 is_stmt 1 view .LVU92
+ 409 0020 2D4C     		ldr	r4, .L30+4
+ 410 0022 0022     		movs	r2, #0
+ 411 0024 0BA9     		add	r1, sp, #44
+ 412 0026 2046     		mov	r0, r4
+ 413 0028 FFF7FEFF 		bl	HAL_RTC_GetTime
+ 414              	.LVL38:
+  20:Core/Logic/logic_sleep.c ****     
+ 415              		.loc 1 20 5 view .LVU93
+ 416 002c 0022     		movs	r2, #0
+ 417 002e 0AA9     		add	r1, sp, #40
+ 418 0030 2046     		mov	r0, r4
+ 419 0032 FFF7FEFF 		bl	HAL_RTC_GetDate
+ 420              	.LVL39:
+  22:Core/Logic/logic_sleep.c ****                             current_time.Minutes * 60 + 
+ 421              		.loc 1 22 5 view .LVU94
+  22:Core/Logic/logic_sleep.c ****                             current_time.Minutes * 60 + 
+ 422              		.loc 1 22 42 is_stmt 0 view .LVU95
+ 423 0036 9DF82C00 		ldrb	r0, [sp, #44]	@ zero_extendqisi2
+  23:Core/Logic/logic_sleep.c ****                             current_time.Seconds + (wake_ms / 1000);
+ 424              		.loc 1 23 41 view .LVU96
+ 425 003a 9DF82D30 		ldrb	r3, [sp, #45]	@ zero_extendqisi2
+  23:Core/Logic/logic_sleep.c ****                             current_time.Seconds + (wake_ms / 1000);
+ 426              		.loc 1 23 50 view .LVU97
+ 427 003e C3EB0313 		rsb	r3, r3, r3, lsl #4
+ 428 0042 9B00     		lsls	r3, r3, #2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 12
+
+
+  22:Core/Logic/logic_sleep.c ****                             current_time.Minutes * 60 + 
+ 429              		.loc 1 22 56 view .LVU98
+ 430 0044 4FF46162 		mov	r2, #3600
+ 431 0048 02FB0033 		mla	r3, r2, r0, r3
   24:Core/Logic/logic_sleep.c ****     
-  25:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: Wake-up from %d\r\n", source);
-  65              		.loc 1 25 5 is_stmt 1 view .LVU5
-  66 000a 2146     		mov	r1, r4
-  67 000c 1548     		ldr	r0, .L10
-  68              	.LVL3:
-  69              		.loc 1 25 5 is_stmt 0 view .LVU6
-  70 000e FFF7FEFF 		bl	Logic_Log
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 3
+ 432              		.loc 1 24 41 view .LVU99
+ 433 004c 9DF82E00 		ldrb	r0, [sp, #46]	@ zero_extendqisi2
+  23:Core/Logic/logic_sleep.c ****                             current_time.Seconds + (wake_ms / 1000);
+ 434              		.loc 1 23 55 view .LVU100
+ 435 0050 0344     		add	r3, r3, r0
+  24:Core/Logic/logic_sleep.c ****     
+ 436              		.loc 1 24 61 view .LVU101
+ 437 0052 2248     		ldr	r0, .L30+8
+ 438 0054 A0FB0520 		umull	r2, r0, r0, r5
+  22:Core/Logic/logic_sleep.c ****                             current_time.Minutes * 60 + 
+ 439              		.loc 1 22 14 view .LVU102
+ 440 0058 03EB9010 		add	r0, r3, r0, lsr #6
+ 441              	.LVL40:
+  26:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Minutes = (total_seconds / 60) % 60;
+ 442              		.loc 1 26 5 is_stmt 1 view .LVU103
+  26:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Minutes = (total_seconds / 60) % 60;
+ 443              		.loc 1 26 44 is_stmt 0 view .LVU104
+ 444 005c 204A     		ldr	r2, .L30+12
+ 445 005e A2FB0032 		umull	r3, r2, r2, r0
+ 446 0062 D20A     		lsrs	r2, r2, #11
+  26:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Minutes = (total_seconds / 60) % 60;
+ 447              		.loc 1 26 52 view .LVU105
+ 448 0064 1F4B     		ldr	r3, .L30+16
+ 449 0066 A3FB0213 		umull	r1, r3, r3, r2
+ 450 006a 1B09     		lsrs	r3, r3, #4
+ 451 006c 03EB4303 		add	r3, r3, r3, lsl #1
+ 452 0070 A2EBC303 		sub	r3, r2, r3, lsl #3
+  26:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Minutes = (total_seconds / 60) % 60;
+ 453              		.loc 1 26 27 view .LVU106
+ 454 0074 8DF80030 		strb	r3, [sp]
+  27:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Seconds = total_seconds % 60;
+ 455              		.loc 1 27 5 is_stmt 1 view .LVU107
+  27:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Seconds = total_seconds % 60;
+ 456              		.loc 1 27 46 is_stmt 0 view .LVU108
+ 457 0078 1B4B     		ldr	r3, .L30+20
+ 458 007a A3FB0012 		umull	r1, r2, r3, r0
+ 459 007e 5209     		lsrs	r2, r2, #5
+  27:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Seconds = total_seconds % 60;
+ 460              		.loc 1 27 52 view .LVU109
+ 461 0080 A3FB0213 		umull	r1, r3, r3, r2
+ 462 0084 5B09     		lsrs	r3, r3, #5
+ 463 0086 C3EB0313 		rsb	r3, r3, r3, lsl #4
+ 464 008a A2EB8303 		sub	r3, r2, r3, lsl #2
+  27:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.Seconds = total_seconds % 60;
+ 465              		.loc 1 27 29 view .LVU110
+ 466 008e 8DF80130 		strb	r3, [sp, #1]
+  28:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.SubSeconds = 0;
+ 467              		.loc 1 28 5 is_stmt 1 view .LVU111
+  28:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.SubSeconds = 0;
+ 468              		.loc 1 28 45 is_stmt 0 view .LVU112
+ 469 0092 C2EB0212 		rsb	r2, r2, r2, lsl #4
+ 470 0096 A0EB8202 		sub	r2, r0, r2, lsl #2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 13
 
 
-  71              	.LVL4:
-  26:Core/Logic/logic_sleep.c ****     
-  27:Core/Logic/logic_sleep.c ****     // Đọc pin
-  28:Core/Logic/logic_sleep.c ****     uint8_t battery = Logic_Battery_Read();
-  72              		.loc 1 28 5 is_stmt 1 view .LVU7
-  73              		.loc 1 28 23 is_stmt 0 view .LVU8
-  74 0012 FFF7FEFF 		bl	Logic_Battery_Read
-  75              	.LVL5:
-  29:Core/Logic/logic_sleep.c ****     health->battery_percent = battery;
-  76              		.loc 1 29 5 is_stmt 1 view .LVU9
-  77              		.loc 1 29 29 is_stmt 0 view .LVU10
-  78 0016 2870     		strb	r0, [r5]
-  30:Core/Logic/logic_sleep.c ****     
-  31:Core/Logic/logic_sleep.c ****     // Pin <20% -> SLEEP lại
-  32:Core/Logic/logic_sleep.c ****     if (battery < BATTERY_CRITICAL)
-  79              		.loc 1 32 5 is_stmt 1 view .LVU11
-  80              		.loc 1 32 8 is_stmt 0 view .LVU12
-  81 0018 1328     		cmp	r0, #19
-  82 001a 13D9     		bls	.L7
-  83 001c 0446     		mov	r4, r0
-  33:Core/Logic/logic_sleep.c ****     {
-  34:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: Battery < 20%%, sleep again\r\n");
-  35:Core/Logic/logic_sleep.c ****         return SLEEP_STAY_ASLEEP;
-  36:Core/Logic/logic_sleep.c ****     }
-  37:Core/Logic/logic_sleep.c ****     
-  38:Core/Logic/logic_sleep.c ****     // Check WHO_AM_I sensors
-  39:Core/Logic/logic_sleep.c ****     uint8_t working = Logic_Sensor_Count_Working();
-  84              		.loc 1 39 5 is_stmt 1 view .LVU13
-  85              		.loc 1 39 23 is_stmt 0 view .LVU14
-  86 001e FFF7FEFF 		bl	Logic_Sensor_Count_Working
-  87              	.LVL6:
-  88              		.loc 1 39 23 view .LVU15
-  89 0022 0646     		mov	r6, r0
-  90              	.LVL7:
-  40:Core/Logic/logic_sleep.c ****     health->working_sensor_count = working;
-  91              		.loc 1 40 5 is_stmt 1 view .LVU16
-  92              		.loc 1 40 34 is_stmt 0 view .LVU17
-  93 0024 A875     		strb	r0, [r5, #22]
-  41:Core/Logic/logic_sleep.c ****     
-  42:Core/Logic/logic_sleep.c ****     // Check flash, RTC
-  43:Core/Logic/logic_sleep.c ****     bool flash_ok = Logic_Flash_Check_Min_Free();
-  94              		.loc 1 43 5 is_stmt 1 view .LVU18
-  95              		.loc 1 43 21 is_stmt 0 view .LVU19
-  96 0026 FFF7FEFF 		bl	Logic_Flash_Check_Min_Free
-  97              	.LVL8:
-  44:Core/Logic/logic_sleep.c ****     // rtc_check()
-  45:Core/Logic/logic_sleep.c ****     
-  46:Core/Logic/logic_sleep.c ****     // Ghi log wake-up
-  47:Core/Logic/logic_sleep.c ****     Logic_Log("SLEEP: bat=%d%%, sensors=%d\r\n", battery, working);
-  98              		.loc 1 47 5 is_stmt 1 view .LVU20
-  99 002a 3246     		mov	r2, r6
- 100 002c 2146     		mov	r1, r4
- 101 002e 0E48     		ldr	r0, .L10+4
- 102 0030 FFF7FEFF 		bl	Logic_Log
- 103              	.LVL9:
-  48:Core/Logic/logic_sleep.c ****     
-  49:Core/Logic/logic_sleep.c ****     // Pin ≥30% + sensors OK -> STANDBY
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 4
+  28:Core/Logic/logic_sleep.c ****     alarm.AlarmTime.SubSeconds = 0;
+ 471              		.loc 1 28 29 view .LVU113
+ 472 009a 8DF80220 		strb	r2, [sp, #2]
+  29:Core/Logic/logic_sleep.c ****     alarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+ 473              		.loc 1 29 5 is_stmt 1 view .LVU114
+  29:Core/Logic/logic_sleep.c ****     alarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+ 474              		.loc 1 29 32 is_stmt 0 view .LVU115
+ 475 009e 0025     		movs	r5, #0
+ 476              	.LVL41:
+  29:Core/Logic/logic_sleep.c ****     alarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+ 477              		.loc 1 29 32 view .LVU116
+ 478 00a0 0195     		str	r5, [sp, #4]
+  30:Core/Logic/logic_sleep.c ****     alarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+ 479              		.loc 1 30 5 is_stmt 1 view .LVU117
+  30:Core/Logic/logic_sleep.c ****     alarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+ 480              		.loc 1 30 21 is_stmt 0 view .LVU118
+ 481 00a2 4FF00043 		mov	r3, #-2147483648
+ 482 00a6 0593     		str	r3, [sp, #20]
+  31:Core/Logic/logic_sleep.c ****     alarm.Alarm = RTC_ALARM_A;
+ 483              		.loc 1 31 5 is_stmt 1 view .LVU119
+  31:Core/Logic/logic_sleep.c ****     alarm.Alarm = RTC_ALARM_A;
+ 484              		.loc 1 31 30 is_stmt 0 view .LVU120
+ 485 00a8 0695     		str	r5, [sp, #24]
+  32:Core/Logic/logic_sleep.c ****     
+ 486              		.loc 1 32 5 is_stmt 1 view .LVU121
+  32:Core/Logic/logic_sleep.c ****     
+ 487              		.loc 1 32 17 is_stmt 0 view .LVU122
+ 488 00aa 4FF48073 		mov	r3, #256
+ 489 00ae 0993     		str	r3, [sp, #36]
+  34:Core/Logic/logic_sleep.c ****     HAL_SuspendTick();
+ 490              		.loc 1 34 5 is_stmt 1 view .LVU123
+ 491 00b0 2A46     		mov	r2, r5
+ 492 00b2 6946     		mov	r1, sp
+ 493 00b4 2046     		mov	r0, r4
+ 494              	.LVL42:
+  34:Core/Logic/logic_sleep.c ****     HAL_SuspendTick();
+ 495              		.loc 1 34 5 is_stmt 0 view .LVU124
+ 496 00b6 FFF7FEFF 		bl	HAL_RTC_SetAlarm_IT
+ 497              	.LVL43:
+  35:Core/Logic/logic_sleep.c ****     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+ 498              		.loc 1 35 5 is_stmt 1 view .LVU125
+ 499 00ba FFF7FEFF 		bl	HAL_SuspendTick
+ 500              	.LVL44:
+  36:Core/Logic/logic_sleep.c ****     HAL_ResumeTick();
+ 501              		.loc 1 36 5 view .LVU126
+ 502 00be 0121     		movs	r1, #1
+ 503 00c0 0846     		mov	r0, r1
+ 504 00c2 FFF7FEFF 		bl	HAL_PWR_EnterSTOPMode
+ 505              	.LVL45:
+  37:Core/Logic/logic_sleep.c ****     SystemClock_Config();
+ 506              		.loc 1 37 5 view .LVU127
+ 507 00c6 FFF7FEFF 		bl	HAL_ResumeTick
+ 508              	.LVL46:
+  38:Core/Logic/logic_sleep.c ****     return SLEEP_OK;
+ 509              		.loc 1 38 5 view .LVU128
+ 510 00ca FFF7FEFF 		bl	SystemClock_Config
+ 511              	.LVL47:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 14
 
 
-  50:Core/Logic/logic_sleep.c ****     if (battery >= BATTERY_LOW && working >= SENSOR_MIN_WORKING)
- 104              		.loc 1 50 5 view .LVU21
- 105              		.loc 1 50 8 is_stmt 0 view .LVU22
- 106 0034 1D2C     		cmp	r4, #29
- 107 0036 88BF     		it	hi
- 108 0038 022E     		cmphi	r6, #2
- 109 003a 08D8     		bhi	.L8
-  51:Core/Logic/logic_sleep.c ****     {
-  52:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: Exit to STANDBY\r\n");
-  53:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_STANDBY;
-  54:Core/Logic/logic_sleep.c ****     }
-  55:Core/Logic/logic_sleep.c ****     
-  56:Core/Logic/logic_sleep.c ****     // Pin ≥20% + sensors lỗi -> SAFE
-  57:Core/Logic/logic_sleep.c ****     if (battery >= BATTERY_CRITICAL && working < SENSOR_MIN_WORKING)
- 110              		.loc 1 57 5 is_stmt 1 view .LVU23
- 111              		.loc 1 57 8 is_stmt 0 view .LVU24
- 112 003c 022E     		cmp	r6, #2
- 113 003e 0BD9     		bls	.L9
-  58:Core/Logic/logic_sleep.c ****     {
-  59:Core/Logic/logic_sleep.c ****         Logic_Log("SLEEP: Exit to SAFE (sensor fail)\r\n");
-  60:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;
-  61:Core/Logic/logic_sleep.c ****     }
-  62:Core/Logic/logic_sleep.c ****     
-  63:Core/Logic/logic_sleep.c ****     // Default: stay asleep
-  64:Core/Logic/logic_sleep.c ****     return SLEEP_STAY_ASLEEP;
- 114              		.loc 1 64 12 view .LVU25
- 115 0040 0120     		movs	r0, #1
- 116              	.L3:
-  65:Core/Logic/logic_sleep.c **** }
- 117              		.loc 1 65 1 view .LVU26
- 118 0042 70BD     		pop	{r4, r5, r6, pc}
- 119              	.LVL10:
- 120              	.L7:
-  34:Core/Logic/logic_sleep.c ****         return SLEEP_STAY_ASLEEP;
- 121              		.loc 1 34 9 is_stmt 1 view .LVU27
- 122 0044 0948     		ldr	r0, .L10+8
- 123              	.LVL11:
-  34:Core/Logic/logic_sleep.c ****         return SLEEP_STAY_ASLEEP;
- 124              		.loc 1 34 9 is_stmt 0 view .LVU28
- 125 0046 FFF7FEFF 		bl	Logic_Log
- 126              	.LVL12:
-  35:Core/Logic/logic_sleep.c ****     }
- 127              		.loc 1 35 9 is_stmt 1 view .LVU29
-  35:Core/Logic/logic_sleep.c ****     }
- 128              		.loc 1 35 16 is_stmt 0 view .LVU30
- 129 004a 0120     		movs	r0, #1
- 130 004c F9E7     		b	.L3
- 131              	.L8:
-  52:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_STANDBY;
- 132              		.loc 1 52 9 is_stmt 1 view .LVU31
- 133 004e 0848     		ldr	r0, .L10+12
- 134 0050 FFF7FEFF 		bl	Logic_Log
- 135              	.LVL13:
-  53:Core/Logic/logic_sleep.c ****     }
- 136              		.loc 1 53 9 view .LVU32
-  53:Core/Logic/logic_sleep.c ****     }
- 137              		.loc 1 53 16 is_stmt 0 view .LVU33
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 5
-
-
- 138 0054 0220     		movs	r0, #2
- 139 0056 F4E7     		b	.L3
- 140              	.L9:
-  59:Core/Logic/logic_sleep.c ****         return SLEEP_EXIT_TO_SAFE;
- 141              		.loc 1 59 9 is_stmt 1 view .LVU34
- 142 0058 0648     		ldr	r0, .L10+16
- 143 005a FFF7FEFF 		bl	Logic_Log
- 144              	.LVL14:
-  60:Core/Logic/logic_sleep.c ****     }
- 145              		.loc 1 60 9 view .LVU35
-  60:Core/Logic/logic_sleep.c ****     }
- 146              		.loc 1 60 16 is_stmt 0 view .LVU36
- 147 005e 0320     		movs	r0, #3
- 148 0060 EFE7     		b	.L3
- 149              	.L11:
- 150 0062 00BF     		.align	2
- 151              	.L10:
- 152 0064 00000000 		.word	.LC0
- 153 0068 44000000 		.word	.LC2
- 154 006c 1C000000 		.word	.LC1
- 155 0070 64000000 		.word	.LC3
- 156 0074 80000000 		.word	.LC4
- 157              		.cfi_endproc
- 158              	.LFE148:
- 160              		.section	.text.Logic_Sleep_GetWakeInterval,"ax",%progbits
- 161              		.align	1
- 162              		.global	Logic_Sleep_GetWakeInterval
- 163              		.syntax unified
- 164              		.thumb
- 165              		.thumb_func
- 167              	Logic_Sleep_GetWakeInterval:
- 168              	.LFB149:
-  66:Core/Logic/logic_sleep.c **** 
-  67:Core/Logic/logic_sleep.c **** uint32_t Logic_Sleep_GetWakeInterval(void)
-  68:Core/Logic/logic_sleep.c **** {
- 169              		.loc 1 68 1 is_stmt 1 view -0
- 170              		.cfi_startproc
- 171              		@ args = 0, pretend = 0, frame = 0
- 172              		@ frame_needed = 0, uses_anonymous_args = 0
- 173 0000 08B5     		push	{r3, lr}
- 174              	.LCFI1:
- 175              		.cfi_def_cfa_offset 8
- 176              		.cfi_offset 3, -8
- 177              		.cfi_offset 14, -4
-  69:Core/Logic/logic_sleep.c ****     system_health_t* health = Logic_GetHealth();
- 178              		.loc 1 69 5 view .LVU38
- 179              		.loc 1 69 31 is_stmt 0 view .LVU39
- 180 0002 FFF7FEFF 		bl	Logic_GetHealth
- 181              	.LVL15:
-  70:Core/Logic/logic_sleep.c ****     
-  71:Core/Logic/logic_sleep.c ****     // 15–30% → wake mỗi 10 phút
-  72:Core/Logic/logic_sleep.c ****     if (health->battery_percent >= BATTERY_SLEEP && 
- 182              		.loc 1 72 5 is_stmt 1 view .LVU40
- 183              		.loc 1 72 15 is_stmt 0 view .LVU41
- 184 0006 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
- 185              		.loc 1 72 50 view .LVU42
- 186 0008 0F3B     		subs	r3, r3, #15
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 6
-
-
- 187 000a DBB2     		uxtb	r3, r3
- 188              		.loc 1 72 8 view .LVU43
- 189 000c 0E2B     		cmp	r3, #14
- 190 000e 01D9     		bls	.L14
-  73:Core/Logic/logic_sleep.c ****         health->battery_percent < BATTERY_LOW)
-  74:Core/Logic/logic_sleep.c ****     {
-  75:Core/Logic/logic_sleep.c ****         return SLEEP_WAKE_INTERVAL_HIGH;
-  76:Core/Logic/logic_sleep.c ****     }
-  77:Core/Logic/logic_sleep.c ****     
-  78:Core/Logic/logic_sleep.c ****     // <15% → wake mỗi 30 phút
-  79:Core/Logic/logic_sleep.c ****     return SLEEP_WAKE_INTERVAL_LOW;
- 191              		.loc 1 79 12 view .LVU44
- 192 0010 0148     		ldr	r0, .L16
- 193              	.LVL16:
- 194              	.L12:
-  80:Core/Logic/logic_sleep.c **** }
- 195              		.loc 1 80 1 view .LVU45
- 196 0012 08BD     		pop	{r3, pc}
- 197              	.LVL17:
- 198              	.L14:
-  75:Core/Logic/logic_sleep.c ****     }
- 199              		.loc 1 75 16 view .LVU46
- 200 0014 0148     		ldr	r0, .L16+4
- 201              	.LVL18:
-  75:Core/Logic/logic_sleep.c ****     }
- 202              		.loc 1 75 16 view .LVU47
- 203 0016 FCE7     		b	.L12
- 204              	.L17:
- 205              		.align	2
- 206              	.L16:
- 207 0018 40771B00 		.word	1800000
- 208 001c C0270900 		.word	600000
- 209              		.cfi_endproc
- 210              	.LFE149:
- 212              		.section	.rodata.Logic_Sleep_Enter.str1.4,"aMS",%progbits,1
- 213              		.align	2
- 214              	.LC5:
- 215 0000 534C4545 		.ascii	"SLEEP: Entering, wake in %lu ms\015\012\000"
- 215      503A2045 
- 215      6E746572 
- 215      696E672C 
- 215      2077616B 
- 216              		.section	.text.Logic_Sleep_Enter,"ax",%progbits
- 217              		.align	1
- 218              		.global	Logic_Sleep_Enter
- 219              		.syntax unified
- 220              		.thumb
- 221              		.thumb_func
- 223              	Logic_Sleep_Enter:
- 224              	.LFB147:
-   6:Core/Logic/logic_sleep.c ****     system_health_t* health = Logic_GetHealth();
- 225              		.loc 1 6 1 is_stmt 1 view -0
- 226              		.cfi_startproc
- 227              		@ args = 0, pretend = 0, frame = 0
- 228              		@ frame_needed = 0, uses_anonymous_args = 0
- 229 0000 08B5     		push	{r3, lr}
- 230              	.LCFI2:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 7
-
-
- 231              		.cfi_def_cfa_offset 8
- 232              		.cfi_offset 3, -8
- 233              		.cfi_offset 14, -4
-   7:Core/Logic/logic_sleep.c ****     
- 234              		.loc 1 7 5 view .LVU49
-   7:Core/Logic/logic_sleep.c ****     
- 235              		.loc 1 7 31 is_stmt 0 view .LVU50
- 236 0002 FFF7FEFF 		bl	Logic_GetHealth
- 237              	.LVL19:
-   9:Core/Logic/logic_sleep.c ****     
- 238              		.loc 1 9 5 is_stmt 1 view .LVU51
- 239 0006 FFF7FEFF 		bl	HW_Power_All_Sensors_Off
- 240              	.LVL20:
-  11:Core/Logic/logic_sleep.c ****     
- 241              		.loc 1 11 5 view .LVU52
-  11:Core/Logic/logic_sleep.c ****     
- 242              		.loc 1 11 30 is_stmt 0 view .LVU53
- 243 000a FFF7FEFF 		bl	Logic_Sleep_GetWakeInterval
- 244              	.LVL21:
- 245 000e 0146     		mov	r1, r0
- 246              	.LVL22:
-  13:Core/Logic/logic_sleep.c ****     
- 247              		.loc 1 13 5 is_stmt 1 view .LVU54
- 248 0010 0548     		ldr	r0, .L20
- 249              	.LVL23:
-  13:Core/Logic/logic_sleep.c ****     
- 250              		.loc 1 13 5 is_stmt 0 view .LVU55
- 251 0012 FFF7FEFF 		bl	Logic_Log
- 252              	.LVL24:
-  15:Core/Logic/logic_sleep.c ****     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
- 253              		.loc 1 15 5 is_stmt 1 view .LVU56
- 254 0016 FFF7FEFF 		bl	HAL_SuspendTick
- 255              	.LVL25:
-  16:Core/Logic/logic_sleep.c ****     
- 256              		.loc 1 16 5 view .LVU57
- 257 001a 0121     		movs	r1, #1
- 258 001c 0846     		mov	r0, r1
- 259 001e FFF7FEFF 		bl	HAL_PWR_EnterSTOPMode
- 260              	.LVL26:
-  18:Core/Logic/logic_sleep.c **** }
- 261              		.loc 1 18 5 view .LVU58
-  19:Core/Logic/logic_sleep.c **** 
- 262              		.loc 1 19 1 is_stmt 0 view .LVU59
- 263 0022 0020     		movs	r0, #0
- 264 0024 08BD     		pop	{r3, pc}
- 265              	.L21:
- 266 0026 00BF     		.align	2
- 267              	.L20:
- 268 0028 00000000 		.word	.LC5
- 269              		.cfi_endproc
- 270              	.LFE147:
- 272              		.text
- 273              	.Letext0:
- 274              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
- 275              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
- 276              		.file 4 "Core/Lib/cubesat_data.h"
- 277              		.file 5 "Core/Logic/logic_sleep.h"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 8
-
-
- 278              		.file 6 "Core/Logic/logic.h"
- 279              		.file 7 "Core/Hardware/hardware.h"
- 280              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
- 281              		.file 9 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\ccbjiAby.s 			page 9
+  39:Core/Logic/logic_sleep.c **** }
+ 512              		.loc 1 39 5 view .LVU129
+  40:Core/Logic/logic_sleep.c **** 
+ 513              		.loc 1 40 1 is_stmt 0 view .LVU130
+ 514 00ce 2846     		mov	r0, r5
+ 515 00d0 11B0     		add	sp, sp, #68
+ 516              	.LCFI7:
+ 517              		.cfi_def_cfa_offset 12
+ 518              		@ sp needed
+ 519 00d2 30BD     		pop	{r4, r5, pc}
+ 520              	.L31:
+ 521              		.align	2
+ 522              	.L30:
+ 523 00d4 00000000 		.word	.LC8
+ 524 00d8 00000000 		.word	hrtc
+ 525 00dc D34D6210 		.word	274877907
+ 526 00e0 C5B3A291 		.word	-1851608123
+ 527 00e4 ABAAAAAA 		.word	-1431655765
+ 528 00e8 89888888 		.word	-2004318071
+ 529              		.cfi_endproc
+ 530              	.LFE151:
+ 532              		.text
+ 533              	.Letext0:
+ 534              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 535              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 536              		.file 4 "Core/Lib/cubesat_data.h"
+ 537              		.file 5 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 538              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 539              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc.h"
+ 540              		.file 8 "Core/Logic/logic_sleep.h"
+ 541              		.file 9 "Core/Hardware/hardware.h"
+ 542              		.file 10 "Core/Logic/logic.h"
+ 543              		.file 11 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 544              		.file 12 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 545              		.file 13 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 546              		.file 14 "Core/Lib/sdcard.h"
+ 547              		.file 15 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h"
+ 548              		.file 16 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciUOc2g.s 			page 15
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 logic_sleep.c
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:19     .rodata.Logic_Sleep_WakeUp.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:35     .text.Logic_Sleep_WakeUp:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:41     .text.Logic_Sleep_WakeUp:00000000 Logic_Sleep_WakeUp
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:152    .text.Logic_Sleep_WakeUp:00000064 $d
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:161    .text.Logic_Sleep_GetWakeInterval:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:167    .text.Logic_Sleep_GetWakeInterval:00000000 Logic_Sleep_GetWakeInterval
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:207    .text.Logic_Sleep_GetWakeInterval:00000018 $d
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:213    .rodata.Logic_Sleep_Enter.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:217    .text.Logic_Sleep_Enter:00000000 $t
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:223    .text.Logic_Sleep_Enter:00000000 Logic_Sleep_Enter
-C:\Users\admin\AppData\Local\Temp\ccbjiAby.s:268    .text.Logic_Sleep_Enter:00000028 $d
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:19     .text.Logic_Sleep_DetectWakeSource:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:25     .text.Logic_Sleep_DetectWakeSource:00000000 Logic_Sleep_DetectWakeSource
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:58     .text.Logic_Sleep_DetectWakeSource:00000020 $d
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:63     .rodata.Logic_Sleep_WakeUp.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:88     .text.Logic_Sleep_WakeUp:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:94     .text.Logic_Sleep_WakeUp:00000000 Logic_Sleep_WakeUp
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:294    .text.Logic_Sleep_WakeUp:000000bc $d
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:306    .text.Logic_Sleep_GetWakeInterval:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:312    .text.Logic_Sleep_GetWakeInterval:00000000 Logic_Sleep_GetWakeInterval
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:352    .text.Logic_Sleep_GetWakeInterval:00000018 $d
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:358    .rodata.Logic_Sleep_Enter.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:362    .text.Logic_Sleep_Enter:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:368    .text.Logic_Sleep_Enter:00000000 Logic_Sleep_Enter
+C:\Users\admin\AppData\Local\Temp\cciUOc2g.s:523    .text.Logic_Sleep_Enter:000000d4 $d
 
 UNDEFINED SYMBOLS
+hrtc
 Logic_GetHealth
+Logic_GetStatus
 Logic_Log
 Logic_Battery_Read
 Logic_Sensor_Count_Working
-Logic_Flash_Check_Min_Free
+HAL_GetTick
+snprintf
+strlen
+SD_WriteScience
 HW_Power_All_Sensors_Off
+memset
+HAL_RTC_GetTime
+HAL_RTC_GetDate
+HAL_RTC_SetAlarm_IT
 HAL_SuspendTick
 HAL_PWR_EnterSTOPMode
+HAL_ResumeTick
+SystemClock_Config

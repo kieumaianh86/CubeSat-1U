@@ -7,6 +7,7 @@
 
 #define MOSFET_ON   GPIO_PIN_SET
 #define MOSFET_OFF  GPIO_PIN_RESET
+ 
 
 hw_status_t hardware_init(hardware_t *hw)
 {
@@ -22,7 +23,7 @@ hw_status_t hardware_init(hardware_t *hw)
   
   // 1. Initialize mpu6050
   mpu6050_config_t mpu_config = {
-    .hi2c = &hi2c1,
+    .hi2c = &hi2c4,
     .device_addr = MPU6050_ADDR,
     .accel_scale = MPU6050_ACCEL_SCALE_2G,
     .gyro_scale = MPU6050_GYRO_SCALE_250DPS,
@@ -46,7 +47,7 @@ hw_status_t hardware_init(hardware_t *hw)
 
   // 2. Initialize hmc5883l
   hmc5883l_config_t mag_config = {
-    .hi2c = &hi2c1,
+    .hi2c = &hi2c4,
     .device_addr = HMC5883L_ADDR,
     .samples_avg = HMC5883L_SAMPLES_8,
     .data_rate = HMC5883L_RATE_15HZ,
@@ -241,7 +242,7 @@ const neo8m_handle_t* hardware_get_gps(const hardware_t *hw)
   }
   return &hw->gps;
 }
-
+//extern UART_HandleTypeDef huart6;
 void Hardware_UART_Printf(const char *format, ...)
 {
   char buffer[256];

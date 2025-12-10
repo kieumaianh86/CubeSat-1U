@@ -4,12 +4,16 @@
 #include "hardware.h"
 
 static uint32_t safe_start_tick = 0;
+static uint32_t last_check_tick = 0;
 
 safe_error_t Logic_Safe_Init(void)
 {
     safe_start_tick = HAL_GetTick();
+    last_check_tick = 0;
     
     cubesat_status_t* status = Logic_GetStatus();
+    
+    // Reset recovery flags
     status->sensors_recovered = false;
     status->flash_recovered = false;
     status->lora_recovered = false;
@@ -17,33 +21,36 @@ safe_error_t Logic_Safe_Init(void)
     
     HW_Power_All_Sensors_Off();
     
-    Logic_Log("SAFE: Entered - error code %d\r\n", status->error_code);
+    Logic_Log("SAFE: Entered - error code 0x%02X\r\n", status->error_code);
     
     return SAFE_OK;
 }
 
-safe_error_t Logic_Safe_Process(uint32_t dt_ms)
+safe_error_t Logic_Safe_Process(void)
 {
     uint32_t total_timer = HAL_GetTick() - safe_start_tick;
+    uint32_t check_elapsed = HAL_GetTick() - last_check_tick;
     
     cubesat_status_t* status = Logic_GetStatus();
     system_health_t* health = Logic_GetHealth();
     
-    // Chu kỳ 10s kiểm tra
-    if (total_timer >= SAFE_CHECK_INTERVAL)
-    {        
-        // Đọc pin
+    // Check every 10s
+    if (check_elapsed >= SAFE_CHECK_INTERVAL)
+    {
+        last_check_tick = HAL_GetTick();
+        
+        // Read battery
         uint8_t battery = Logic_Battery_Read();
         health->battery_percent = battery;
         
-        // Pin <15% -> SLEEP
+        // Battery <15% -> SLEEP
         if (battery < BATTERY_SLEEP)
         {
             Logic_Log("SAFE: Battery < 15%%, go to SLEEP\r\n");
             return SAFE_EXIT_TO_SLEEP;
         }
         
-        // Kiểm tra nhiệt độ
+        // Check temperature
         float temp = Logic_Temp_Read();
         health->temperature = temp;
         if (Logic_Temp_Check_Safe())
@@ -59,25 +66,21 @@ safe_error_t Logic_Safe_Process(uint32_t dt_ms)
             status->sensors_recovered = true;
         }
         
-        // Test flash
+        // Test SD card
         if (Logic_Flash_Check_Min_Free())
         {
             status->flash_recovered = true;
         }
         
-        // Test LoRa
-        // if lora_test_ok()
-        {
-            status->lora_recovered = true;
-            health->lora_ok = true;
-        }
+        // Test LoRa (simplified - assume OK for now)
+        status->lora_recovered = true;
+        health->lora_ok = true;
         
-        Logic_Log("SAFE: Check - bat=%d%%, temp=%.1f, sensors=%d\r\n", 
+        Logic_Log("SAFE: bat=%d%%, temp=%.1f, sensors=%d\r\n", 
                   battery, temp, working);
     }
     
-    // Exit conditions
-    // Pin ≥30%, sensors ≥3, flash OK, nhiệt độ OK -> STANDBY
+    // Exit condition 1: All recovered
     if (health->battery_percent >= BATTERY_LOW &&
         status->sensors_recovered &&
         status->flash_recovered &&
@@ -87,11 +90,11 @@ safe_error_t Logic_Safe_Process(uint32_t dt_ms)
         return SAFE_EXIT_TO_STANDBY;
     }
     
-    // Timeout 60s + pin ≥25% -> STANDBY
+    // Exit condition 2: Timeout + battery OK
     if (total_timer >= SAFE_TOTAL_TIMEOUT && 
         health->battery_percent >= BATTERY_COMM_MIN)
     {
-        Logic_Log("SAFE: Timeout 60s + battery >= 25%%, exit to STANDBY\r\n");
+        Logic_Log("SAFE: Timeout + battery OK, exit to STANDBY\r\n");
         return SAFE_EXIT_TO_STANDBY;
     }
     
@@ -101,6 +104,7 @@ safe_error_t Logic_Safe_Process(uint32_t dt_ms)
 safe_error_t Logic_Safe_Reset(void)
 {
     safe_start_tick = 0;
+    last_check_tick = 0;
     
     cubesat_status_t* status = Logic_GetStatus();
     status->sensors_recovered = false;
@@ -114,5 +118,5 @@ safe_error_t Logic_Safe_Reset(void)
 
 uint32_t Logic_Safe_GetTimer(void)
 {
-    return safe_start_tick - HAL_GetTick();
+    return HAL_GetTick() - safe_start_tick;  
 }

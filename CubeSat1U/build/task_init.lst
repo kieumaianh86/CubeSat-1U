@@ -1,0 +1,1130 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"task_init.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.SharedData_Init,"ax",%progbits
+  19              		.align	1
+  20              		.global	SharedData_Init
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SharedData_Init:
+  26              	.LFB159:
+  27              		.file 1 "Core/RTOS/task_init.c"
+   1:Core/RTOS/task_init.c **** #include "task_config.h"
+   2:Core/RTOS/task_init.c **** #include "hardware.h"
+   3:Core/RTOS/task_init.c **** 
+   4:Core/RTOS/task_init.c **** //global bandle
+   5:Core/RTOS/task_init.c **** QueueHandle_t cmdQueue = NULL;
+   6:Core/RTOS/task_init.c **** QueueHandle_t outQueue = NULL;
+   7:Core/RTOS/task_init.c **** SemaphoreHandle_t healthMutex = NULL;
+   8:Core/RTOS/task_init.c **** SemaphoreHandle_t i2cMutex = NULL;
+   9:Core/RTOS/task_init.c **** SemaphoreHandle_t flashMutex = NULL;
+  10:Core/RTOS/task_init.c **** EventGroupHandle_t systemEvents = NULL;
+  11:Core/RTOS/task_init.c **** shared_data_t g_shared = {0};
+  12:Core/RTOS/task_init.c **** 
+  13:Core/RTOS/task_init.c **** // Task handles (for debugging/monitoring)
+  14:Core/RTOS/task_init.c **** static TaskHandle_t hTaskCmdRx = NULL;
+  15:Core/RTOS/task_init.c **** static TaskHandle_t hTaskStateMachine = NULL;
+  16:Core/RTOS/task_init.c **** static TaskHandle_t hTaskOutput = NULL;
+  17:Core/RTOS/task_init.c **** 
+  18:Core/RTOS/task_init.c **** void SharedData_Init(void)
+  19:Core/RTOS/task_init.c **** {
+  28              		.loc 1 19 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 38B5     		push	{r3, r4, r5, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 16
+  35              		.cfi_offset 3, -16
+  36              		.cfi_offset 4, -12
+  37              		.cfi_offset 5, -8
+  38              		.cfi_offset 14, -4
+  20:Core/RTOS/task_init.c ****     memset(&g_shared, 0, sizeof(g_shared));
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 2
+
+
+  39              		.loc 1 20 5 view .LVU1
+  40 0002 174C     		ldr	r4, .L8
+  41 0004 3C22     		movs	r2, #60
+  42 0006 0021     		movs	r1, #0
+  43 0008 2046     		mov	r0, r4
+  44 000a FFF7FEFF 		bl	memset
+  45              	.LVL0:
+  21:Core/RTOS/task_init.c ****     
+  22:Core/RTOS/task_init.c ****     // Create mutex for shared data
+  23:Core/RTOS/task_init.c ****     g_shared.mutex = xSemaphoreCreateMutex();
+  46              		.loc 1 23 5 view .LVU2
+  47              		.loc 1 23 22 is_stmt 0 view .LVU3
+  48 000e 0120     		movs	r0, #1
+  49 0010 FFF7FEFF 		bl	xQueueCreateMutex
+  50              	.LVL1:
+  51              		.loc 1 23 20 view .LVU4
+  52 0014 A063     		str	r0, [r4, #56]
+  24:Core/RTOS/task_init.c ****     configASSERT(g_shared.mutex != NULL);
+  53              		.loc 1 24 5 is_stmt 1 view .LVU5
+  54 0016 78B1     		cbz	r0, .L7
+  55              		.loc 1 24 41 discriminator 2 view .LVU6
+  25:Core/RTOS/task_init.c ****     
+  26:Core/RTOS/task_init.c ****     // Initialize default values
+  27:Core/RTOS/task_init.c ****     g_shared.status.current_state = STATE_INIT;
+  56              		.loc 1 27 5 discriminator 2 view .LVU7
+  57              		.loc 1 27 35 is_stmt 0 discriminator 2 view .LVU8
+  58 0018 114D     		ldr	r5, .L8
+  59 001a 0024     		movs	r4, #0
+  60 001c 2C77     		strb	r4, [r5, #28]
+  28:Core/RTOS/task_init.c ****     g_shared.status.previous_state = STATE_INIT;
+  61              		.loc 1 28 5 is_stmt 1 discriminator 2 view .LVU9
+  62              		.loc 1 28 36 is_stmt 0 discriminator 2 view .LVU10
+  63 001e 6C77     		strb	r4, [r5, #29]
+  29:Core/RTOS/task_init.c ****     g_shared.status.state_entry_time = HAL_GetTick();
+  64              		.loc 1 29 5 is_stmt 1 discriminator 2 view .LVU11
+  65              		.loc 1 29 40 is_stmt 0 discriminator 2 view .LVU12
+  66 0020 FFF7FEFF 		bl	HAL_GetTick
+  67              	.LVL2:
+  68              		.loc 1 29 38 discriminator 2 view .LVU13
+  69 0024 2862     		str	r0, [r5, #32]
+  30:Core/RTOS/task_init.c ****     g_shared.status.pending = CMD_NONE;
+  70              		.loc 1 30 5 is_stmt 1 discriminator 2 view .LVU14
+  71              		.loc 1 30 29 is_stmt 0 discriminator 2 view .LVU15
+  72 0026 85F83040 		strb	r4, [r5, #48]
+  31:Core/RTOS/task_init.c ****     
+  32:Core/RTOS/task_init.c ****     g_shared.health.battery_percent = 100;
+  73              		.loc 1 32 5 is_stmt 1 discriminator 2 view .LVU16
+  74              		.loc 1 32 37 is_stmt 0 discriminator 2 view .LVU17
+  75 002a 6423     		movs	r3, #100
+  76 002c 2B70     		strb	r3, [r5]
+  33:Core/RTOS/task_init.c ****     g_shared.health.temperature = 25.0f;
+  77              		.loc 1 33 5 is_stmt 1 discriminator 2 view .LVU18
+  78              		.loc 1 33 33 is_stmt 0 discriminator 2 view .LVU19
+  79 002e 0D4B     		ldr	r3, .L8+4
+  80 0030 6B60     		str	r3, [r5, #4]	@ float
+  34:Core/RTOS/task_init.c ****     g_shared.health.lora_ok = false;
+  81              		.loc 1 34 5 is_stmt 1 discriminator 2 view .LVU20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 3
+
+
+  82              		.loc 1 34 29 is_stmt 0 discriminator 2 view .LVU21
+  83 0032 6C76     		strb	r4, [r5, #25]
+  35:Core/RTOS/task_init.c ****     
+  36:Core/RTOS/task_init.c ****     for (int i = 0; i < SENSOR_COUNT; i++) {
+  84              		.loc 1 36 5 is_stmt 1 discriminator 2 view .LVU22
+  85              	.LBB23:
+  86              		.loc 1 36 10 discriminator 2 view .LVU23
+  87              	.LVL3:
+  88              		.loc 1 36 14 is_stmt 0 discriminator 2 view .LVU24
+  89 0034 2346     		mov	r3, r4
+  90              		.loc 1 36 5 discriminator 2 view .LVU25
+  91 0036 0FE0     		b	.L4
+  92              	.LVL4:
+  93              	.L7:
+  94              		.loc 1 36 5 discriminator 2 view .LVU26
+  95              	.LBE23:
+  24:Core/RTOS/task_init.c ****     
+  96              		.loc 1 24 5 is_stmt 1 view .LVU27
+  97              	.LBB24:
+  98              	.LBI24:
+  99              		.file 2 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+   1:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*
+   2:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * FreeRTOS Kernel V10.3.1
+   3:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+   5:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * this software and associated documentation files (the "Software"), to deal in
+   7:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * the Software without restriction, including without limitation the rights to
+   8:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * subject to the following conditions:
+  11:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  12:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * The above copyright notice and this permission notice shall be included in all
+  13:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * copies or substantial portions of the Software.
+  14:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  15:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  22:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * http://www.FreeRTOS.org
+  23:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * http://aws.amazon.com/freertos
+  24:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  25:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * 1 tab == 4 spaces!
+  26:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  */
+  27:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  28:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  29:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef PORTMACRO_H
+  30:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define PORTMACRO_H
+  31:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  32:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifdef __cplusplus
+  33:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** extern "C" {
+  34:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+  35:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  36:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 4
+
+
+  37:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * Port specific definitions.
+  38:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  39:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * The settings in this file configure FreeRTOS correctly for the
+  40:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * given hardware and compiler.
+  41:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  42:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * These settings should not be altered.
+  43:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *-----------------------------------------------------------
+  44:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  */
+  45:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  46:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Type definitions. */
+  47:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portCHAR		char
+  48:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portFLOAT		float
+  49:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portDOUBLE		double
+  50:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portLONG		long
+  51:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSHORT		short
+  52:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSTACK_TYPE	uint32_t
+  53:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portBASE_TYPE	long
+  54:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  55:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** typedef portSTACK_TYPE StackType_t;
+  56:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** typedef long BaseType_t;
+  57:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** typedef unsigned long UBaseType_t;
+  58:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  59:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #if( configUSE_16_BIT_TICKS == 1 )
+  60:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	typedef uint16_t TickType_t;
+  61:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portMAX_DELAY ( TickType_t ) 0xffff
+  62:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #else
+  63:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	typedef uint32_t TickType_t;
+  64:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
+  65:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  66:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* 32-bit tick type on a 32-bit architecture, so reads of the tick count do
+  67:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	not need to be guarded with a critical section. */
+  68:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portTICK_TYPE_IS_ATOMIC 1
+  69:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+  70:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+  71:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  72:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Architecture specifics. */
+  73:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSTACK_GROWTH			( -1 )
+  74:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
+  75:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portBYTE_ALIGNMENT			8
+  76:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+  77:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  78:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Scheduler utilities. */
+  79:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portYIELD() 															\
+  80:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {																				\
+  81:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Set a PendSV to request a context switch. */								\
+  82:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;								\
+  83:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 																				\
+  84:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Barriers are normally not required but do ensure the code is completely	\
+  85:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	within the specified behaviour for the architecture. */						\
+  86:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile( "dsb" ::: "memory" );										\
+  87:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile( "isb" );													\
+  88:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** }
+  89:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  90:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portNVIC_INT_CTRL_REG		( * ( ( volatile uint32_t * ) 0xe000ed04 ) )
+  91:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portNVIC_PENDSVSET_BIT		( 1UL << 28UL )
+  92:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired != pdFALSE ) portYIELD()
+  93:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 5
+
+
+  94:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+  95:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  96:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Critical section management. */
+  97:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** extern void vPortEnterCritical( void );
+  98:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** extern void vPortExitCritical( void );
+  99:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSET_INTERRUPT_MASK_FROM_ISR()		ulPortRaiseBASEPRI()
+ 100:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portCLEAR_INTERRUPT_MASK_FROM_ISR(x)	vPortSetBASEPRI(x)
+ 101:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portDISABLE_INTERRUPTS()				vPortRaiseBASEPRI()
+ 102:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portENABLE_INTERRUPTS()					vPortSetBASEPRI(0)
+ 103:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portENTER_CRITICAL()					vPortEnterCritical()
+ 104:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portEXIT_CRITICAL()						vPortExitCritical()
+ 105:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 106:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 107:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 108:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Task function macros as described on the FreeRTOS.org WEB site.  These are
+ 109:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** not necessary for to use this port.  They are defined so the common demo files
+ 110:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** (which build with all the ports) will build. */
+ 111:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )
+ 112:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
+ 113:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 114:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 115:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Tickless idle/low power functionality. */
+ 116:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef portSUPPRESS_TICKS_AND_SLEEP
+ 117:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	extern void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime );
+ 118:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdl
+ 119:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 120:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 121:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 122:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Architecture specific optimisations. */
+ 123:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
+ 124:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+ 125:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 126:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 127:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
+ 128:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 129:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Generic helper function. */
+ 130:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__attribute__( ( always_inline ) ) static inline uint8_t ucPortCountLeadingZeros( uint32_t ulBitma
+ 131:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
+ 132:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	uint8_t ucReturn;
+ 133:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 134:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		__asm volatile ( "clz %0, %1" : "=r" ( ucReturn ) : "r" ( ulBitmap ) : "memory" );
+ 135:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		return ucReturn;
+ 136:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
+ 137:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 138:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Check the configuration. */
+ 139:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#if( configMAX_PRIORITIES > 32 )
+ 140:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is 
+ 141:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#endif
+ 142:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 143:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Store/clear the ready priorities in a bit map. */
+ 144:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL 
+ 145:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL 
+ 146:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 147:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/*-----------------------------------------------------------*/
+ 148:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 149:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( ui
+ 150:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 6
+
+
+ 151:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
+ 152:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 153:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 154:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 155:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifdef configASSERT
+ 156:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	void vPortValidateInterruptPriority( void );
+ 157:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
+ 158:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 159:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 160:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* portNOP() is not required by this port. */
+ 161:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portNOP()
+ 162:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 163:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portINLINE	__inline
+ 164:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 165:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef portFORCE_INLINE
+ 166:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portFORCE_INLINE inline __attribute__(( always_inline))
+ 167:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 168:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 169:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** portFORCE_INLINE static BaseType_t xPortIsInsideInterrupt( void )
+ 170:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 171:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** uint32_t ulCurrentInterrupt;
+ 172:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** BaseType_t xReturn;
+ 173:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 174:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Obtain the number of the currently executing interrupt. */
+ 175:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile( "mrs %0, ipsr" : "=r"( ulCurrentInterrupt ) :: "memory" );
+ 176:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 177:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	if( ulCurrentInterrupt == 0 )
+ 178:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
+ 179:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		xReturn = pdFALSE;
+ 180:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
+ 181:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	else
+ 182:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
+ 183:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		xReturn = pdTRUE;
+ 184:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
+ 185:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 186:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	return xReturn;
+ 187:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** }
+ 188:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 189:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 190:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** portFORCE_INLINE static void vPortRaiseBASEPRI( void )
+ 100              		.loc 2 191 30 view .LVU28
+ 101              	.LBB25:
+ 192:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** uint32_t ulNewBASEPRI;
+ 102              		.loc 2 193 1 view .LVU29
+ 194:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 195:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile
+ 103              		.loc 2 195 2 view .LVU30
+ 104              		.syntax unified
+ 105              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 106 0038 4FF05003 			mov r3, #80												
+ 107 003c 83F31188 		msr basepri, r3											
+ 108 0040 BFF36F8F 		isb														
+ 109 0044 BFF34F8F 		dsb														
+ 110              	
+ 111              	@ 0 "" 2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 7
+
+
+ 112              	.LVL5:
+ 113              		.thumb
+ 114              		.syntax unified
+ 115              	.L3:
+ 116              		.loc 2 195 2 is_stmt 0 view .LVU31
+ 117              	.LBE25:
+ 118              	.LBE24:
+  24:Core/RTOS/task_init.c ****     
+ 119              		.loc 1 24 5 is_stmt 1 discriminator 1 view .LVU32
+  24:Core/RTOS/task_init.c ****     
+ 120              		.loc 1 24 5 discriminator 1 view .LVU33
+  24:Core/RTOS/task_init.c ****     
+ 121              		.loc 1 24 5 discriminator 1 view .LVU34
+ 122 0048 FEE7     		b	.L3
+ 123              	.LVL6:
+ 124              	.L5:
+ 125              	.LBB26:
+  37:Core/RTOS/task_init.c ****         g_shared.health.sensor_status[i] = SENSOR_STATUS_NOT_INIT;
+ 126              		.loc 1 37 9 discriminator 3 view .LVU35
+ 127              		.loc 1 37 42 is_stmt 0 discriminator 3 view .LVU36
+ 128 004a 054A     		ldr	r2, .L8
+ 129 004c 1A44     		add	r2, r2, r3
+ 130 004e 0321     		movs	r1, #3
+ 131 0050 1173     		strb	r1, [r2, #12]
+  38:Core/RTOS/task_init.c ****         g_shared.health.sensor_fail_count[i] = 0;
+ 132              		.loc 1 38 9 is_stmt 1 discriminator 3 view .LVU37
+ 133              		.loc 1 38 46 is_stmt 0 discriminator 3 view .LVU38
+ 134 0052 0021     		movs	r1, #0
+ 135 0054 9174     		strb	r1, [r2, #18]
+  36:Core/RTOS/task_init.c ****         g_shared.health.sensor_status[i] = SENSOR_STATUS_NOT_INIT;
+ 136              		.loc 1 36 39 is_stmt 1 discriminator 3 view .LVU39
+  36:Core/RTOS/task_init.c ****         g_shared.health.sensor_status[i] = SENSOR_STATUS_NOT_INIT;
+ 137              		.loc 1 36 40 is_stmt 0 discriminator 3 view .LVU40
+ 138 0056 0133     		adds	r3, r3, #1
+ 139              	.LVL7:
+ 140              	.L4:
+  36:Core/RTOS/task_init.c ****         g_shared.health.sensor_status[i] = SENSOR_STATUS_NOT_INIT;
+ 141              		.loc 1 36 21 is_stmt 1 discriminator 1 view .LVU41
+  36:Core/RTOS/task_init.c ****         g_shared.health.sensor_status[i] = SENSOR_STATUS_NOT_INIT;
+ 142              		.loc 1 36 5 is_stmt 0 discriminator 1 view .LVU42
+ 143 0058 052B     		cmp	r3, #5
+ 144 005a F6DD     		ble	.L5
+ 145              	.LBE26:
+  39:Core/RTOS/task_init.c ****     }
+  40:Core/RTOS/task_init.c **** }
+ 146              		.loc 1 40 1 view .LVU43
+ 147 005c 38BD     		pop	{r3, r4, r5, pc}
+ 148              	.LVL8:
+ 149              	.L9:
+ 150              		.loc 1 40 1 view .LVU44
+ 151 005e 00BF     		.align	2
+ 152              	.L8:
+ 153 0060 00000000 		.word	.LANCHOR0
+ 154 0064 0000C841 		.word	1103626240
+ 155              		.cfi_endproc
+ 156              	.LFE159:
+ 158              		.section	.rodata.Task_Init.str1.4,"aMS",%progbits,1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 8
+
+
+ 159              		.align	2
+ 160              	.LC0:
+ 161 0000 436D6452 		.ascii	"CmdRx\000"
+ 161      7800
+ 162 0006 0000     		.align	2
+ 163              	.LC1:
+ 164 0008 53746174 		.ascii	"StateMachine\000"
+ 164      654D6163 
+ 164      68696E65 
+ 164      00
+ 165 0015 000000   		.align	2
+ 166              	.LC2:
+ 167 0018 4F757470 		.ascii	"Output\000"
+ 167      757400
+ 168 001f 00       		.align	2
+ 169              	.LC3:
+ 170 0020 52544F53 		.ascii	"RTOS: Tasks initialized!\015\012\000"
+ 170      3A205461 
+ 170      736B7320 
+ 170      696E6974 
+ 170      69616C69 
+ 171              		.section	.text.Task_Init,"ax",%progbits
+ 172              		.align	1
+ 173              		.global	Task_Init
+ 174              		.syntax unified
+ 175              		.thumb
+ 176              		.thumb_func
+ 178              	Task_Init:
+ 179              	.LFB160:
+  41:Core/RTOS/task_init.c **** 
+  42:Core/RTOS/task_init.c **** 
+  43:Core/RTOS/task_init.c **** void Task_Init (void){
+ 180              		.loc 1 43 22 is_stmt 1 view -0
+ 181              		.cfi_startproc
+ 182              		@ args = 0, pretend = 0, frame = 528
+ 183              		@ frame_needed = 0, uses_anonymous_args = 0
+ 184 0000 10B5     		push	{r4, lr}
+ 185              	.LCFI1:
+ 186              		.cfi_def_cfa_offset 8
+ 187              		.cfi_offset 4, -8
+ 188              		.cfi_offset 14, -4
+ 189 0002 ADF5067D 		sub	sp, sp, #536
+ 190              	.LCFI2:
+ 191              		.cfi_def_cfa_offset 544
+  44:Core/RTOS/task_init.c ****   //initialize shared data first
+  45:Core/RTOS/task_init.c ****   SharedData_Init();
+ 192              		.loc 1 45 3 view .LVU46
+ 193 0006 FFF7FEFF 		bl	SharedData_Init
+ 194              	.LVL9:
+  46:Core/RTOS/task_init.c **** 
+  47:Core/RTOS/task_init.c ****   //create queue
+  48:Core/RTOS/task_init.c ****   cmdQueue = xQueueCreate(CMD_QUEUE_LENGTH, sizeof(command_msg_t));
+ 195              		.loc 1 48 3 view .LVU47
+ 196              		.loc 1 48 14 is_stmt 0 view .LVU48
+ 197 000a 0022     		movs	r2, #0
+ 198 000c 2C21     		movs	r1, #44
+ 199 000e 0520     		movs	r0, #5
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 9
+
+
+ 200 0010 FFF7FEFF 		bl	xQueueGenericCreate
+ 201              	.LVL10:
+ 202              		.loc 1 48 12 view .LVU49
+ 203 0014 5C4B     		ldr	r3, .L36
+ 204 0016 1860     		str	r0, [r3]
+  49:Core/RTOS/task_init.c ****   configASSERT(cmdQueue != NULL); //tra ve true -> chay tiep, false -> dung lai
+ 205              		.loc 1 49 3 is_stmt 1 view .LVU50
+ 206 0018 0028     		cmp	r0, #0
+ 207 001a 3AD0     		beq	.L30
+ 208              		.loc 1 49 33 discriminator 2 view .LVU51
+  50:Core/RTOS/task_init.c **** 
+  51:Core/RTOS/task_init.c ****   outQueue = xQueueCreate(OUT_QUEUE_LENGTH, sizeof(output_request_t));
+ 209              		.loc 1 51 3 discriminator 2 view .LVU52
+ 210              		.loc 1 51 14 is_stmt 0 discriminator 2 view .LVU53
+ 211 001c 0022     		movs	r2, #0
+ 212 001e 4FF40371 		mov	r1, #524
+ 213 0022 0A20     		movs	r0, #10
+ 214 0024 FFF7FEFF 		bl	xQueueGenericCreate
+ 215              	.LVL11:
+ 216              		.loc 1 51 12 discriminator 2 view .LVU54
+ 217 0028 584B     		ldr	r3, .L36+4
+ 218 002a 1860     		str	r0, [r3]
+  52:Core/RTOS/task_init.c ****   configASSERT(outQueue != NULL);
+ 219              		.loc 1 52 3 is_stmt 1 discriminator 2 view .LVU55
+ 220 002c 0028     		cmp	r0, #0
+ 221 002e 39D0     		beq	.L31
+ 222              		.loc 1 52 33 discriminator 2 view .LVU56
+  53:Core/RTOS/task_init.c **** 
+  54:Core/RTOS/task_init.c ****   //create mutex
+  55:Core/RTOS/task_init.c ****   healthMutex = xSemaphoreCreateMutex();
+ 223              		.loc 1 55 3 discriminator 2 view .LVU57
+ 224              		.loc 1 55 17 is_stmt 0 discriminator 2 view .LVU58
+ 225 0030 0120     		movs	r0, #1
+ 226 0032 FFF7FEFF 		bl	xQueueCreateMutex
+ 227              	.LVL12:
+ 228              		.loc 1 55 15 discriminator 2 view .LVU59
+ 229 0036 564B     		ldr	r3, .L36+8
+ 230 0038 1860     		str	r0, [r3]
+  56:Core/RTOS/task_init.c ****   configASSERT(healthMutex != NULL);
+ 231              		.loc 1 56 3 is_stmt 1 discriminator 2 view .LVU60
+ 232 003a 0028     		cmp	r0, #0
+ 233 003c 3BD0     		beq	.L32
+ 234              		.loc 1 56 36 discriminator 2 view .LVU61
+  57:Core/RTOS/task_init.c **** 
+  58:Core/RTOS/task_init.c ****   i2cMutex = xSemaphoreCreateMutex();
+ 235              		.loc 1 58 3 discriminator 2 view .LVU62
+ 236              		.loc 1 58 14 is_stmt 0 discriminator 2 view .LVU63
+ 237 003e 0120     		movs	r0, #1
+ 238 0040 FFF7FEFF 		bl	xQueueCreateMutex
+ 239              	.LVL13:
+ 240              		.loc 1 58 12 discriminator 2 view .LVU64
+ 241 0044 534B     		ldr	r3, .L36+12
+ 242 0046 1860     		str	r0, [r3]
+  59:Core/RTOS/task_init.c ****   configASSERT(i2cMutex != NULL);
+ 243              		.loc 1 59 3 is_stmt 1 discriminator 2 view .LVU65
+ 244 0048 0028     		cmp	r0, #0
+ 245 004a 3DD0     		beq	.L33
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 10
+
+
+ 246              		.loc 1 59 33 discriminator 2 view .LVU66
+  60:Core/RTOS/task_init.c **** 
+  61:Core/RTOS/task_init.c ****   flashMutex = xSemaphoreCreateMutex();
+ 247              		.loc 1 61 3 discriminator 2 view .LVU67
+ 248              		.loc 1 61 16 is_stmt 0 discriminator 2 view .LVU68
+ 249 004c 0120     		movs	r0, #1
+ 250 004e FFF7FEFF 		bl	xQueueCreateMutex
+ 251              	.LVL14:
+ 252              		.loc 1 61 14 discriminator 2 view .LVU69
+ 253 0052 514A     		ldr	r2, .L36+16
+ 254 0054 1060     		str	r0, [r2]
+  62:Core/RTOS/task_init.c ****   configASSERT(flashMutex != NULL);
+ 255              		.loc 1 62 3 is_stmt 1 discriminator 2 view .LVU70
+ 256 0056 0028     		cmp	r0, #0
+ 257 0058 3FD0     		beq	.L34
+ 258              		.loc 1 62 35 discriminator 2 view .LVU71
+  63:Core/RTOS/task_init.c **** 
+  64:Core/RTOS/task_init.c ****   //create event group
+  65:Core/RTOS/task_init.c ****   systemEvents = xEventGroupCreate();
+ 259              		.loc 1 65 3 discriminator 2 view .LVU72
+ 260              		.loc 1 65 18 is_stmt 0 discriminator 2 view .LVU73
+ 261 005a FFF7FEFF 		bl	xEventGroupCreate
+ 262              	.LVL15:
+ 263              		.loc 1 65 16 discriminator 2 view .LVU74
+ 264 005e 4F4A     		ldr	r2, .L36+20
+ 265 0060 1060     		str	r0, [r2]
+  66:Core/RTOS/task_init.c ****   configASSERT(systemEvents != NULL);
+ 266              		.loc 1 66 3 is_stmt 1 discriminator 2 view .LVU75
+ 267 0062 0028     		cmp	r0, #0
+ 268 0064 42D0     		beq	.L35
+ 269              		.loc 1 66 37 discriminator 2 view .LVU76
+  67:Core/RTOS/task_init.c **** 
+  68:Core/RTOS/task_init.c ****   //create task
+  69:Core/RTOS/task_init.c ****   BaseType_t result;
+ 270              		.loc 1 69 3 discriminator 2 view .LVU77
+  70:Core/RTOS/task_init.c ****   result = xTaskCreate(Task_CommandReceiver, "CmdRx", STACK_CMD_RECEIVER, NULL, PRIORITY_CMD_RECEIV
+ 271              		.loc 1 70 3 discriminator 2 view .LVU78
+ 272              		.loc 1 70 12 is_stmt 0 discriminator 2 view .LVU79
+ 273 0066 4E4B     		ldr	r3, .L36+24
+ 274 0068 0193     		str	r3, [sp, #4]
+ 275 006a 0323     		movs	r3, #3
+ 276 006c 0093     		str	r3, [sp]
+ 277 006e 0023     		movs	r3, #0
+ 278 0070 4FF40072 		mov	r2, #512
+ 279 0074 4B49     		ldr	r1, .L36+28
+ 280 0076 4C48     		ldr	r0, .L36+32
+ 281 0078 FFF7FEFF 		bl	xTaskCreate
+ 282              	.LVL16:
+  71:Core/RTOS/task_init.c ****   configASSERT(result == pdPASS);
+ 283              		.loc 1 71 3 is_stmt 1 discriminator 2 view .LVU80
+ 284 007c 0128     		cmp	r0, #1
+ 285 007e 3ED0     		beq	.L23
+ 286              		.loc 1 71 3 view .LVU81
+ 287              	.LBB27:
+ 288              	.LBI27:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 289              		.loc 2 191 30 view .LVU82
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 11
+
+
+ 290              	.LBB28:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 291              		.loc 2 193 1 view .LVU83
+ 292              		.loc 2 195 2 view .LVU84
+ 293              		.syntax unified
+ 294              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 295 0080 4FF05003 			mov r3, #80												
+ 296 0084 83F31188 		msr basepri, r3											
+ 297 0088 BFF36F8F 		isb														
+ 298 008c BFF34F8F 		dsb														
+ 299              	
+ 300              	@ 0 "" 2
+ 301              	.LVL17:
+ 302              		.thumb
+ 303              		.syntax unified
+ 304              	.L24:
+ 305              		.loc 2 195 2 is_stmt 0 view .LVU85
+ 306              	.LBE28:
+ 307              	.LBE27:
+ 308              		.loc 1 71 3 is_stmt 1 discriminator 7 view .LVU86
+ 309              		.loc 1 71 3 discriminator 7 view .LVU87
+ 310              		.loc 1 71 3 discriminator 7 view .LVU88
+ 311 0090 FEE7     		b	.L24
+ 312              	.LVL18:
+ 313              	.L30:
+  49:Core/RTOS/task_init.c **** 
+ 314              		.loc 1 49 3 view .LVU89
+ 315              	.LBB29:
+ 316              	.LBI29:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 317              		.loc 2 191 30 view .LVU90
+ 318              	.LBB30:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 319              		.loc 2 193 1 view .LVU91
+ 320              		.loc 2 195 2 view .LVU92
+ 321              		.syntax unified
+ 322              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 323 0092 4FF05003 			mov r3, #80												
+ 324 0096 83F31188 		msr basepri, r3											
+ 325 009a BFF36F8F 		isb														
+ 326 009e BFF34F8F 		dsb														
+ 327              	
+ 328              	@ 0 "" 2
+ 329              	.LVL19:
+ 330              		.thumb
+ 331              		.syntax unified
+ 332              	.L12:
+ 333              		.loc 2 195 2 is_stmt 0 view .LVU93
+ 334              	.LBE30:
+ 335              	.LBE29:
+  49:Core/RTOS/task_init.c **** 
+ 336              		.loc 1 49 3 is_stmt 1 discriminator 1 view .LVU94
+  49:Core/RTOS/task_init.c **** 
+ 337              		.loc 1 49 3 discriminator 1 view .LVU95
+  49:Core/RTOS/task_init.c **** 
+ 338              		.loc 1 49 3 discriminator 1 view .LVU96
+ 339 00a2 FEE7     		b	.L12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 12
+
+
+ 340              	.L31:
+  52:Core/RTOS/task_init.c **** 
+ 341              		.loc 1 52 3 view .LVU97
+ 342              	.LBB31:
+ 343              	.LBI31:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 344              		.loc 2 191 30 view .LVU98
+ 345              	.LBB32:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 346              		.loc 2 193 1 view .LVU99
+ 347              		.loc 2 195 2 view .LVU100
+ 348              		.syntax unified
+ 349              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 350 00a4 4FF05003 			mov r3, #80												
+ 351 00a8 83F31188 		msr basepri, r3											
+ 352 00ac BFF36F8F 		isb														
+ 353 00b0 BFF34F8F 		dsb														
+ 354              	
+ 355              	@ 0 "" 2
+ 356              	.LVL20:
+ 357              		.thumb
+ 358              		.syntax unified
+ 359              	.L14:
+ 360              		.loc 2 195 2 is_stmt 0 view .LVU101
+ 361              	.LBE32:
+ 362              	.LBE31:
+  52:Core/RTOS/task_init.c **** 
+ 363              		.loc 1 52 3 is_stmt 1 discriminator 2 view .LVU102
+  52:Core/RTOS/task_init.c **** 
+ 364              		.loc 1 52 3 discriminator 2 view .LVU103
+  52:Core/RTOS/task_init.c **** 
+ 365              		.loc 1 52 3 discriminator 2 view .LVU104
+ 366 00b4 FEE7     		b	.L14
+ 367              	.L32:
+  56:Core/RTOS/task_init.c **** 
+ 368              		.loc 1 56 3 view .LVU105
+ 369              	.LBB33:
+ 370              	.LBI33:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 371              		.loc 2 191 30 view .LVU106
+ 372              	.LBB34:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 373              		.loc 2 193 1 view .LVU107
+ 374              		.loc 2 195 2 view .LVU108
+ 375              		.syntax unified
+ 376              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 377 00b6 4FF05003 			mov r3, #80												
+ 378 00ba 83F31188 		msr basepri, r3											
+ 379 00be BFF36F8F 		isb														
+ 380 00c2 BFF34F8F 		dsb														
+ 381              	
+ 382              	@ 0 "" 2
+ 383              	.LVL21:
+ 384              		.thumb
+ 385              		.syntax unified
+ 386              	.L16:
+ 387              		.loc 2 195 2 is_stmt 0 view .LVU109
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 13
+
+
+ 388              	.LBE34:
+ 389              	.LBE33:
+  56:Core/RTOS/task_init.c **** 
+ 390              		.loc 1 56 3 is_stmt 1 discriminator 3 view .LVU110
+  56:Core/RTOS/task_init.c **** 
+ 391              		.loc 1 56 3 discriminator 3 view .LVU111
+  56:Core/RTOS/task_init.c **** 
+ 392              		.loc 1 56 3 discriminator 3 view .LVU112
+ 393 00c6 FEE7     		b	.L16
+ 394              	.L33:
+  59:Core/RTOS/task_init.c **** 
+ 395              		.loc 1 59 3 view .LVU113
+ 396              	.LBB35:
+ 397              	.LBI35:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 398              		.loc 2 191 30 view .LVU114
+ 399              	.LBB36:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 400              		.loc 2 193 1 view .LVU115
+ 401              		.loc 2 195 2 view .LVU116
+ 402              		.syntax unified
+ 403              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 404 00c8 4FF05003 			mov r3, #80												
+ 405 00cc 83F31188 		msr basepri, r3											
+ 406 00d0 BFF36F8F 		isb														
+ 407 00d4 BFF34F8F 		dsb														
+ 408              	
+ 409              	@ 0 "" 2
+ 410              	.LVL22:
+ 411              		.thumb
+ 412              		.syntax unified
+ 413              	.L18:
+ 414              		.loc 2 195 2 is_stmt 0 view .LVU117
+ 415              	.LBE36:
+ 416              	.LBE35:
+  59:Core/RTOS/task_init.c **** 
+ 417              		.loc 1 59 3 is_stmt 1 discriminator 4 view .LVU118
+  59:Core/RTOS/task_init.c **** 
+ 418              		.loc 1 59 3 discriminator 4 view .LVU119
+  59:Core/RTOS/task_init.c **** 
+ 419              		.loc 1 59 3 discriminator 4 view .LVU120
+ 420 00d8 FEE7     		b	.L18
+ 421              	.L34:
+  62:Core/RTOS/task_init.c **** 
+ 422              		.loc 1 62 3 view .LVU121
+ 423              	.LBB37:
+ 424              	.LBI37:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 425              		.loc 2 191 30 view .LVU122
+ 426              	.LBB38:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 427              		.loc 2 193 1 view .LVU123
+ 428              		.loc 2 195 2 view .LVU124
+ 429              		.syntax unified
+ 430              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 431 00da 4FF05003 			mov r3, #80												
+ 432 00de 83F31188 		msr basepri, r3											
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 14
+
+
+ 433 00e2 BFF36F8F 		isb														
+ 434 00e6 BFF34F8F 		dsb														
+ 435              	
+ 436              	@ 0 "" 2
+ 437              	.LVL23:
+ 438              		.thumb
+ 439              		.syntax unified
+ 440              	.L20:
+ 441              		.loc 2 195 2 is_stmt 0 view .LVU125
+ 442              	.LBE38:
+ 443              	.LBE37:
+  62:Core/RTOS/task_init.c **** 
+ 444              		.loc 1 62 3 is_stmt 1 discriminator 5 view .LVU126
+  62:Core/RTOS/task_init.c **** 
+ 445              		.loc 1 62 3 discriminator 5 view .LVU127
+  62:Core/RTOS/task_init.c **** 
+ 446              		.loc 1 62 3 discriminator 5 view .LVU128
+ 447 00ea FEE7     		b	.L20
+ 448              	.L35:
+  66:Core/RTOS/task_init.c **** 
+ 449              		.loc 1 66 3 view .LVU129
+ 450              	.LBB39:
+ 451              	.LBI39:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 452              		.loc 2 191 30 view .LVU130
+ 453              	.LBB40:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 454              		.loc 2 193 1 view .LVU131
+ 455              		.loc 2 195 2 view .LVU132
+ 456              		.syntax unified
+ 457              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 458 00ec 4FF05003 			mov r3, #80												
+ 459 00f0 83F31188 		msr basepri, r3											
+ 460 00f4 BFF36F8F 		isb														
+ 461 00f8 BFF34F8F 		dsb														
+ 462              	
+ 463              	@ 0 "" 2
+ 464              	.LVL24:
+ 465              		.thumb
+ 466              		.syntax unified
+ 467              	.L22:
+ 468              		.loc 2 195 2 is_stmt 0 view .LVU133
+ 469              	.LBE40:
+ 470              	.LBE39:
+  66:Core/RTOS/task_init.c **** 
+ 471              		.loc 1 66 3 is_stmt 1 discriminator 6 view .LVU134
+  66:Core/RTOS/task_init.c **** 
+ 472              		.loc 1 66 3 discriminator 6 view .LVU135
+  66:Core/RTOS/task_init.c **** 
+ 473              		.loc 1 66 3 discriminator 6 view .LVU136
+ 474 00fc FEE7     		b	.L22
+ 475              	.LVL25:
+ 476              	.L23:
+ 477              		.loc 1 71 33 discriminator 2 view .LVU137
+  72:Core/RTOS/task_init.c **** 
+  73:Core/RTOS/task_init.c ****   result = xTaskCreate(Task_StateMachine, "StateMachine", STACK_STATE_MACHINE, NULL, PRIORITY_STATE
+ 478              		.loc 1 73 3 discriminator 2 view .LVU138
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 15
+
+
+ 479              		.loc 1 73 12 is_stmt 0 discriminator 2 view .LVU139
+ 480 00fe 2B4B     		ldr	r3, .L36+36
+ 481 0100 0193     		str	r3, [sp, #4]
+ 482 0102 0223     		movs	r3, #2
+ 483 0104 0093     		str	r3, [sp]
+ 484 0106 0023     		movs	r3, #0
+ 485 0108 4FF40062 		mov	r2, #2048
+ 486 010c 2849     		ldr	r1, .L36+40
+ 487 010e 2948     		ldr	r0, .L36+44
+ 488              	.LVL26:
+ 489              		.loc 1 73 12 discriminator 2 view .LVU140
+ 490 0110 FFF7FEFF 		bl	xTaskCreate
+ 491              	.LVL27:
+  74:Core/RTOS/task_init.c ****   configASSERT(result == pdPASS);
+ 492              		.loc 1 74 3 is_stmt 1 discriminator 2 view .LVU141
+ 493 0114 0128     		cmp	r0, #1
+ 494 0116 08D0     		beq	.L25
+ 495              		.loc 1 74 3 view .LVU142
+ 496              	.LBB41:
+ 497              	.LBI41:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 498              		.loc 2 191 30 view .LVU143
+ 499              	.LBB42:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 500              		.loc 2 193 1 view .LVU144
+ 501              		.loc 2 195 2 view .LVU145
+ 502              		.syntax unified
+ 503              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 504 0118 4FF05003 			mov r3, #80												
+ 505 011c 83F31188 		msr basepri, r3											
+ 506 0120 BFF36F8F 		isb														
+ 507 0124 BFF34F8F 		dsb														
+ 508              	
+ 509              	@ 0 "" 2
+ 510              	.LVL28:
+ 511              		.thumb
+ 512              		.syntax unified
+ 513              	.L26:
+ 514              		.loc 2 195 2 is_stmt 0 view .LVU146
+ 515              	.LBE42:
+ 516              	.LBE41:
+ 517              		.loc 1 74 3 is_stmt 1 discriminator 8 view .LVU147
+ 518              		.loc 1 74 3 discriminator 8 view .LVU148
+ 519              		.loc 1 74 3 discriminator 8 view .LVU149
+ 520 0128 FEE7     		b	.L26
+ 521              	.L25:
+ 522              		.loc 1 74 33 discriminator 2 view .LVU150
+  75:Core/RTOS/task_init.c **** 
+  76:Core/RTOS/task_init.c ****   result = xTaskCreate(Task_OutputManager, "Output", STACK_OUTPUT_MGR, NULL, PRIORITY_OUTPUT_MGR, &
+ 523              		.loc 1 76 3 discriminator 2 view .LVU151
+ 524              		.loc 1 76 12 is_stmt 0 discriminator 2 view .LVU152
+ 525 012a 234B     		ldr	r3, .L36+48
+ 526 012c 0193     		str	r3, [sp, #4]
+ 527 012e 0123     		movs	r3, #1
+ 528 0130 0093     		str	r3, [sp]
+ 529 0132 0023     		movs	r3, #0
+ 530 0134 4FF48062 		mov	r2, #1024
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 16
+
+
+ 531 0138 2049     		ldr	r1, .L36+52
+ 532 013a 2148     		ldr	r0, .L36+56
+ 533              	.LVL29:
+ 534              		.loc 1 76 12 discriminator 2 view .LVU153
+ 535 013c FFF7FEFF 		bl	xTaskCreate
+ 536              	.LVL30:
+  77:Core/RTOS/task_init.c ****   configASSERT(result == pdPASS);
+ 537              		.loc 1 77 3 is_stmt 1 discriminator 2 view .LVU154
+ 538 0140 0128     		cmp	r0, #1
+ 539 0142 08D0     		beq	.L27
+ 540              		.loc 1 77 3 view .LVU155
+ 541              	.LBB43:
+ 542              	.LBI43:
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 543              		.loc 2 191 30 view .LVU156
+ 544              	.LBB44:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 545              		.loc 2 193 1 view .LVU157
+ 546              		.loc 2 195 2 view .LVU158
+ 547              		.syntax unified
+ 548              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 549 0144 4FF05003 			mov r3, #80												
+ 550 0148 83F31188 		msr basepri, r3											
+ 551 014c BFF36F8F 		isb														
+ 552 0150 BFF34F8F 		dsb														
+ 553              	
+ 554              	@ 0 "" 2
+ 555              	.LVL31:
+ 556              		.thumb
+ 557              		.syntax unified
+ 558              	.L28:
+ 559              		.loc 2 195 2 is_stmt 0 view .LVU159
+ 560              	.LBE44:
+ 561              	.LBE43:
+ 562              		.loc 1 77 3 is_stmt 1 discriminator 9 view .LVU160
+ 563              		.loc 1 77 3 discriminator 9 view .LVU161
+ 564              		.loc 1 77 3 discriminator 9 view .LVU162
+ 565 0154 FEE7     		b	.L28
+ 566              	.L27:
+ 567              		.loc 1 77 33 discriminator 2 view .LVU163
+  78:Core/RTOS/task_init.c **** 
+  79:Core/RTOS/task_init.c ****   //log initialization
+  80:Core/RTOS/task_init.c ****   output_request_t init_log = {
+ 568              		.loc 1 80 3 discriminator 2 view .LVU164
+ 569              		.loc 1 80 20 is_stmt 0 discriminator 2 view .LVU165
+ 570 0156 4FF40372 		mov	r2, #524
+ 571 015a 0021     		movs	r1, #0
+ 572 015c 03A8     		add	r0, sp, #12
+ 573              	.LVL32:
+ 574              		.loc 1 80 20 discriminator 2 view .LVU166
+ 575 015e FFF7FEFF 		bl	memset
+ 576              	.LVL33:
+  81:Core/RTOS/task_init.c ****     .type = OUT_LOG
+  82:Core/RTOS/task_init.c ****   };
+  83:Core/RTOS/task_init.c **** 
+  84:Core/RTOS/task_init.c ****   snprintf(init_log.data.log.msg, sizeof(init_log.data.log.msg), "RTOS: Tasks initialized!\r\n");
+ 577              		.loc 1 84 3 is_stmt 1 discriminator 2 view .LVU167
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 17
+
+
+ 578 0162 0DF1100C 		add	ip, sp, #16
+ 579 0166 174C     		ldr	r4, .L36+60
+ 580 0168 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 581 016a ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 582 016e 94E80700 		ldm	r4, {r0, r1, r2}
+ 583 0172 ACE80300 		stmia	ip!, {r0, r1}
+ 584 0176 2CF8022B 		strh	r2, [ip], #2	@ movhi
+ 585 017a 120C     		lsrs	r2, r2, #16
+ 586 017c 8CF80020 		strb	r2, [ip]
+  85:Core/RTOS/task_init.c **** 
+  86:Core/RTOS/task_init.c ****   //task monitoring handle
+  87:Core/RTOS/task_init.c ****   TaskHandle_t Tasks_GetHandle_CmdRx(void){ return hTaskCmdRx; }
+ 587              		.loc 1 87 3 discriminator 2 view .LVU168
+  88:Core/RTOS/task_init.c ****   TaskHandle_t Tasks_GetHandle_StateMachine(void) { return hTaskStateMachine; }
+ 588              		.loc 1 88 3 discriminator 2 view .LVU169
+  89:Core/RTOS/task_init.c ****   TaskHandle_t Tasks_GetHandle_Output(void) { return hTaskOutput; }
+ 589              		.loc 1 89 3 discriminator 2 view .LVU170
+  90:Core/RTOS/task_init.c **** }...
+ 590              		.loc 1 90 1 is_stmt 0 discriminator 2 view .LVU171
+ 591 0180 0DF5067D 		add	sp, sp, #536
+ 592              	.LCFI3:
+ 593              		.cfi_def_cfa_offset 8
+ 594              		@ sp needed
+ 595 0184 10BD     		pop	{r4, pc}
+ 596              	.L37:
+ 597 0186 00BF     		.align	2
+ 598              	.L36:
+ 599 0188 00000000 		.word	.LANCHOR1
+ 600 018c 00000000 		.word	.LANCHOR2
+ 601 0190 00000000 		.word	.LANCHOR3
+ 602 0194 00000000 		.word	.LANCHOR4
+ 603 0198 00000000 		.word	.LANCHOR5
+ 604 019c 00000000 		.word	.LANCHOR6
+ 605 01a0 00000000 		.word	.LANCHOR7
+ 606 01a4 00000000 		.word	.LC0
+ 607 01a8 00000000 		.word	Task_CommandReceiver
+ 608 01ac 00000000 		.word	.LANCHOR8
+ 609 01b0 08000000 		.word	.LC1
+ 610 01b4 00000000 		.word	Task_StateMachine
+ 611 01b8 00000000 		.word	.LANCHOR9
+ 612 01bc 18000000 		.word	.LC2
+ 613 01c0 00000000 		.word	Task_OutputManager
+ 614 01c4 20000000 		.word	.LC3
+ 615              		.cfi_endproc
+ 616              	.LFE160:
+ 618              		.global	g_shared
+ 619              		.global	systemEvents
+ 620              		.global	flashMutex
+ 621              		.global	i2cMutex
+ 622              		.global	healthMutex
+ 623              		.global	outQueue
+ 624              		.global	cmdQueue
+ 625              		.section	.bss.cmdQueue,"aw",%nobits
+ 626              		.align	2
+ 627              		.set	.LANCHOR1,. + 0
+ 630              	cmdQueue:
+ 631 0000 00000000 		.space	4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 18
+
+
+ 632              		.section	.bss.flashMutex,"aw",%nobits
+ 633              		.align	2
+ 634              		.set	.LANCHOR5,. + 0
+ 637              	flashMutex:
+ 638 0000 00000000 		.space	4
+ 639              		.section	.bss.g_shared,"aw",%nobits
+ 640              		.align	2
+ 641              		.set	.LANCHOR0,. + 0
+ 644              	g_shared:
+ 645 0000 00000000 		.space	60
+ 645      00000000 
+ 645      00000000 
+ 645      00000000 
+ 645      00000000 
+ 646              		.section	.bss.hTaskCmdRx,"aw",%nobits
+ 647              		.align	2
+ 648              		.set	.LANCHOR7,. + 0
+ 651              	hTaskCmdRx:
+ 652 0000 00000000 		.space	4
+ 653              		.section	.bss.hTaskOutput,"aw",%nobits
+ 654              		.align	2
+ 655              		.set	.LANCHOR9,. + 0
+ 658              	hTaskOutput:
+ 659 0000 00000000 		.space	4
+ 660              		.section	.bss.hTaskStateMachine,"aw",%nobits
+ 661              		.align	2
+ 662              		.set	.LANCHOR8,. + 0
+ 665              	hTaskStateMachine:
+ 666 0000 00000000 		.space	4
+ 667              		.section	.bss.healthMutex,"aw",%nobits
+ 668              		.align	2
+ 669              		.set	.LANCHOR3,. + 0
+ 672              	healthMutex:
+ 673 0000 00000000 		.space	4
+ 674              		.section	.bss.i2cMutex,"aw",%nobits
+ 675              		.align	2
+ 676              		.set	.LANCHOR4,. + 0
+ 679              	i2cMutex:
+ 680 0000 00000000 		.space	4
+ 681              		.section	.bss.outQueue,"aw",%nobits
+ 682              		.align	2
+ 683              		.set	.LANCHOR2,. + 0
+ 686              	outQueue:
+ 687 0000 00000000 		.space	4
+ 688              		.section	.bss.systemEvents,"aw",%nobits
+ 689              		.align	2
+ 690              		.set	.LANCHOR6,. + 0
+ 693              	systemEvents:
+ 694 0000 00000000 		.space	4
+ 695              		.text
+ 696              	.Letext0:
+ 697              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 698              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 699              		.file 5 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
+ 700              		.file 6 "Middlewares/Third_Party/FreeRTOS/Source/include/queue.h"
+ 701              		.file 7 "Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h"
+ 702              		.file 8 "Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 19
+
+
+ 703              		.file 9 "Core/Lib/cubesat_data.h"
+ 704              		.file 10 "Core/RTOS/task_config.h"
+ 705              		.file 11 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 706              		.file 12 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s 			page 20
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 task_init.c
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:19     .text.SharedData_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:25     .text.SharedData_Init:00000000 SharedData_Init
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:153    .text.SharedData_Init:00000060 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:159    .rodata.Task_Init.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:172    .text.Task_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:178    .text.Task_Init:00000000 Task_Init
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:599    .text.Task_Init:00000188 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:644    .bss.g_shared:00000000 g_shared
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:693    .bss.systemEvents:00000000 systemEvents
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:637    .bss.flashMutex:00000000 flashMutex
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:679    .bss.i2cMutex:00000000 i2cMutex
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:672    .bss.healthMutex:00000000 healthMutex
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:686    .bss.outQueue:00000000 outQueue
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:630    .bss.cmdQueue:00000000 cmdQueue
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:626    .bss.cmdQueue:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:633    .bss.flashMutex:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:640    .bss.g_shared:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:647    .bss.hTaskCmdRx:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:651    .bss.hTaskCmdRx:00000000 hTaskCmdRx
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:654    .bss.hTaskOutput:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:658    .bss.hTaskOutput:00000000 hTaskOutput
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:661    .bss.hTaskStateMachine:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:665    .bss.hTaskStateMachine:00000000 hTaskStateMachine
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:668    .bss.healthMutex:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:675    .bss.i2cMutex:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:682    .bss.outQueue:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccS14Zsb.s:689    .bss.systemEvents:00000000 $d
+
+UNDEFINED SYMBOLS
+memset
+xQueueCreateMutex
+HAL_GetTick
+xQueueGenericCreate
+xEventGroupCreate
+xTaskCreate
+Task_CommandReceiver
+Task_StateMachine
+Task_OutputManager

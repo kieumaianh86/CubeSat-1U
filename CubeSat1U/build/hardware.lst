@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -26,7 +26,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
   23              		.thumb_func
   25              	hardware_init:
   26              	.LVL0:
-  27              	.LFB147:
+  27              	.LFB151:
   28              		.file 1 "Core/Hardware/hardware.c"
    1:Core/Hardware/hardware.c **** #include "hardware.h"
    2:Core/Hardware/hardware.c **** #include "stdio.h"
@@ -34,13 +34,18 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
    4:Core/Hardware/hardware.c **** 
    5:Core/Hardware/hardware.c **** #define MPU6050_ADDR 0x68
    6:Core/Hardware/hardware.c **** #define HMC5883L_ADDR 0x1E
-   7:Core/Hardware/hardware.c **** hw_status_t hardware_init(hardware_t *hw)
-   8:Core/Hardware/hardware.c **** {
-  29              		.loc 1 8 1 view -0
+   7:Core/Hardware/hardware.c **** 
+   8:Core/Hardware/hardware.c **** #define MOSFET_ON   GPIO_PIN_SET
+   9:Core/Hardware/hardware.c **** #define MOSFET_OFF  GPIO_PIN_RESET
+  10:Core/Hardware/hardware.c ****  
+  11:Core/Hardware/hardware.c **** 
+  12:Core/Hardware/hardware.c **** hw_status_t hardware_init(hardware_t *hw)
+  13:Core/Hardware/hardware.c **** {
+  29              		.loc 1 13 1 view -0
   30              		.cfi_startproc
   31              		@ args = 0, pretend = 0, frame = 40
   32              		@ frame_needed = 0, uses_anonymous_args = 0
-  33              		.loc 1 8 1 is_stmt 0 view .LVU1
+  33              		.loc 1 13 1 is_stmt 0 view .LVU1
   34 0000 30B5     		push	{r4, r5, lr}
   35              	.LCFI0:
   36              		.cfi_def_cfa_offset 12
@@ -50,171 +55,179 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
   40 0002 8BB0     		sub	sp, sp, #44
   41              	.LCFI1:
   42              		.cfi_def_cfa_offset 56
-   9:Core/Hardware/hardware.c ****   if (hw == NULL)
-  43              		.loc 1 9 3 is_stmt 1 view .LVU2
-  44              		.loc 1 9 6 is_stmt 0 view .LVU3
+  14:Core/Hardware/hardware.c ****   if (hw == NULL)
+  43              		.loc 1 14 3 is_stmt 1 view .LVU2
+  44              		.loc 1 14 6 is_stmt 0 view .LVU3
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 2
+
+
   45 0004 0028     		cmp	r0, #0
   46 0006 55D0     		beq	.L11
   47 0008 0446     		mov	r4, r0
-  10:Core/Hardware/hardware.c ****   {
-  11:Core/Hardware/hardware.c ****     return HW_ERROR;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 2
-
-
-  12:Core/Hardware/hardware.c ****   }
-  13:Core/Hardware/hardware.c **** 
-  14:Core/Hardware/hardware.c ****   //clear hardware structure
-  15:Core/Hardware/hardware.c ****   memset(hw, 0, sizeof(hardware_t));
-  48              		.loc 1 15 3 is_stmt 1 view .LVU4
-  49 000a 4FF4EC72 		mov	r2, #472
+  15:Core/Hardware/hardware.c ****   {
+  16:Core/Hardware/hardware.c ****     return HW_ERROR;
+  17:Core/Hardware/hardware.c ****   }
+  18:Core/Hardware/hardware.c **** 
+  19:Core/Hardware/hardware.c ****   // Clear hardware structure
+  20:Core/Hardware/hardware.c ****   memset(hw, 0, sizeof(hardware_t));
+  48              		.loc 1 20 3 is_stmt 1 view .LVU4
+  49 000a 4FF4F872 		mov	r2, #496
   50 000e 0021     		movs	r1, #0
   51 0010 FFF7FEFF 		bl	memset
   52              	.LVL1:
-  16:Core/Hardware/hardware.c **** 
-  17:Core/Hardware/hardware.c ****   hw_status_t status = HW_OK;
-  53              		.loc 1 17 3 view .LVU5
-  18:Core/Hardware/hardware.c ****   //1.initialize mpu6050
-  19:Core/Hardware/hardware.c ****   mpu6050_config_t mpu_config = {
-  54              		.loc 1 19 3 view .LVU6
-  55              		.loc 1 19 20 is_stmt 0 view .LVU7
+  21:Core/Hardware/hardware.c **** 
+  22:Core/Hardware/hardware.c ****   hw_status_t status = HW_OK;
+  53              		.loc 1 22 3 view .LVU5
+  23:Core/Hardware/hardware.c ****   
+  24:Core/Hardware/hardware.c ****   // 1. Initialize mpu6050
+  25:Core/Hardware/hardware.c ****   mpu6050_config_t mpu_config = {
+  54              		.loc 1 25 3 view .LVU6
+  55              		.loc 1 25 20 is_stmt 0 view .LVU7
   56 0014 284A     		ldr	r2, .L16
   57 0016 07AB     		add	r3, sp, #28
   58 0018 07CA     		ldm	r2, {r0, r1, r2}
   59 001a 83E80700 		stm	r3, {r0, r1, r2}
-  20:Core/Hardware/hardware.c ****     .hi2c = &hi2c1,
-  21:Core/Hardware/hardware.c ****     .device_addr = MPU6050_ADDR,
-  22:Core/Hardware/hardware.c ****     .accel_scale = MPU6050_ACCEL_SCALE_2G,
-  23:Core/Hardware/hardware.c ****     .gyro_scale = MPU6050_GYRO_SCALE_250DPS,
-  24:Core/Hardware/hardware.c ****     .i2c_timeout_ms = 100
-  25:Core/Hardware/hardware.c ****   };
-  26:Core/Hardware/hardware.c **** 
-  27:Core/Hardware/hardware.c ****   mpu6050_status_t mpu_status = mpu6050_init(&hw->mpu, &mpu_config);
-  60              		.loc 1 27 3 is_stmt 1 view .LVU8
-  61              		.loc 1 27 33 is_stmt 0 view .LVU9
+  26:Core/Hardware/hardware.c ****     .hi2c = &hi2c4,
+  27:Core/Hardware/hardware.c ****     .device_addr = MPU6050_ADDR,
+  28:Core/Hardware/hardware.c ****     .accel_scale = MPU6050_ACCEL_SCALE_2G,
+  29:Core/Hardware/hardware.c ****     .gyro_scale = MPU6050_GYRO_SCALE_250DPS,
+  30:Core/Hardware/hardware.c ****     .i2c_timeout_ms = 100
+  31:Core/Hardware/hardware.c ****   };
+  32:Core/Hardware/hardware.c **** 
+  33:Core/Hardware/hardware.c ****   mpu6050_status_t mpu_status = mpu6050_init(&hw->mpu, &mpu_config);
+  60              		.loc 1 33 3 is_stmt 1 view .LVU8
+  61              		.loc 1 33 33 is_stmt 0 view .LVU9
   62 001e 1946     		mov	r1, r3
   63 0020 2046     		mov	r0, r4
   64 0022 FFF7FEFF 		bl	mpu6050_init
   65              	.LVL2:
-  28:Core/Hardware/hardware.c ****   if (mpu_status == MPU6050_OK)
-  66              		.loc 1 28 3 is_stmt 1 view .LVU10
-  67              		.loc 1 28 6 is_stmt 0 view .LVU11
+  34:Core/Hardware/hardware.c ****   if (mpu_status == MPU6050_OK)
+  66              		.loc 1 34 3 is_stmt 1 view .LVU10
+  67              		.loc 1 34 6 is_stmt 0 view .LVU11
   68 0026 0546     		mov	r5, r0
   69 0028 18BB     		cbnz	r0, .L3
-  29:Core/Hardware/hardware.c ****   {
-  30:Core/Hardware/hardware.c ****     hw->mpu_ready = 1;
-  70              		.loc 1 30 5 is_stmt 1 view .LVU12
-  71              		.loc 1 30 19 is_stmt 0 view .LVU13
+  35:Core/Hardware/hardware.c ****   {
+  36:Core/Hardware/hardware.c ****     hw->mpu_ready = 1;
+  70              		.loc 1 36 5 is_stmt 1 view .LVU12
+  71              		.loc 1 36 19 is_stmt 0 view .LVU13
   72 002a 0123     		movs	r3, #1
-  73 002c 84F8D031 		strb	r3, [r4, #464]
+  73 002c 84F8E031 		strb	r3, [r4, #480]
   74              	.LVL3:
   75              	.L4:
-  31:Core/Hardware/hardware.c ****   }
-  32:Core/Hardware/hardware.c ****   else if (mpu_status == MPU6050_NOT_READY)
-  33:Core/Hardware/hardware.c ****   {
-  34:Core/Hardware/hardware.c ****     hw->mpu_ready = 0;
-  35:Core/Hardware/hardware.c ****   }
-  36:Core/Hardware/hardware.c ****   else {
-  37:Core/Hardware/hardware.c ****     hw->mpu_ready = 0;
-  38:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
-  39:Core/Hardware/hardware.c ****   }
-  40:Core/Hardware/hardware.c **** 
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 3
+  37:Core/Hardware/hardware.c ****   }
+  38:Core/Hardware/hardware.c ****   else if (mpu_status == MPU6050_NOT_READY)
+  39:Core/Hardware/hardware.c ****   {
+  40:Core/Hardware/hardware.c ****     hw->mpu_ready = 0;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 3
 
 
-  41:Core/Hardware/hardware.c ****   //2. initialize hmc5883l
-  42:Core/Hardware/hardware.c ****   hmc5883l_config_t mag_config = {
-  76              		.loc 1 42 3 is_stmt 1 view .LVU14
-  77              		.loc 1 42 21 is_stmt 0 view .LVU15
+  41:Core/Hardware/hardware.c ****   }
+  42:Core/Hardware/hardware.c ****   else 
+  43:Core/Hardware/hardware.c ****   {
+  44:Core/Hardware/hardware.c ****     hw->mpu_ready = 0;
+  45:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+  46:Core/Hardware/hardware.c ****   }
+  47:Core/Hardware/hardware.c **** 
+  48:Core/Hardware/hardware.c ****   // 2. Initialize hmc5883l
+  49:Core/Hardware/hardware.c ****   hmc5883l_config_t mag_config = {
+  76              		.loc 1 49 3 is_stmt 1 view .LVU14
+  77              		.loc 1 49 21 is_stmt 0 view .LVU15
   78 0030 0DF10C0C 		add	ip, sp, #12
   79 0034 214B     		ldr	r3, .L16+4
   80 0036 0FCB     		ldm	r3, {r0, r1, r2, r3}
   81              	.LVL4:
-  82              		.loc 1 42 21 view .LVU16
+  82              		.loc 1 49 21 view .LVU16
   83 0038 8CE80F00 		stm	ip, {r0, r1, r2, r3}
-  43:Core/Hardware/hardware.c ****     .hi2c = &hi2c1,
-  44:Core/Hardware/hardware.c ****     .device_addr = HMC5883L_ADDR,
-  45:Core/Hardware/hardware.c ****     .samples_avg = HMC5883L_SAMPLES_8,
-  46:Core/Hardware/hardware.c ****     .data_rate = HMC5883L_RATE_15HZ,
-  47:Core/Hardware/hardware.c ****     .gain = HMC5883L_GAIN_330,
-  48:Core/Hardware/hardware.c ****     .mode = HMC5883L_MODE_CONTINUOUS,
-  49:Core/Hardware/hardware.c ****     .i2c_timeout_ms = 100
-  50:Core/Hardware/hardware.c ****   };
-  51:Core/Hardware/hardware.c **** 
-  52:Core/Hardware/hardware.c ****   hmc5883l_status_t mag_status = hmc5883l_init(&hw->mag, &mag_config);
-  84              		.loc 1 52 3 is_stmt 1 view .LVU17
-  85              		.loc 1 52 34 is_stmt 0 view .LVU18
+  50:Core/Hardware/hardware.c ****     .hi2c = &hi2c4,
+  51:Core/Hardware/hardware.c ****     .device_addr = HMC5883L_ADDR,
+  52:Core/Hardware/hardware.c ****     .samples_avg = HMC5883L_SAMPLES_8,
+  53:Core/Hardware/hardware.c ****     .data_rate = HMC5883L_RATE_15HZ,
+  54:Core/Hardware/hardware.c ****     .gain = HMC5883L_GAIN_330,
+  55:Core/Hardware/hardware.c ****     .mode = HMC5883L_MODE_CONTINUOUS,
+  56:Core/Hardware/hardware.c ****     .i2c_timeout_ms = 100
+  57:Core/Hardware/hardware.c ****   };
+  58:Core/Hardware/hardware.c **** 
+  59:Core/Hardware/hardware.c ****   hmc5883l_status_t mag_status = hmc5883l_init(&hw->mag, &mag_config);
+  84              		.loc 1 59 3 is_stmt 1 view .LVU17
+  85              		.loc 1 59 34 is_stmt 0 view .LVU18
   86 003c 6146     		mov	r1, ip
   87 003e 04F15C00 		add	r0, r4, #92
   88 0042 FFF7FEFF 		bl	hmc5883l_init
   89              	.LVL5:
-  53:Core/Hardware/hardware.c ****   if (mag_status == HMC5883L_OK)
-  90              		.loc 1 53 3 is_stmt 1 view .LVU19
-  91              		.loc 1 53 6 is_stmt 0 view .LVU20
+  60:Core/Hardware/hardware.c ****   if (mag_status == HMC5883L_OK)
+  90              		.loc 1 60 3 is_stmt 1 view .LVU19
+  91              		.loc 1 60 6 is_stmt 0 view .LVU20
   92 0046 F8B9     		cbnz	r0, .L6
-  54:Core/Hardware/hardware.c ****   {
-  55:Core/Hardware/hardware.c ****     hw->mag_ready = 1;
-  93              		.loc 1 55 5 is_stmt 1 view .LVU21
-  94              		.loc 1 55 19 is_stmt 0 view .LVU22
+  61:Core/Hardware/hardware.c ****   {
+  62:Core/Hardware/hardware.c ****     hw->mag_ready = 1;
+  93              		.loc 1 62 5 is_stmt 1 view .LVU21
+  94              		.loc 1 62 19 is_stmt 0 view .LVU22
   95 0048 0123     		movs	r3, #1
-  96 004a 84F8D131 		strb	r3, [r4, #465]
+  96 004a 84F8E131 		strb	r3, [r4, #481]
   97              	.LVL6:
   98              	.L7:
-  56:Core/Hardware/hardware.c ****   } else if (mag_status == HMC5883L_NOT_READY) 
-  57:Core/Hardware/hardware.c ****   {
-  58:Core/Hardware/hardware.c ****     hw->mag_ready = 0;
-  59:Core/Hardware/hardware.c ****   } else 
-  60:Core/Hardware/hardware.c ****   {
-  61:Core/Hardware/hardware.c ****     hw->mag_ready = 0;
-  62:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
-  63:Core/Hardware/hardware.c ****   }
-  64:Core/Hardware/hardware.c **** 
-  65:Core/Hardware/hardware.c ****   //3. initialize gps
-  66:Core/Hardware/hardware.c ****   neo8m_config_t gps_config = {
-  99              		.loc 1 66 3 is_stmt 1 view .LVU23
- 100              		.loc 1 66 18 is_stmt 0 view .LVU24
+  63:Core/Hardware/hardware.c ****   } 
+  64:Core/Hardware/hardware.c ****   else if (mag_status == HMC5883L_NOT_READY) 
+  65:Core/Hardware/hardware.c ****   {
+  66:Core/Hardware/hardware.c ****     hw->mag_ready = 0;
+  67:Core/Hardware/hardware.c ****   } 
+  68:Core/Hardware/hardware.c ****   else 
+  69:Core/Hardware/hardware.c ****   {
+  70:Core/Hardware/hardware.c ****     hw->mag_ready = 0;
+  71:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+  72:Core/Hardware/hardware.c ****   }
+  73:Core/Hardware/hardware.c **** 
+  74:Core/Hardware/hardware.c ****   // 3. Initialize gps
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 4
+
+
+  75:Core/Hardware/hardware.c ****   neo8m_config_t gps_config = {
+  99              		.loc 1 75 3 is_stmt 1 view .LVU23
+ 100              		.loc 1 75 18 is_stmt 0 view .LVU24
  101 004e 0023     		movs	r3, #0
  102 0050 0093     		str	r3, [sp]
  103 0052 0193     		str	r3, [sp, #4]
  104 0054 0293     		str	r3, [sp, #8]
  105 0056 1A4B     		ldr	r3, .L16+8
  106 0058 0093     		str	r3, [sp]
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 4
-
-
-  67:Core/Hardware/hardware.c ****     .huart = &huart2
-  68:Core/Hardware/hardware.c ****   };
-  69:Core/Hardware/hardware.c ****   neo8m_status_t gps_status = neo8m_init(&hw->gps, &gps_config);
- 107              		.loc 1 69 3 is_stmt 1 view .LVU25
- 108              		.loc 1 69 31 is_stmt 0 view .LVU26
+  76:Core/Hardware/hardware.c ****     .huart = &huart2
+  77:Core/Hardware/hardware.c ****   };
+  78:Core/Hardware/hardware.c ****   
+  79:Core/Hardware/hardware.c ****   neo8m_status_t gps_status = neo8m_init(&hw->gps, &gps_config);
+ 107              		.loc 1 79 3 is_stmt 1 view .LVU25
+ 108              		.loc 1 79 31 is_stmt 0 view .LVU26
  109 005a 6946     		mov	r1, sp
  110 005c 04F18800 		add	r0, r4, #136
  111              	.LVL7:
- 112              		.loc 1 69 31 view .LVU27
+ 112              		.loc 1 79 31 view .LVU27
  113 0060 FFF7FEFF 		bl	neo8m_init
  114              	.LVL8:
-  70:Core/Hardware/hardware.c ****   if (gps_status == NEO8M_OK)
- 115              		.loc 1 70 3 is_stmt 1 view .LVU28
- 116              		.loc 1 70 6 is_stmt 0 view .LVU29
+  80:Core/Hardware/hardware.c ****   if (gps_status == NEO8M_OK)
+ 115              		.loc 1 80 3 is_stmt 1 view .LVU28
+ 116              		.loc 1 80 6 is_stmt 0 view .LVU29
  117 0064 D8B9     		cbnz	r0, .L9
-  71:Core/Hardware/hardware.c ****   {
-  72:Core/Hardware/hardware.c ****     hw->gps_ready = 1;
- 118              		.loc 1 72 5 is_stmt 1 view .LVU30
- 119              		.loc 1 72 19 is_stmt 0 view .LVU31
+  81:Core/Hardware/hardware.c ****   {
+  82:Core/Hardware/hardware.c ****     hw->gps_ready = 1;
+ 118              		.loc 1 82 5 is_stmt 1 view .LVU30
+ 119              		.loc 1 82 19 is_stmt 0 view .LVU31
  120 0066 0123     		movs	r3, #1
- 121 0068 84F8D231 		strb	r3, [r4, #466]
+ 121 0068 84F8E231 		strb	r3, [r4, #482]
  122              	.LVL9:
  123              	.L2:
-  73:Core/Hardware/hardware.c ****   } else if (gps_status == NEO8M_ERROR)
-  74:Core/Hardware/hardware.c ****   {
-  75:Core/Hardware/hardware.c ****     hw->gps_ready = 0;
-  76:Core/Hardware/hardware.c ****   } else
-  77:Core/Hardware/hardware.c ****   {
-  78:Core/Hardware/hardware.c ****     hw->gps_ready = 0;
-  79:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
-  80:Core/Hardware/hardware.c ****   }
-  81:Core/Hardware/hardware.c ****   return status;  
-  82:Core/Hardware/hardware.c **** }
- 124              		.loc 1 82 1 view .LVU32
+  83:Core/Hardware/hardware.c ****   } 
+  84:Core/Hardware/hardware.c ****   else if (gps_status == NEO8M_ERROR)
+  85:Core/Hardware/hardware.c ****   {
+  86:Core/Hardware/hardware.c ****     hw->gps_ready = 0;
+  87:Core/Hardware/hardware.c ****   } 
+  88:Core/Hardware/hardware.c ****   else
+  89:Core/Hardware/hardware.c ****   {
+  90:Core/Hardware/hardware.c ****     hw->gps_ready = 0;
+  91:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+  92:Core/Hardware/hardware.c ****   }
+  93:Core/Hardware/hardware.c ****   
+  94:Core/Hardware/hardware.c ****   return status;  
+  95:Core/Hardware/hardware.c **** }
+ 124              		.loc 1 95 1 view .LVU32
  125 006c 2846     		mov	r0, r5
  126 006e 0BB0     		add	sp, sp, #44
  127              	.LCFI2:
@@ -225,105 +238,105 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  132              	.LVL10:
  133              	.L3:
  134              	.LCFI3:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 5
+
+
  135              		.cfi_restore_state
-  32:Core/Hardware/hardware.c ****   {
- 136              		.loc 1 32 8 is_stmt 1 view .LVU33
-  32:Core/Hardware/hardware.c ****   {
- 137              		.loc 1 32 11 is_stmt 0 view .LVU34
+  38:Core/Hardware/hardware.c ****   {
+ 136              		.loc 1 38 8 is_stmt 1 view .LVU33
+  38:Core/Hardware/hardware.c ****   {
+ 137              		.loc 1 38 11 is_stmt 0 view .LVU34
  138 0072 0728     		cmp	r0, #7
  139 0074 04D0     		beq	.L13
-  37:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
- 140              		.loc 1 37 5 is_stmt 1 view .LVU35
-  37:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
- 141              		.loc 1 37 19 is_stmt 0 view .LVU36
+  44:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+ 140              		.loc 1 44 5 is_stmt 1 view .LVU35
+  44:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+ 141              		.loc 1 44 19 is_stmt 0 view .LVU36
  142 0076 0023     		movs	r3, #0
- 143 0078 84F8D031 		strb	r3, [r4, #464]
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 5
-
-
-  38:Core/Hardware/hardware.c ****   }
- 144              		.loc 1 38 5 is_stmt 1 view .LVU37
+ 143 0078 84F8E031 		strb	r3, [r4, #480]
+  45:Core/Hardware/hardware.c ****   }
+ 144              		.loc 1 45 5 is_stmt 1 view .LVU37
  145              	.LVL11:
-  38:Core/Hardware/hardware.c ****   }
- 146              		.loc 1 38 12 is_stmt 0 view .LVU38
+  45:Core/Hardware/hardware.c ****   }
+ 146              		.loc 1 45 12 is_stmt 0 view .LVU38
  147 007c 0525     		movs	r5, #5
  148 007e D7E7     		b	.L4
  149              	.LVL12:
  150              	.L13:
-  34:Core/Hardware/hardware.c ****   }
- 151              		.loc 1 34 5 is_stmt 1 view .LVU39
-  34:Core/Hardware/hardware.c ****   }
- 152              		.loc 1 34 19 is_stmt 0 view .LVU40
+  40:Core/Hardware/hardware.c ****   }
+ 151              		.loc 1 40 5 is_stmt 1 view .LVU39
+  40:Core/Hardware/hardware.c ****   }
+ 152              		.loc 1 40 19 is_stmt 0 view .LVU40
  153 0080 0025     		movs	r5, #0
- 154 0082 84F8D051 		strb	r5, [r4, #464]
+ 154 0082 84F8E051 		strb	r5, [r4, #480]
  155 0086 D3E7     		b	.L4
  156              	.LVL13:
  157              	.L6:
-  56:Core/Hardware/hardware.c ****   {
- 158              		.loc 1 56 10 is_stmt 1 view .LVU41
-  56:Core/Hardware/hardware.c ****   {
- 159              		.loc 1 56 13 is_stmt 0 view .LVU42
+  64:Core/Hardware/hardware.c ****   {
+ 158              		.loc 1 64 8 is_stmt 1 view .LVU41
+  64:Core/Hardware/hardware.c ****   {
+ 159              		.loc 1 64 11 is_stmt 0 view .LVU42
  160 0088 0728     		cmp	r0, #7
  161 008a 04D0     		beq	.L14
-  61:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
- 162              		.loc 1 61 5 is_stmt 1 view .LVU43
-  61:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
- 163              		.loc 1 61 19 is_stmt 0 view .LVU44
+  70:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+ 162              		.loc 1 70 5 is_stmt 1 view .LVU43
+  70:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+ 163              		.loc 1 70 19 is_stmt 0 view .LVU44
  164 008c 0023     		movs	r3, #0
- 165 008e 84F8D131 		strb	r3, [r4, #465]
-  62:Core/Hardware/hardware.c ****   }
- 166              		.loc 1 62 5 is_stmt 1 view .LVU45
+ 165 008e 84F8E131 		strb	r3, [r4, #481]
+  71:Core/Hardware/hardware.c ****   }
+ 166              		.loc 1 71 5 is_stmt 1 view .LVU45
  167              	.LVL14:
-  62:Core/Hardware/hardware.c ****   }
- 168              		.loc 1 62 12 is_stmt 0 view .LVU46
+  71:Core/Hardware/hardware.c ****   }
+ 168              		.loc 1 71 12 is_stmt 0 view .LVU46
  169 0092 0525     		movs	r5, #5
  170 0094 DBE7     		b	.L7
  171              	.LVL15:
  172              	.L14:
-  58:Core/Hardware/hardware.c ****   } else 
- 173              		.loc 1 58 5 is_stmt 1 view .LVU47
-  58:Core/Hardware/hardware.c ****   } else 
- 174              		.loc 1 58 19 is_stmt 0 view .LVU48
+  66:Core/Hardware/hardware.c ****   } 
+ 173              		.loc 1 66 5 is_stmt 1 view .LVU47
+  66:Core/Hardware/hardware.c ****   } 
+ 174              		.loc 1 66 19 is_stmt 0 view .LVU48
  175 0096 0023     		movs	r3, #0
- 176 0098 84F8D131 		strb	r3, [r4, #465]
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 6
+
+
+ 176 0098 84F8E131 		strb	r3, [r4, #481]
  177 009c D7E7     		b	.L7
  178              	.LVL16:
  179              	.L9:
-  73:Core/Hardware/hardware.c ****   {
- 180              		.loc 1 73 10 is_stmt 1 view .LVU49
-  73:Core/Hardware/hardware.c ****   {
- 181              		.loc 1 73 13 is_stmt 0 view .LVU50
+  84:Core/Hardware/hardware.c ****   {
+ 180              		.loc 1 84 8 is_stmt 1 view .LVU49
+  84:Core/Hardware/hardware.c ****   {
+ 181              		.loc 1 84 11 is_stmt 0 view .LVU50
  182 009e 0128     		cmp	r0, #1
  183 00a0 04D0     		beq	.L15
-  78:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
- 184              		.loc 1 78 5 is_stmt 1 view .LVU51
-  78:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 6
-
-
- 185              		.loc 1 78 19 is_stmt 0 view .LVU52
+  90:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+ 184              		.loc 1 90 5 is_stmt 1 view .LVU51
+  90:Core/Hardware/hardware.c ****     status = HW_IN_PROGRESS;
+ 185              		.loc 1 90 19 is_stmt 0 view .LVU52
  186 00a2 0023     		movs	r3, #0
- 187 00a4 84F8D231 		strb	r3, [r4, #466]
-  79:Core/Hardware/hardware.c ****   }
- 188              		.loc 1 79 5 is_stmt 1 view .LVU53
+ 187 00a4 84F8E231 		strb	r3, [r4, #482]
+  91:Core/Hardware/hardware.c ****   }
+ 188              		.loc 1 91 5 is_stmt 1 view .LVU53
  189              	.LVL17:
-  79:Core/Hardware/hardware.c ****   }
- 190              		.loc 1 79 12 is_stmt 0 view .LVU54
+  91:Core/Hardware/hardware.c ****   }
+ 190              		.loc 1 91 12 is_stmt 0 view .LVU54
  191 00a8 0525     		movs	r5, #5
  192 00aa DFE7     		b	.L2
  193              	.LVL18:
  194              	.L15:
-  75:Core/Hardware/hardware.c ****   } else
- 195              		.loc 1 75 5 is_stmt 1 view .LVU55
-  75:Core/Hardware/hardware.c ****   } else
- 196              		.loc 1 75 19 is_stmt 0 view .LVU56
+  86:Core/Hardware/hardware.c ****   } 
+ 195              		.loc 1 86 5 is_stmt 1 view .LVU55
+  86:Core/Hardware/hardware.c ****   } 
+ 196              		.loc 1 86 19 is_stmt 0 view .LVU56
  197 00ac 0023     		movs	r3, #0
- 198 00ae 84F8D231 		strb	r3, [r4, #466]
+ 198 00ae 84F8E231 		strb	r3, [r4, #482]
  199 00b2 DBE7     		b	.L2
  200              	.LVL19:
  201              	.L11:
-  11:Core/Hardware/hardware.c ****   }
- 202              		.loc 1 11 12 view .LVU57
+  16:Core/Hardware/hardware.c ****   }
+ 202              		.loc 1 16 12 view .LVU57
  203 00b4 0125     		movs	r5, #1
  204 00b6 D9E7     		b	.L2
  205              	.L17:
@@ -333,7 +346,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  209 00bc 0C000000 		.word	.LANCHOR0+12
  210 00c0 00000000 		.word	huart2
  211              		.cfi_endproc
- 212              	.LFE147:
+ 212              	.LFE151:
  214              		.section	.text.hardware_is_ready,"ax",%progbits
  215              		.align	1
  216              		.global	hardware_is_ready
@@ -342,94 +355,100 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  219              		.thumb_func
  221              	hardware_is_ready:
  222              	.LVL20:
- 223              	.LFB149:
-  83:Core/Hardware/hardware.c **** 
-  84:Core/Hardware/hardware.c **** //bien dem sensor
-  85:Core/Hardware/hardware.c **** int count = 0;
-  86:Core/Hardware/hardware.c **** //process hardware initialization
-  87:Core/Hardware/hardware.c **** hw_status_t hardware_init_process(hardware_t *hw)
-  88:Core/Hardware/hardware.c **** {
-  89:Core/Hardware/hardware.c ****   if (hw == NULL)
-  90:Core/Hardware/hardware.c ****   {
-  91:Core/Hardware/hardware.c ****     return HW_ERROR;
-  92:Core/Hardware/hardware.c ****   }
-  93:Core/Hardware/hardware.c ****   
-  94:Core/Hardware/hardware.c ****   //check if mpu6050 need wakeup processing
-  95:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
-  96:Core/Hardware/hardware.c ****   {
-  97:Core/Hardware/hardware.c ****     mpu6050_status_t status = mpu6050_init_process(&hw->mpu);
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 7
+ 223              	.LFB153:
+  96:Core/Hardware/hardware.c **** 
+  97:Core/Hardware/hardware.c **** // Bi?n d?m sensor
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 7
 
 
-  98:Core/Hardware/hardware.c ****     if (status == MPU6050_OK)
-  99:Core/Hardware/hardware.c ****     {
- 100:Core/Hardware/hardware.c ****       hw->mpu_ready = 1;
- 101:Core/Hardware/hardware.c ****     }
- 102:Core/Hardware/hardware.c ****     
- 103:Core/Hardware/hardware.c ****   }
- 104:Core/Hardware/hardware.c **** 
- 105:Core/Hardware/hardware.c ****   //check overall readiness
- 106:Core/Hardware/hardware.c ****   if (hw->mag_ready)
- 107:Core/Hardware/hardware.c ****   {
- 108:Core/Hardware/hardware.c ****     count++;
- 109:Core/Hardware/hardware.c ****   } else 
+  98:Core/Hardware/hardware.c **** static int sensor_count = 0;
+  99:Core/Hardware/hardware.c **** 
+ 100:Core/Hardware/hardware.c **** // Process hardware initialization
+ 101:Core/Hardware/hardware.c **** hw_status_t hardware_init_process(hardware_t *hw)
+ 102:Core/Hardware/hardware.c **** {
+ 103:Core/Hardware/hardware.c ****   if (hw == NULL)
+ 104:Core/Hardware/hardware.c ****   {
+ 105:Core/Hardware/hardware.c ****     return HW_ERROR;
+ 106:Core/Hardware/hardware.c ****   }
+ 107:Core/Hardware/hardware.c ****   
+ 108:Core/Hardware/hardware.c ****   // Check if mpu6050 needs wakeup processing
+ 109:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
  110:Core/Hardware/hardware.c ****   {
- 111:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Mag ERROR\r\n");
- 112:Core/Hardware/hardware.c ****   }
- 113:Core/Hardware/hardware.c ****   if (hw->mpu_ready)
- 114:Core/Hardware/hardware.c ****   {
- 115:Core/Hardware/hardware.c ****     count++;
- 116:Core/Hardware/hardware.c ****   } 
- 117:Core/Hardware/hardware.c ****   else
- 118:Core/Hardware/hardware.c ****   {
- 119:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Mpu ERROR\r\n");
- 120:Core/Hardware/hardware.c ****   }
- 121:Core/Hardware/hardware.c ****   if (hw->gps_ready)
- 122:Core/Hardware/hardware.c ****   {
- 123:Core/Hardware/hardware.c ****     count++;
- 124:Core/Hardware/hardware.c ****   }
- 125:Core/Hardware/hardware.c ****   else 
- 126:Core/Hardware/hardware.c ****   {
- 127:Core/Hardware/hardware.c ****     Hardware_UART_Printf("GPS ERROR\r\n");
- 128:Core/Hardware/hardware.c ****   }
- 129:Core/Hardware/hardware.c ****   //...
- 130:Core/Hardware/hardware.c ****   if (count >= 3)
- 131:Core/Hardware/hardware.c ****   {
- 132:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Sensors OK: %d\r\n", count);
- 133:Core/Hardware/hardware.c ****     return HW_OK;
- 134:Core/Hardware/hardware.c ****   }
+ 111:Core/Hardware/hardware.c ****     mpu6050_status_t status = mpu6050_init_process(&hw->mpu);
+ 112:Core/Hardware/hardware.c ****     if (status == MPU6050_OK)
+ 113:Core/Hardware/hardware.c ****     {
+ 114:Core/Hardware/hardware.c ****       hw->mpu_ready = 1;
+ 115:Core/Hardware/hardware.c ****     }
+ 116:Core/Hardware/hardware.c ****   }
+ 117:Core/Hardware/hardware.c **** 
+ 118:Core/Hardware/hardware.c ****   // Reset count before checking
+ 119:Core/Hardware/hardware.c ****   sensor_count = 0;
+ 120:Core/Hardware/hardware.c ****   
+ 121:Core/Hardware/hardware.c ****   // Check overall readiness
+ 122:Core/Hardware/hardware.c ****   if (hw->mag_ready)
+ 123:Core/Hardware/hardware.c ****   {
+ 124:Core/Hardware/hardware.c ****     sensor_count++;
+ 125:Core/Hardware/hardware.c ****   } 
+ 126:Core/Hardware/hardware.c ****   else 
+ 127:Core/Hardware/hardware.c ****   {
+ 128:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Mag ERROR\r\n");
+ 129:Core/Hardware/hardware.c ****   }
+ 130:Core/Hardware/hardware.c ****   
+ 131:Core/Hardware/hardware.c ****   if (hw->mpu_ready)
+ 132:Core/Hardware/hardware.c ****   {
+ 133:Core/Hardware/hardware.c ****     sensor_count++;
+ 134:Core/Hardware/hardware.c ****   } 
  135:Core/Hardware/hardware.c ****   else
  136:Core/Hardware/hardware.c ****   {
- 137:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Sensors Fail: %d\r\n", count);
- 138:Core/Hardware/hardware.c ****     return HW_ERROR;
- 139:Core/Hardware/hardware.c ****   }
- 140:Core/Hardware/hardware.c ****   return HW_IN_PROGRESS;
- 141:Core/Hardware/hardware.c **** }
- 142:Core/Hardware/hardware.c **** 
- 143:Core/Hardware/hardware.c **** uint8_t hardware_is_ready(const hardware_t *hw)
- 144:Core/Hardware/hardware.c **** {
- 224              		.loc 1 144 1 is_stmt 1 view -0
+ 137:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Mpu ERROR\r\n");
+ 138:Core/Hardware/hardware.c ****   }
+ 139:Core/Hardware/hardware.c ****   
+ 140:Core/Hardware/hardware.c ****   if (hw->gps_ready)
+ 141:Core/Hardware/hardware.c ****   {
+ 142:Core/Hardware/hardware.c ****     sensor_count++;
+ 143:Core/Hardware/hardware.c ****   }
+ 144:Core/Hardware/hardware.c ****   else 
+ 145:Core/Hardware/hardware.c ****   {
+ 146:Core/Hardware/hardware.c ****     Hardware_UART_Printf("GPS ERROR\r\n");
+ 147:Core/Hardware/hardware.c ****   }
+ 148:Core/Hardware/hardware.c ****   
+ 149:Core/Hardware/hardware.c ****   // Return based on sensor count
+ 150:Core/Hardware/hardware.c ****   if (sensor_count >= 3)
+ 151:Core/Hardware/hardware.c ****   {
+ 152:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Sensors OK: %d\r\n", sensor_count);
+ 153:Core/Hardware/hardware.c ****     return HW_OK;
+ 154:Core/Hardware/hardware.c ****   }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 8
+
+
+ 155:Core/Hardware/hardware.c ****   else
+ 156:Core/Hardware/hardware.c ****   {
+ 157:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Sensors Fail: %d\r\n", sensor_count);
+ 158:Core/Hardware/hardware.c ****     return HW_IN_PROGRESS;
+ 159:Core/Hardware/hardware.c ****   }
+ 160:Core/Hardware/hardware.c **** }
+ 161:Core/Hardware/hardware.c **** 
+ 162:Core/Hardware/hardware.c **** uint8_t hardware_is_ready(const hardware_t *hw)
+ 163:Core/Hardware/hardware.c **** {
+ 224              		.loc 1 163 1 is_stmt 1 view -0
  225              		.cfi_startproc
  226              		@ args = 0, pretend = 0, frame = 0
  227              		@ frame_needed = 0, uses_anonymous_args = 0
  228              		@ link register save eliminated.
- 145:Core/Hardware/hardware.c ****   if (hw == NULL)
- 229              		.loc 1 145 3 view .LVU59
- 230              		.loc 1 145 6 is_stmt 0 view .LVU60
+ 164:Core/Hardware/hardware.c ****   if (hw == NULL)
+ 229              		.loc 1 164 3 view .LVU59
+ 230              		.loc 1 164 6 is_stmt 0 view .LVU60
  231 0000 30B1     		cbz	r0, .L20
- 146:Core/Hardware/hardware.c ****   {
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 8
-
-
- 147:Core/Hardware/hardware.c ****     return 0;
- 148:Core/Hardware/hardware.c ****   }
- 149:Core/Hardware/hardware.c ****   return (count >= 3) ? 1 : 0;
- 232              		.loc 1 149 3 is_stmt 1 view .LVU61
- 233              		.loc 1 149 27 is_stmt 0 view .LVU62
+ 165:Core/Hardware/hardware.c ****   {
+ 166:Core/Hardware/hardware.c ****     return 0;
+ 167:Core/Hardware/hardware.c ****   }
+ 168:Core/Hardware/hardware.c ****   return (sensor_count >= 3) ? 1 : 0;
+ 232              		.loc 1 168 3 is_stmt 1 view .LVU61
+ 233              		.loc 1 168 34 is_stmt 0 view .LVU62
  234 0002 044B     		ldr	r3, .L21
  235 0004 1868     		ldr	r0, [r3]
  236              	.LVL21:
- 237              		.loc 1 149 27 view .LVU63
+ 237              		.loc 1 168 34 view .LVU63
  238 0006 0228     		cmp	r0, #2
  239 0008 D4BF     		ite	le
  240 000a 0020     		movle	r0, #0
@@ -437,19 +456,19 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  242 000e 7047     		bx	lr
  243              	.LVL22:
  244              	.L20:
- 147:Core/Hardware/hardware.c ****   }
- 245              		.loc 1 147 12 view .LVU64
+ 166:Core/Hardware/hardware.c ****   }
+ 245              		.loc 1 166 12 view .LVU64
  246 0010 0020     		movs	r0, #0
  247              	.LVL23:
- 150:Core/Hardware/hardware.c **** }
- 248              		.loc 1 150 1 view .LVU65
+ 169:Core/Hardware/hardware.c **** }
+ 248              		.loc 1 169 1 view .LVU65
  249 0012 7047     		bx	lr
  250              	.L22:
  251              		.align	2
  252              	.L21:
  253 0014 00000000 		.word	.LANCHOR1
  254              		.cfi_endproc
- 255              	.LFE149:
+ 255              	.LFE153:
  257              		.section	.text.hardware_get_mpu,"ax",%progbits
  258              		.align	1
  259              		.global	hardware_get_mpu
@@ -458,79 +477,86 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  262              		.thumb_func
  264              	hardware_get_mpu:
  265              	.LVL24:
- 266              	.LFB153:
- 151:Core/Hardware/hardware.c **** 
- 152:Core/Hardware/hardware.c **** hw_status_t hardware_read_imu(hardware_t *hw)
- 153:Core/Hardware/hardware.c **** {
- 154:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
- 155:Core/Hardware/hardware.c ****   {
- 156:Core/Hardware/hardware.c ****     return HW_ERROR;
- 157:Core/Hardware/hardware.c ****   }
- 158:Core/Hardware/hardware.c ****   if (mpu6050_read_all(&hw->mpu) != MPU6050_OK)
- 159:Core/Hardware/hardware.c ****   {
- 160:Core/Hardware/hardware.c ****     Hardware_UART_Printf("MPU read ERROR\r\n");
- 161:Core/Hardware/hardware.c ****     return HW_MPU_ERROR;
- 162:Core/Hardware/hardware.c ****   }
- 163:Core/Hardware/hardware.c ****   return HW_OK;
- 164:Core/Hardware/hardware.c ****   
- 165:Core/Hardware/hardware.c **** }
- 166:Core/Hardware/hardware.c **** 
- 167:Core/Hardware/hardware.c **** hw_status_t hardware_read_mag(hardware_t *hw)
- 168:Core/Hardware/hardware.c **** {
- 169:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 9
+ 266              	.LFB157:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 9
 
 
- 170:Core/Hardware/hardware.c ****   {
- 171:Core/Hardware/hardware.c ****     return HW_ERROR;
- 172:Core/Hardware/hardware.c ****   }
- 173:Core/Hardware/hardware.c ****   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
+ 170:Core/Hardware/hardware.c **** 
+ 171:Core/Hardware/hardware.c **** hw_status_t hardware_read_imu(hardware_t *hw)
+ 172:Core/Hardware/hardware.c **** {
+ 173:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
  174:Core/Hardware/hardware.c ****   {
- 175:Core/Hardware/hardware.c ****     Hardware_UART_Printf("MAG read ERROR\r\n");
- 176:Core/Hardware/hardware.c ****     return HW_MAG_ERROR;
- 177:Core/Hardware/hardware.c ****   }
- 178:Core/Hardware/hardware.c ****   return HW_OK;
- 179:Core/Hardware/hardware.c **** }
- 180:Core/Hardware/hardware.c **** 
- 181:Core/Hardware/hardware.c **** hw_status_t hardware_process_gps(hardware_t *hw, uint8_t byte)
- 182:Core/Hardware/hardware.c **** {
- 183:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
- 184:Core/Hardware/hardware.c ****   {
- 185:Core/Hardware/hardware.c ****     return HW_ERROR;
- 186:Core/Hardware/hardware.c ****   }
- 187:Core/Hardware/hardware.c ****   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
- 188:Core/Hardware/hardware.c ****   {
- 189:Core/Hardware/hardware.c ****     Hardware_UART_Printf("GPS read ERROR\r\n");
- 190:Core/Hardware/hardware.c ****     return HW_ERROR;
- 191:Core/Hardware/hardware.c ****   }
- 192:Core/Hardware/hardware.c ****   return HW_OK;  
- 193:Core/Hardware/hardware.c **** }
- 194:Core/Hardware/hardware.c **** 
- 195:Core/Hardware/hardware.c **** const mpu6050_handle_t* hardware_get_mpu(const hardware_t *hw)
- 196:Core/Hardware/hardware.c **** {
- 267              		.loc 1 196 1 is_stmt 1 view -0
+ 175:Core/Hardware/hardware.c ****     return HW_ERROR;
+ 176:Core/Hardware/hardware.c ****   }
+ 177:Core/Hardware/hardware.c ****   
+ 178:Core/Hardware/hardware.c ****   if (mpu6050_read_all(&hw->mpu) != MPU6050_OK)
+ 179:Core/Hardware/hardware.c ****   {
+ 180:Core/Hardware/hardware.c ****     Hardware_UART_Printf("MPU read ERROR\r\n");
+ 181:Core/Hardware/hardware.c ****     return HW_MPU_ERROR;
+ 182:Core/Hardware/hardware.c ****   }
+ 183:Core/Hardware/hardware.c ****   
+ 184:Core/Hardware/hardware.c ****   return HW_OK;
+ 185:Core/Hardware/hardware.c **** }
+ 186:Core/Hardware/hardware.c **** 
+ 187:Core/Hardware/hardware.c **** hw_status_t hardware_read_mag(hardware_t *hw)
+ 188:Core/Hardware/hardware.c **** {
+ 189:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
+ 190:Core/Hardware/hardware.c ****   {
+ 191:Core/Hardware/hardware.c ****     return HW_ERROR;
+ 192:Core/Hardware/hardware.c ****   }
+ 193:Core/Hardware/hardware.c ****   
+ 194:Core/Hardware/hardware.c ****   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
+ 195:Core/Hardware/hardware.c ****   {
+ 196:Core/Hardware/hardware.c ****     Hardware_UART_Printf("MAG read ERROR\r\n");
+ 197:Core/Hardware/hardware.c ****     return HW_MAG_ERROR;
+ 198:Core/Hardware/hardware.c ****   }
+ 199:Core/Hardware/hardware.c ****   
+ 200:Core/Hardware/hardware.c ****   return HW_OK;
+ 201:Core/Hardware/hardware.c **** }
+ 202:Core/Hardware/hardware.c **** 
+ 203:Core/Hardware/hardware.c **** hw_status_t hardware_process_gps(hardware_t *hw, uint8_t byte)
+ 204:Core/Hardware/hardware.c **** {
+ 205:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
+ 206:Core/Hardware/hardware.c ****   {
+ 207:Core/Hardware/hardware.c ****     return HW_ERROR;
+ 208:Core/Hardware/hardware.c ****   }
+ 209:Core/Hardware/hardware.c ****   
+ 210:Core/Hardware/hardware.c ****   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
+ 211:Core/Hardware/hardware.c ****   {
+ 212:Core/Hardware/hardware.c ****     Hardware_UART_Printf("GPS read ERROR\r\n");
+ 213:Core/Hardware/hardware.c ****     return HW_ERROR;
+ 214:Core/Hardware/hardware.c ****   }
+ 215:Core/Hardware/hardware.c ****   
+ 216:Core/Hardware/hardware.c ****   return HW_OK;  
+ 217:Core/Hardware/hardware.c **** }
+ 218:Core/Hardware/hardware.c **** 
+ 219:Core/Hardware/hardware.c **** const mpu6050_handle_t* hardware_get_mpu(const hardware_t *hw)
+ 220:Core/Hardware/hardware.c **** {
+ 267              		.loc 1 220 1 is_stmt 1 view -0
  268              		.cfi_startproc
  269              		@ args = 0, pretend = 0, frame = 0
  270              		@ frame_needed = 0, uses_anonymous_args = 0
  271              		@ link register save eliminated.
- 197:Core/Hardware/hardware.c ****   if (hw == NULL)
- 272              		.loc 1 197 3 view .LVU67
- 273              		.loc 1 197 6 is_stmt 0 view .LVU68
+ 221:Core/Hardware/hardware.c ****   if (hw == NULL)
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 10
+
+
+ 272              		.loc 1 221 3 view .LVU67
+ 273              		.loc 1 221 6 is_stmt 0 view .LVU68
  274 0000 00B1     		cbz	r0, .L25
- 198:Core/Hardware/hardware.c ****   {
- 199:Core/Hardware/hardware.c ****     return NULL;
- 200:Core/Hardware/hardware.c ****   }
- 201:Core/Hardware/hardware.c ****   return &hw->mpu;
- 275              		.loc 1 201 3 is_stmt 1 view .LVU69
- 276              		.loc 1 201 10 is_stmt 0 view .LVU70
+ 222:Core/Hardware/hardware.c ****   {
+ 223:Core/Hardware/hardware.c ****     return NULL;
+ 224:Core/Hardware/hardware.c ****   }
+ 225:Core/Hardware/hardware.c ****   return &hw->mpu;
+ 275              		.loc 1 225 3 is_stmt 1 view .LVU69
+ 276              		.loc 1 225 10 is_stmt 0 view .LVU70
  277 0002 7047     		bx	lr
  278              	.L25:
- 202:Core/Hardware/hardware.c ****   
- 203:Core/Hardware/hardware.c **** }
- 279              		.loc 1 203 1 view .LVU71
+ 226:Core/Hardware/hardware.c **** }
+ 279              		.loc 1 226 1 view .LVU71
  280 0004 7047     		bx	lr
  281              		.cfi_endproc
- 282              	.LFE153:
+ 282              	.LFE157:
  284              		.section	.text.hardware_get_mag,"ax",%progbits
  285              		.align	1
  286              		.global	hardware_get_mag
@@ -538,81 +564,78 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  288              		.thumb
  289              		.thumb_func
  291              	hardware_get_mag:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 10
-
-
  292              	.LVL25:
- 293              	.LFB154:
- 204:Core/Hardware/hardware.c **** const hmc5883l_handle_t* hardware_get_mag(const hardware_t *hw)
- 205:Core/Hardware/hardware.c **** {
- 294              		.loc 1 205 1 is_stmt 1 view -0
+ 293              	.LFB158:
+ 227:Core/Hardware/hardware.c **** 
+ 228:Core/Hardware/hardware.c **** const hmc5883l_handle_t* hardware_get_mag(const hardware_t *hw)
+ 229:Core/Hardware/hardware.c **** {
+ 294              		.loc 1 229 1 is_stmt 1 view -0
  295              		.cfi_startproc
  296              		@ args = 0, pretend = 0, frame = 0
  297              		@ frame_needed = 0, uses_anonymous_args = 0
  298              		@ link register save eliminated.
- 206:Core/Hardware/hardware.c ****   if (hw == NULL)
- 299              		.loc 1 206 3 view .LVU73
- 300              		.loc 1 206 6 is_stmt 0 view .LVU74
+ 230:Core/Hardware/hardware.c ****   if (hw == NULL)
+ 299              		.loc 1 230 3 view .LVU73
+ 300              		.loc 1 230 6 is_stmt 0 view .LVU74
  301 0000 08B1     		cbz	r0, .L28
- 207:Core/Hardware/hardware.c ****   {
- 208:Core/Hardware/hardware.c ****     return NULL;
- 209:Core/Hardware/hardware.c ****   }
- 210:Core/Hardware/hardware.c ****   return &hw->mag;
- 302              		.loc 1 210 3 is_stmt 1 view .LVU75
- 303              		.loc 1 210 10 is_stmt 0 view .LVU76
+ 231:Core/Hardware/hardware.c ****   {
+ 232:Core/Hardware/hardware.c ****     return NULL;
+ 233:Core/Hardware/hardware.c ****   }
+ 234:Core/Hardware/hardware.c ****   return &hw->mag;
+ 302              		.loc 1 234 3 is_stmt 1 view .LVU75
+ 303              		.loc 1 234 10 is_stmt 0 view .LVU76
  304 0002 5C30     		adds	r0, r0, #92
  305              	.LVL26:
- 306              		.loc 1 210 10 view .LVU77
+ 306              		.loc 1 234 10 view .LVU77
  307 0004 7047     		bx	lr
  308              	.LVL27:
  309              	.L28:
- 211:Core/Hardware/hardware.c ****   
- 212:Core/Hardware/hardware.c **** }
- 310              		.loc 1 212 1 view .LVU78
+ 235:Core/Hardware/hardware.c **** }
+ 310              		.loc 1 235 1 view .LVU78
  311 0006 7047     		bx	lr
  312              		.cfi_endproc
- 313              	.LFE154:
+ 313              	.LFE158:
  315              		.section	.text.hardware_get_gps,"ax",%progbits
  316              		.align	1
  317              		.global	hardware_get_gps
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 11
+
+
  318              		.syntax unified
  319              		.thumb
  320              		.thumb_func
  322              	hardware_get_gps:
  323              	.LVL28:
- 324              	.LFB155:
- 213:Core/Hardware/hardware.c **** const neo8m_handle_t* hardware_get_gps(const hardware_t *hw)
- 214:Core/Hardware/hardware.c **** {
- 325              		.loc 1 214 1 is_stmt 1 view -0
+ 324              	.LFB159:
+ 236:Core/Hardware/hardware.c **** 
+ 237:Core/Hardware/hardware.c **** const neo8m_handle_t* hardware_get_gps(const hardware_t *hw)
+ 238:Core/Hardware/hardware.c **** {
+ 325              		.loc 1 238 1 is_stmt 1 view -0
  326              		.cfi_startproc
  327              		@ args = 0, pretend = 0, frame = 0
  328              		@ frame_needed = 0, uses_anonymous_args = 0
  329              		@ link register save eliminated.
- 215:Core/Hardware/hardware.c ****   if (hw == NULL)
- 330              		.loc 1 215 3 view .LVU80
- 331              		.loc 1 215 6 is_stmt 0 view .LVU81
+ 239:Core/Hardware/hardware.c ****   if (hw == NULL)
+ 330              		.loc 1 239 3 view .LVU80
+ 331              		.loc 1 239 6 is_stmt 0 view .LVU81
  332 0000 08B1     		cbz	r0, .L31
- 216:Core/Hardware/hardware.c ****   {
- 217:Core/Hardware/hardware.c ****     return NULL;
- 218:Core/Hardware/hardware.c ****   }
- 219:Core/Hardware/hardware.c ****   return &hw->gps;
- 333              		.loc 1 219 3 is_stmt 1 view .LVU82
- 334              		.loc 1 219 10 is_stmt 0 view .LVU83
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 11
-
-
+ 240:Core/Hardware/hardware.c ****   {
+ 241:Core/Hardware/hardware.c ****     return NULL;
+ 242:Core/Hardware/hardware.c ****   }
+ 243:Core/Hardware/hardware.c ****   return &hw->gps;
+ 333              		.loc 1 243 3 is_stmt 1 view .LVU82
+ 334              		.loc 1 243 10 is_stmt 0 view .LVU83
  335 0002 8830     		adds	r0, r0, #136
  336              	.LVL29:
- 337              		.loc 1 219 10 view .LVU84
+ 337              		.loc 1 243 10 view .LVU84
  338 0004 7047     		bx	lr
  339              	.LVL30:
  340              	.L31:
- 220:Core/Hardware/hardware.c ****   
- 221:Core/Hardware/hardware.c **** }
- 341              		.loc 1 221 1 view .LVU85
+ 244:Core/Hardware/hardware.c **** }
+ 341              		.loc 1 244 1 view .LVU85
  342 0006 7047     		bx	lr
  343              		.cfi_endproc
- 344              	.LFE155:
+ 344              	.LFE159:
  346              		.section	.text.Hardware_UART_Printf,"ax",%progbits
  347              		.align	1
  348              		.global	Hardware_UART_Printf
@@ -621,23 +644,23 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  351              		.thumb_func
  353              	Hardware_UART_Printf:
  354              	.LVL31:
- 355              	.LFB156:
- 222:Core/Hardware/hardware.c **** 
- 223:Core/Hardware/hardware.c **** 
- 224:Core/Hardware/hardware.c **** 
- 225:Core/Hardware/hardware.c **** 
- 226:Core/Hardware/hardware.c **** void Hardware_UART_Printf(const char *format,...)
- 227:Core/Hardware/hardware.c **** {
- 356              		.loc 1 227 1 is_stmt 1 view -0
+ 355              	.LFB160:
+ 245:Core/Hardware/hardware.c **** //extern UART_HandleTypeDef huart6;
+ 246:Core/Hardware/hardware.c **** void Hardware_UART_Printf(const char *format, ...)
+ 247:Core/Hardware/hardware.c **** {
+ 356              		.loc 1 247 1 is_stmt 1 view -0
  357              		.cfi_startproc
  358              		@ args = 4, pretend = 16, frame = 264
  359              		@ frame_needed = 0, uses_anonymous_args = 1
- 360              		.loc 1 227 1 is_stmt 0 view .LVU87
+ 360              		.loc 1 247 1 is_stmt 0 view .LVU87
  361 0000 0FB4     		push	{r0, r1, r2, r3}
  362              	.LCFI4:
  363              		.cfi_def_cfa_offset 16
  364              		.cfi_offset 0, -16
  365              		.cfi_offset 1, -12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 12
+
+
  366              		.cfi_offset 2, -8
  367              		.cfi_offset 3, -4
  368 0002 00B5     		push	{lr}
@@ -649,41 +672,37 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  374              		.cfi_def_cfa_offset 288
  375 0006 44AB     		add	r3, sp, #272
  376 0008 53F8042B 		ldr	r2, [r3], #4
- 228:Core/Hardware/hardware.c ****   char buffer[256];
- 377              		.loc 1 228 3 is_stmt 1 view .LVU88
- 229:Core/Hardware/hardware.c ****   va_list args;
- 378              		.loc 1 229 3 view .LVU89
- 230:Core/Hardware/hardware.c ****   va_start(args, format);
- 379              		.loc 1 230 3 view .LVU90
+ 248:Core/Hardware/hardware.c ****   char buffer[256];
+ 377              		.loc 1 248 3 is_stmt 1 view .LVU88
+ 249:Core/Hardware/hardware.c ****   va_list args;
+ 378              		.loc 1 249 3 view .LVU89
+ 250:Core/Hardware/hardware.c ****   va_start(args, format);
+ 379              		.loc 1 250 3 view .LVU90
  380 000c 0193     		str	r3, [sp, #4]
- 231:Core/Hardware/hardware.c ****   vsnprintf(buffer, sizeof(buffer), format, args);
- 381              		.loc 1 231 3 view .LVU91
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 12
-
-
+ 251:Core/Hardware/hardware.c ****   vsnprintf(buffer, sizeof(buffer), format, args);
+ 381              		.loc 1 251 3 view .LVU91
  382 000e 4FF48071 		mov	r1, #256
  383 0012 02A8     		add	r0, sp, #8
  384 0014 FFF7FEFF 		bl	vsnprintf
  385              	.LVL32:
- 232:Core/Hardware/hardware.c ****   va_end(args);
- 386              		.loc 1 232 3 view .LVU92
- 233:Core/Hardware/hardware.c **** 
- 234:Core/Hardware/hardware.c ****   HAL_UART_Transmit(&huart3, (uint8_t *) buffer, strlen(buffer), 100);
- 387              		.loc 1 234 3 view .LVU93
- 388              		.loc 1 234 50 is_stmt 0 view .LVU94
+ 252:Core/Hardware/hardware.c ****   va_end(args);
+ 386              		.loc 1 252 3 view .LVU92
+ 253:Core/Hardware/hardware.c **** 
+ 254:Core/Hardware/hardware.c ****   HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 100);
+ 387              		.loc 1 254 3 view .LVU93
+ 388              		.loc 1 254 49 is_stmt 0 view .LVU94
  389 0018 02A8     		add	r0, sp, #8
  390 001a FFF7FEFF 		bl	strlen
  391              	.LVL33:
- 392              		.loc 1 234 3 view .LVU95
+ 392              		.loc 1 254 3 view .LVU95
  393 001e 6423     		movs	r3, #100
  394 0020 82B2     		uxth	r2, r0
  395 0022 02A9     		add	r1, sp, #8
  396 0024 0348     		ldr	r0, .L34
  397 0026 FFF7FEFF 		bl	HAL_UART_Transmit
  398              	.LVL34:
- 235:Core/Hardware/hardware.c ****   
- 236:Core/Hardware/hardware.c **** }...
- 399              		.loc 1 236 1 view .LVU96
+ 255:Core/Hardware/hardware.c **** }
+ 399              		.loc 1 255 1 view .LVU96
  400 002a 43B0     		add	sp, sp, #268
  401              	.LCFI7:
  402              		.cfi_def_cfa_offset 20
@@ -699,13 +718,16 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  412              		.cfi_restore 1
  413              		.cfi_restore 0
  414              		.cfi_def_cfa_offset 0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 13
+
+
  415 0032 7047     		bx	lr
  416              	.L35:
  417              		.align	2
  418              	.L34:
  419 0034 00000000 		.word	huart3
  420              		.cfi_endproc
- 421              	.LFE156:
+ 421              	.LFE160:
  423              		.section	.rodata.hardware_init_process.str1.4,"aMS",%progbits,1
  424              		.align	2
  425              	.LC2:
@@ -718,9 +740,6 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  429      4552524F 
  429      520D0A00 
  430              		.align	2
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 13
-
-
  431              	.LC4:
  432 0018 47505320 		.ascii	"GPS ERROR\015\012\000"
  432      4552524F 
@@ -747,588 +766,1173 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 1
  444              		.thumb_func
  446              	hardware_init_process:
  447              	.LVL35:
- 448              	.LFB148:
-  88:Core/Hardware/hardware.c **** {
- 449              		.loc 1 88 1 is_stmt 1 view -0
+ 448              	.LFB152:
+ 102:Core/Hardware/hardware.c ****   if (hw == NULL)
+ 449              		.loc 1 102 1 is_stmt 1 view -0
  450              		.cfi_startproc
  451              		@ args = 0, pretend = 0, frame = 0
  452              		@ frame_needed = 0, uses_anonymous_args = 0
-  89:Core/Hardware/hardware.c ****   if (hw == NULL)
- 453              		.loc 1 89 3 view .LVU98
-  89:Core/Hardware/hardware.c ****   if (hw == NULL)
- 454              		.loc 1 89 6 is_stmt 0 view .LVU99
+ 103:Core/Hardware/hardware.c ****   {
+ 453              		.loc 1 103 3 view .LVU98
+ 103:Core/Hardware/hardware.c ****   {
+ 454              		.loc 1 103 6 is_stmt 0 view .LVU99
  455 0000 0028     		cmp	r0, #0
- 456 0002 3FD0     		beq	.L46
-  88:Core/Hardware/hardware.c **** {
- 457              		.loc 1 88 1 view .LVU100
+ 456 0002 41D0     		beq	.L46
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 14
+
+
+ 102:Core/Hardware/hardware.c ****   if (hw == NULL)
+ 457              		.loc 1 102 1 view .LVU100
  458 0004 10B5     		push	{r4, lr}
  459              	.LCFI10:
  460              		.cfi_def_cfa_offset 8
  461              		.cfi_offset 4, -8
  462              		.cfi_offset 14, -4
  463 0006 0446     		mov	r4, r0
-  95:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
- 464              		.loc 1 95 3 is_stmt 1 view .LVU101
-  95:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
- 465              		.loc 1 95 10 is_stmt 0 view .LVU102
- 466 0008 90F8D031 		ldrb	r3, [r0, #464]	@ zero_extendqisi2
-  95:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
- 467              		.loc 1 95 6 view .LVU103
+ 109:Core/Hardware/hardware.c ****   {
+ 464              		.loc 1 109 3 is_stmt 1 view .LVU101
+ 109:Core/Hardware/hardware.c ****   {
+ 465              		.loc 1 109 10 is_stmt 0 view .LVU102
+ 466 0008 90F8E031 		ldrb	r3, [r0, #480]	@ zero_extendqisi2
+ 109:Core/Hardware/hardware.c ****   {
+ 467              		.loc 1 109 6 view .LVU103
  468 000c 1BB9     		cbnz	r3, .L38
-  95:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
- 469              		.loc 1 95 32 discriminator 1 view .LVU104
+ 109:Core/Hardware/hardware.c ****   {
+ 469              		.loc 1 109 32 discriminator 1 view .LVU104
  470 000e 90F84830 		ldrb	r3, [r0, #72]	@ zero_extendqisi2
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 14
-
-
-  95:Core/Hardware/hardware.c ****   if (!hw->mpu_ready && hw->mpu.init_state == MPU6050_INIT_STATE_WAKING_UP)
- 471              		.loc 1 95 22 discriminator 1 view .LVU105
+ 109:Core/Hardware/hardware.c ****   {
+ 471              		.loc 1 109 22 discriminator 1 view .LVU105
  472 0012 012B     		cmp	r3, #1
- 473 0014 1DD0     		beq	.L51
+ 473 0014 1FD0     		beq	.L51
  474              	.LVL36:
  475              	.L38:
- 106:Core/Hardware/hardware.c ****   if (hw->mag_ready)
- 476              		.loc 1 106 3 is_stmt 1 view .LVU106
- 106:Core/Hardware/hardware.c ****   if (hw->mag_ready)
- 477              		.loc 1 106 9 is_stmt 0 view .LVU107
- 478 0016 94F8D131 		ldrb	r3, [r4, #465]	@ zero_extendqisi2
- 106:Core/Hardware/hardware.c ****   if (hw->mag_ready)
- 479              		.loc 1 106 6 view .LVU108
- 480 001a 13B3     		cbz	r3, .L39
- 108:Core/Hardware/hardware.c ****     count++;
- 481              		.loc 1 108 5 is_stmt 1 view .LVU109
- 108:Core/Hardware/hardware.c ****     count++;
- 482              		.loc 1 108 10 is_stmt 0 view .LVU110
- 483 001c 1A4A     		ldr	r2, .L52
- 484 001e 1368     		ldr	r3, [r2]
- 485 0020 0133     		adds	r3, r3, #1
- 486 0022 1360     		str	r3, [r2]
- 487              	.L40:
- 113:Core/Hardware/hardware.c ****   if (hw->mpu_ready)
- 488              		.loc 1 113 3 is_stmt 1 view .LVU111
- 113:Core/Hardware/hardware.c ****   if (hw->mpu_ready)
- 489              		.loc 1 113 9 is_stmt 0 view .LVU112
- 490 0024 94F8D031 		ldrb	r3, [r4, #464]	@ zero_extendqisi2
- 113:Core/Hardware/hardware.c ****   if (hw->mpu_ready)
- 491              		.loc 1 113 6 view .LVU113
- 492 0028 FBB1     		cbz	r3, .L41
- 115:Core/Hardware/hardware.c ****     count++;
- 493              		.loc 1 115 5 is_stmt 1 view .LVU114
- 115:Core/Hardware/hardware.c ****     count++;
- 494              		.loc 1 115 10 is_stmt 0 view .LVU115
- 495 002a 174A     		ldr	r2, .L52
- 496 002c 1368     		ldr	r3, [r2]
- 497 002e 0133     		adds	r3, r3, #1
- 498 0030 1360     		str	r3, [r2]
- 499              	.L42:
- 121:Core/Hardware/hardware.c ****   if (hw->gps_ready)
- 500              		.loc 1 121 3 is_stmt 1 view .LVU116
- 121:Core/Hardware/hardware.c ****   if (hw->gps_ready)
- 501              		.loc 1 121 9 is_stmt 0 view .LVU117
- 502 0032 94F8D231 		ldrb	r3, [r4, #466]	@ zero_extendqisi2
- 121:Core/Hardware/hardware.c ****   if (hw->gps_ready)
- 503              		.loc 1 121 6 view .LVU118
- 504 0036 E3B1     		cbz	r3, .L43
- 123:Core/Hardware/hardware.c ****     count++;
- 505              		.loc 1 123 5 is_stmt 1 view .LVU119
- 123:Core/Hardware/hardware.c ****     count++;
- 506              		.loc 1 123 10 is_stmt 0 view .LVU120
- 507 0038 134A     		ldr	r2, .L52
- 508 003a 1368     		ldr	r3, [r2]
- 509 003c 0133     		adds	r3, r3, #1
- 510 003e 1360     		str	r3, [r2]
- 511              	.L44:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 15
+ 119:Core/Hardware/hardware.c ****   
+ 476              		.loc 1 119 3 is_stmt 1 view .LVU106
+ 119:Core/Hardware/hardware.c ****   
+ 477              		.loc 1 119 16 is_stmt 0 view .LVU107
+ 478 0016 1D4B     		ldr	r3, .L52
+ 479 0018 0022     		movs	r2, #0
+ 480 001a 1A60     		str	r2, [r3]
+ 122:Core/Hardware/hardware.c ****   {
+ 481              		.loc 1 122 3 is_stmt 1 view .LVU108
+ 122:Core/Hardware/hardware.c ****   {
+ 482              		.loc 1 122 9 is_stmt 0 view .LVU109
+ 483 001c 94F8E131 		ldrb	r3, [r4, #481]	@ zero_extendqisi2
+ 122:Core/Hardware/hardware.c ****   {
+ 484              		.loc 1 122 6 view .LVU110
+ 485 0020 0BB3     		cbz	r3, .L39
+ 124:Core/Hardware/hardware.c ****   } 
+ 486              		.loc 1 124 5 is_stmt 1 view .LVU111
+ 124:Core/Hardware/hardware.c ****   } 
+ 487              		.loc 1 124 17 is_stmt 0 view .LVU112
+ 488 0022 1A4B     		ldr	r3, .L52
+ 489 0024 0122     		movs	r2, #1
+ 490 0026 1A60     		str	r2, [r3]
+ 491              	.L40:
+ 131:Core/Hardware/hardware.c ****   {
+ 492              		.loc 1 131 3 is_stmt 1 view .LVU113
+ 131:Core/Hardware/hardware.c ****   {
+ 493              		.loc 1 131 9 is_stmt 0 view .LVU114
+ 494 0028 94F8E031 		ldrb	r3, [r4, #480]	@ zero_extendqisi2
+ 131:Core/Hardware/hardware.c ****   {
+ 495              		.loc 1 131 6 view .LVU115
+ 496 002c FBB1     		cbz	r3, .L41
+ 133:Core/Hardware/hardware.c ****   } 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 15
 
 
- 130:Core/Hardware/hardware.c ****   if (count >= 3)
- 512              		.loc 1 130 3 is_stmt 1 view .LVU121
- 130:Core/Hardware/hardware.c ****   if (count >= 3)
- 513              		.loc 1 130 13 is_stmt 0 view .LVU122
- 514 0040 114B     		ldr	r3, .L52
- 515 0042 1968     		ldr	r1, [r3]
- 130:Core/Hardware/hardware.c ****   if (count >= 3)
- 516              		.loc 1 130 6 view .LVU123
- 517 0044 0229     		cmp	r1, #2
- 518 0046 18DD     		ble	.L45
- 132:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Sensors OK: %d\r\n", count);
- 519              		.loc 1 132 5 is_stmt 1 view .LVU124
- 520 0048 1048     		ldr	r0, .L52+4
- 521 004a FFF7FEFF 		bl	Hardware_UART_Printf
- 522              	.LVL37:
- 133:Core/Hardware/hardware.c ****     return HW_OK;
- 523              		.loc 1 133 5 view .LVU125
- 133:Core/Hardware/hardware.c ****     return HW_OK;
- 524              		.loc 1 133 12 is_stmt 0 view .LVU126
- 525 004e 0020     		movs	r0, #0
- 526              	.L37:
- 141:Core/Hardware/hardware.c **** }
- 527              		.loc 1 141 1 view .LVU127
- 528 0050 10BD     		pop	{r4, pc}
- 529              	.LVL38:
- 530              	.L51:
- 531              	.LBB2:
-  97:Core/Hardware/hardware.c ****     mpu6050_status_t status = mpu6050_init_process(&hw->mpu);
- 532              		.loc 1 97 5 is_stmt 1 view .LVU128
-  97:Core/Hardware/hardware.c ****     mpu6050_status_t status = mpu6050_init_process(&hw->mpu);
- 533              		.loc 1 97 31 is_stmt 0 view .LVU129
- 534 0052 FFF7FEFF 		bl	mpu6050_init_process
- 535              	.LVL39:
-  98:Core/Hardware/hardware.c ****     if (status == MPU6050_OK)
- 536              		.loc 1 98 5 is_stmt 1 view .LVU130
-  98:Core/Hardware/hardware.c ****     if (status == MPU6050_OK)
- 537              		.loc 1 98 8 is_stmt 0 view .LVU131
- 538 0056 0028     		cmp	r0, #0
- 539 0058 DDD1     		bne	.L38
- 100:Core/Hardware/hardware.c ****       hw->mpu_ready = 1;
- 540              		.loc 1 100 7 is_stmt 1 view .LVU132
- 100:Core/Hardware/hardware.c ****       hw->mpu_ready = 1;
- 541              		.loc 1 100 21 is_stmt 0 view .LVU133
- 542 005a 0123     		movs	r3, #1
- 543 005c 84F8D031 		strb	r3, [r4, #464]
- 544 0060 D9E7     		b	.L38
- 545              	.LVL40:
- 546              	.L39:
- 100:Core/Hardware/hardware.c ****       hw->mpu_ready = 1;
- 547              		.loc 1 100 21 view .LVU134
- 548              	.LBE2:
- 111:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Mag ERROR\r\n");
- 549              		.loc 1 111 5 is_stmt 1 view .LVU135
- 550 0062 0B48     		ldr	r0, .L52+8
- 551 0064 FFF7FEFF 		bl	Hardware_UART_Printf
- 552              	.LVL41:
- 553 0068 DCE7     		b	.L40
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 16
+ 497              		.loc 1 133 5 is_stmt 1 view .LVU116
+ 133:Core/Hardware/hardware.c ****   } 
+ 498              		.loc 1 133 17 is_stmt 0 view .LVU117
+ 499 002e 174A     		ldr	r2, .L52
+ 500 0030 1368     		ldr	r3, [r2]
+ 501 0032 0133     		adds	r3, r3, #1
+ 502 0034 1360     		str	r3, [r2]
+ 503              	.L42:
+ 140:Core/Hardware/hardware.c ****   {
+ 504              		.loc 1 140 3 is_stmt 1 view .LVU118
+ 140:Core/Hardware/hardware.c ****   {
+ 505              		.loc 1 140 9 is_stmt 0 view .LVU119
+ 506 0036 94F8E231 		ldrb	r3, [r4, #482]	@ zero_extendqisi2
+ 140:Core/Hardware/hardware.c ****   {
+ 507              		.loc 1 140 6 view .LVU120
+ 508 003a E3B1     		cbz	r3, .L43
+ 142:Core/Hardware/hardware.c ****   }
+ 509              		.loc 1 142 5 is_stmt 1 view .LVU121
+ 142:Core/Hardware/hardware.c ****   }
+ 510              		.loc 1 142 17 is_stmt 0 view .LVU122
+ 511 003c 134A     		ldr	r2, .L52
+ 512 003e 1368     		ldr	r3, [r2]
+ 513 0040 0133     		adds	r3, r3, #1
+ 514 0042 1360     		str	r3, [r2]
+ 515              	.L44:
+ 150:Core/Hardware/hardware.c ****   {
+ 516              		.loc 1 150 3 is_stmt 1 view .LVU123
+ 150:Core/Hardware/hardware.c ****   {
+ 517              		.loc 1 150 20 is_stmt 0 view .LVU124
+ 518 0044 114B     		ldr	r3, .L52
+ 519 0046 1968     		ldr	r1, [r3]
+ 150:Core/Hardware/hardware.c ****   {
+ 520              		.loc 1 150 6 view .LVU125
+ 521 0048 0229     		cmp	r1, #2
+ 522 004a 18DD     		ble	.L45
+ 152:Core/Hardware/hardware.c ****     return HW_OK;
+ 523              		.loc 1 152 5 is_stmt 1 view .LVU126
+ 524 004c 1048     		ldr	r0, .L52+4
+ 525 004e FFF7FEFF 		bl	Hardware_UART_Printf
+ 526              	.LVL37:
+ 153:Core/Hardware/hardware.c ****   }
+ 527              		.loc 1 153 5 view .LVU127
+ 153:Core/Hardware/hardware.c ****   }
+ 528              		.loc 1 153 12 is_stmt 0 view .LVU128
+ 529 0052 0020     		movs	r0, #0
+ 530              	.L37:
+ 160:Core/Hardware/hardware.c **** 
+ 531              		.loc 1 160 1 view .LVU129
+ 532 0054 10BD     		pop	{r4, pc}
+ 533              	.LVL38:
+ 534              	.L51:
+ 535              	.LBB2:
+ 111:Core/Hardware/hardware.c ****     if (status == MPU6050_OK)
+ 536              		.loc 1 111 5 is_stmt 1 view .LVU130
+ 111:Core/Hardware/hardware.c ****     if (status == MPU6050_OK)
+ 537              		.loc 1 111 31 is_stmt 0 view .LVU131
+ 538 0056 FFF7FEFF 		bl	mpu6050_init_process
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 16
 
 
- 554              	.L41:
- 119:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Mpu ERROR\r\n");
- 555              		.loc 1 119 5 view .LVU136
- 556 006a 0A48     		ldr	r0, .L52+12
- 557 006c FFF7FEFF 		bl	Hardware_UART_Printf
- 558              	.LVL42:
- 559 0070 DFE7     		b	.L42
- 560              	.L43:
- 127:Core/Hardware/hardware.c ****     Hardware_UART_Printf("GPS ERROR\r\n");
- 561              		.loc 1 127 5 view .LVU137
- 562 0072 0948     		ldr	r0, .L52+16
- 563 0074 FFF7FEFF 		bl	Hardware_UART_Printf
- 564              	.LVL43:
- 565 0078 E2E7     		b	.L44
- 566              	.L45:
- 137:Core/Hardware/hardware.c ****     Hardware_UART_Printf("Sensors Fail: %d\r\n", count);
- 567              		.loc 1 137 5 view .LVU138
- 568 007a 0848     		ldr	r0, .L52+20
- 569 007c FFF7FEFF 		bl	Hardware_UART_Printf
- 570              	.LVL44:
- 138:Core/Hardware/hardware.c ****     return HW_ERROR;
- 571              		.loc 1 138 5 view .LVU139
- 138:Core/Hardware/hardware.c ****     return HW_ERROR;
- 572              		.loc 1 138 12 is_stmt 0 view .LVU140
- 573 0080 0120     		movs	r0, #1
- 574 0082 E5E7     		b	.L37
- 575              	.LVL45:
- 576              	.L46:
- 577              	.LCFI11:
- 578              		.cfi_def_cfa_offset 0
- 579              		.cfi_restore 4
- 580              		.cfi_restore 14
-  91:Core/Hardware/hardware.c ****     return HW_ERROR;
- 581              		.loc 1 91 12 view .LVU141
- 582 0084 0120     		movs	r0, #1
- 583              	.LVL46:
- 141:Core/Hardware/hardware.c **** }
- 584              		.loc 1 141 1 view .LVU142
- 585 0086 7047     		bx	lr
- 586              	.L53:
- 587              		.align	2
- 588              	.L52:
- 589 0088 00000000 		.word	.LANCHOR1
- 590 008c 24000000 		.word	.LC5
- 591 0090 00000000 		.word	.LC2
- 592 0094 0C000000 		.word	.LC3
- 593 0098 18000000 		.word	.LC4
- 594 009c 38000000 		.word	.LC6
- 595              		.cfi_endproc
- 596              	.LFE148:
- 598              		.section	.rodata.hardware_read_imu.str1.4,"aMS",%progbits,1
- 599              		.align	2
- 600              	.LC7:
- 601 0000 4D505520 		.ascii	"MPU read ERROR\015\012\000"
- 601      72656164 
- 601      20455252 
- 601      4F520D0A 
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 17
+ 539              	.LVL39:
+ 112:Core/Hardware/hardware.c ****     {
+ 540              		.loc 1 112 5 is_stmt 1 view .LVU132
+ 112:Core/Hardware/hardware.c ****     {
+ 541              		.loc 1 112 8 is_stmt 0 view .LVU133
+ 542 005a 0028     		cmp	r0, #0
+ 543 005c DBD1     		bne	.L38
+ 114:Core/Hardware/hardware.c ****     }
+ 544              		.loc 1 114 7 is_stmt 1 view .LVU134
+ 114:Core/Hardware/hardware.c ****     }
+ 545              		.loc 1 114 21 is_stmt 0 view .LVU135
+ 546 005e 0123     		movs	r3, #1
+ 547 0060 84F8E031 		strb	r3, [r4, #480]
+ 548 0064 D7E7     		b	.L38
+ 549              	.LVL40:
+ 550              	.L39:
+ 114:Core/Hardware/hardware.c ****     }
+ 551              		.loc 1 114 21 view .LVU136
+ 552              	.LBE2:
+ 128:Core/Hardware/hardware.c ****   }
+ 553              		.loc 1 128 5 is_stmt 1 view .LVU137
+ 554 0066 0B48     		ldr	r0, .L52+8
+ 555 0068 FFF7FEFF 		bl	Hardware_UART_Printf
+ 556              	.LVL41:
+ 557 006c DCE7     		b	.L40
+ 558              	.L41:
+ 137:Core/Hardware/hardware.c ****   }
+ 559              		.loc 1 137 5 view .LVU138
+ 560 006e 0A48     		ldr	r0, .L52+12
+ 561 0070 FFF7FEFF 		bl	Hardware_UART_Printf
+ 562              	.LVL42:
+ 563 0074 DFE7     		b	.L42
+ 564              	.L43:
+ 146:Core/Hardware/hardware.c ****   }
+ 565              		.loc 1 146 5 view .LVU139
+ 566 0076 0948     		ldr	r0, .L52+16
+ 567 0078 FFF7FEFF 		bl	Hardware_UART_Printf
+ 568              	.LVL43:
+ 569 007c E2E7     		b	.L44
+ 570              	.L45:
+ 157:Core/Hardware/hardware.c ****     return HW_IN_PROGRESS;
+ 571              		.loc 1 157 5 view .LVU140
+ 572 007e 0848     		ldr	r0, .L52+20
+ 573 0080 FFF7FEFF 		bl	Hardware_UART_Printf
+ 574              	.LVL44:
+ 158:Core/Hardware/hardware.c ****   }
+ 575              		.loc 1 158 5 view .LVU141
+ 158:Core/Hardware/hardware.c ****   }
+ 576              		.loc 1 158 12 is_stmt 0 view .LVU142
+ 577 0084 0520     		movs	r0, #5
+ 578 0086 E5E7     		b	.L37
+ 579              	.LVL45:
+ 580              	.L46:
+ 581              	.LCFI11:
+ 582              		.cfi_def_cfa_offset 0
+ 583              		.cfi_restore 4
+ 584              		.cfi_restore 14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 17
 
 
- 601      00
- 602              		.section	.text.hardware_read_imu,"ax",%progbits
- 603              		.align	1
- 604              		.global	hardware_read_imu
- 605              		.syntax unified
- 606              		.thumb
- 607              		.thumb_func
- 609              	hardware_read_imu:
- 610              	.LVL47:
- 611              	.LFB150:
- 153:Core/Hardware/hardware.c **** {
- 612              		.loc 1 153 1 is_stmt 1 view -0
- 613              		.cfi_startproc
- 614              		@ args = 0, pretend = 0, frame = 0
- 615              		@ frame_needed = 0, uses_anonymous_args = 0
- 154:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
- 616              		.loc 1 154 3 view .LVU144
- 154:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
- 617              		.loc 1 154 6 is_stmt 0 view .LVU145
- 618 0000 70B1     		cbz	r0, .L56
- 153:Core/Hardware/hardware.c **** {
- 619              		.loc 1 153 1 discriminator 1 view .LVU146
- 620 0002 08B5     		push	{r3, lr}
- 621              	.LCFI12:
- 622              		.cfi_def_cfa_offset 8
- 623              		.cfi_offset 3, -8
- 624              		.cfi_offset 14, -4
- 154:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
- 625              		.loc 1 154 24 discriminator 1 view .LVU147
- 626 0004 90F8D021 		ldrb	r2, [r0, #464]	@ zero_extendqisi2
- 154:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
- 627              		.loc 1 154 18 discriminator 1 view .LVU148
- 628 0008 0AB9     		cbnz	r2, .L62
- 156:Core/Hardware/hardware.c ****     return HW_ERROR;
- 629              		.loc 1 156 12 view .LVU149
- 630 000a 0120     		movs	r0, #1
- 631              	.LVL48:
- 632              	.L55:
- 165:Core/Hardware/hardware.c **** }
- 633              		.loc 1 165 1 view .LVU150
- 634 000c 08BD     		pop	{r3, pc}
- 635              	.LVL49:
- 636              	.L62:
- 158:Core/Hardware/hardware.c ****   if (mpu6050_read_all(&hw->mpu) != MPU6050_OK)
- 637              		.loc 1 158 3 is_stmt 1 view .LVU151
- 158:Core/Hardware/hardware.c ****   if (mpu6050_read_all(&hw->mpu) != MPU6050_OK)
- 638              		.loc 1 158 7 is_stmt 0 view .LVU152
- 639 000e FFF7FEFF 		bl	mpu6050_read_all
- 640              	.LVL50:
- 158:Core/Hardware/hardware.c ****   if (mpu6050_read_all(&hw->mpu) != MPU6050_OK)
- 641              		.loc 1 158 6 view .LVU153
- 642 0012 0028     		cmp	r0, #0
- 643 0014 FAD0     		beq	.L55
- 160:Core/Hardware/hardware.c ****     Hardware_UART_Printf("MPU read ERROR\r\n");
- 644              		.loc 1 160 5 is_stmt 1 view .LVU154
- 645 0016 0348     		ldr	r0, .L63
- 646 0018 FFF7FEFF 		bl	Hardware_UART_Printf
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 18
+ 105:Core/Hardware/hardware.c ****   }
+ 585              		.loc 1 105 12 view .LVU143
+ 586 0088 0120     		movs	r0, #1
+ 587              	.LVL46:
+ 160:Core/Hardware/hardware.c **** 
+ 588              		.loc 1 160 1 view .LVU144
+ 589 008a 7047     		bx	lr
+ 590              	.L53:
+ 591              		.align	2
+ 592              	.L52:
+ 593 008c 00000000 		.word	.LANCHOR1
+ 594 0090 24000000 		.word	.LC5
+ 595 0094 00000000 		.word	.LC2
+ 596 0098 0C000000 		.word	.LC3
+ 597 009c 18000000 		.word	.LC4
+ 598 00a0 38000000 		.word	.LC6
+ 599              		.cfi_endproc
+ 600              	.LFE152:
+ 602              		.section	.rodata.hardware_read_imu.str1.4,"aMS",%progbits,1
+ 603              		.align	2
+ 604              	.LC7:
+ 605 0000 4D505520 		.ascii	"MPU read ERROR\015\012\000"
+ 605      72656164 
+ 605      20455252 
+ 605      4F520D0A 
+ 605      00
+ 606              		.section	.text.hardware_read_imu,"ax",%progbits
+ 607              		.align	1
+ 608              		.global	hardware_read_imu
+ 609              		.syntax unified
+ 610              		.thumb
+ 611              		.thumb_func
+ 613              	hardware_read_imu:
+ 614              	.LVL47:
+ 615              	.LFB154:
+ 172:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
+ 616              		.loc 1 172 1 is_stmt 1 view -0
+ 617              		.cfi_startproc
+ 618              		@ args = 0, pretend = 0, frame = 0
+ 619              		@ frame_needed = 0, uses_anonymous_args = 0
+ 173:Core/Hardware/hardware.c ****   {
+ 620              		.loc 1 173 3 view .LVU146
+ 173:Core/Hardware/hardware.c ****   {
+ 621              		.loc 1 173 6 is_stmt 0 view .LVU147
+ 622 0000 70B1     		cbz	r0, .L56
+ 172:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mpu_ready)
+ 623              		.loc 1 172 1 discriminator 1 view .LVU148
+ 624 0002 08B5     		push	{r3, lr}
+ 625              	.LCFI12:
+ 626              		.cfi_def_cfa_offset 8
+ 627              		.cfi_offset 3, -8
+ 628              		.cfi_offset 14, -4
+ 173:Core/Hardware/hardware.c ****   {
+ 629              		.loc 1 173 24 discriminator 1 view .LVU149
+ 630 0004 90F8E021 		ldrb	r2, [r0, #480]	@ zero_extendqisi2
+ 173:Core/Hardware/hardware.c ****   {
+ 631              		.loc 1 173 18 discriminator 1 view .LVU150
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 18
 
 
- 647              	.LVL51:
- 161:Core/Hardware/hardware.c ****     return HW_MPU_ERROR;
- 648              		.loc 1 161 5 view .LVU155
- 161:Core/Hardware/hardware.c ****     return HW_MPU_ERROR;
- 649              		.loc 1 161 12 is_stmt 0 view .LVU156
- 650 001c 0220     		movs	r0, #2
- 651 001e F5E7     		b	.L55
- 652              	.LVL52:
- 653              	.L56:
- 654              	.LCFI13:
- 655              		.cfi_def_cfa_offset 0
- 656              		.cfi_restore 3
- 657              		.cfi_restore 14
- 156:Core/Hardware/hardware.c ****     return HW_ERROR;
- 658              		.loc 1 156 12 view .LVU157
- 659 0020 0120     		movs	r0, #1
- 660              	.LVL53:
- 165:Core/Hardware/hardware.c **** }
- 661              		.loc 1 165 1 view .LVU158
- 662 0022 7047     		bx	lr
- 663              	.L64:
- 664              		.align	2
- 665              	.L63:
- 666 0024 00000000 		.word	.LC7
- 667              		.cfi_endproc
- 668              	.LFE150:
- 670              		.section	.rodata.hardware_read_mag.str1.4,"aMS",%progbits,1
- 671              		.align	2
- 672              	.LC8:
- 673 0000 4D414720 		.ascii	"MAG read ERROR\015\012\000"
- 673      72656164 
- 673      20455252 
- 673      4F520D0A 
- 673      00
- 674              		.section	.text.hardware_read_mag,"ax",%progbits
- 675              		.align	1
- 676              		.global	hardware_read_mag
- 677              		.syntax unified
- 678              		.thumb
- 679              		.thumb_func
- 681              	hardware_read_mag:
- 682              	.LVL54:
- 683              	.LFB151:
- 168:Core/Hardware/hardware.c **** {
- 684              		.loc 1 168 1 is_stmt 1 view -0
- 685              		.cfi_startproc
- 686              		@ args = 0, pretend = 0, frame = 0
- 687              		@ frame_needed = 0, uses_anonymous_args = 0
- 169:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
- 688              		.loc 1 169 3 view .LVU160
- 169:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
- 689              		.loc 1 169 6 is_stmt 0 view .LVU161
- 690 0000 78B1     		cbz	r0, .L67
- 168:Core/Hardware/hardware.c **** {
- 691              		.loc 1 168 1 discriminator 1 view .LVU162
- 692 0002 08B5     		push	{r3, lr}
- 693              	.LCFI14:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 19
+ 632 0008 0AB9     		cbnz	r2, .L62
+ 175:Core/Hardware/hardware.c ****   }
+ 633              		.loc 1 175 12 view .LVU151
+ 634 000a 0120     		movs	r0, #1
+ 635              	.LVL48:
+ 636              	.L55:
+ 185:Core/Hardware/hardware.c **** 
+ 637              		.loc 1 185 1 view .LVU152
+ 638 000c 08BD     		pop	{r3, pc}
+ 639              	.LVL49:
+ 640              	.L62:
+ 178:Core/Hardware/hardware.c ****   {
+ 641              		.loc 1 178 3 is_stmt 1 view .LVU153
+ 178:Core/Hardware/hardware.c ****   {
+ 642              		.loc 1 178 7 is_stmt 0 view .LVU154
+ 643 000e FFF7FEFF 		bl	mpu6050_read_all
+ 644              	.LVL50:
+ 178:Core/Hardware/hardware.c ****   {
+ 645              		.loc 1 178 6 view .LVU155
+ 646 0012 0028     		cmp	r0, #0
+ 647 0014 FAD0     		beq	.L55
+ 180:Core/Hardware/hardware.c ****     return HW_MPU_ERROR;
+ 648              		.loc 1 180 5 is_stmt 1 view .LVU156
+ 649 0016 0348     		ldr	r0, .L63
+ 650 0018 FFF7FEFF 		bl	Hardware_UART_Printf
+ 651              	.LVL51:
+ 181:Core/Hardware/hardware.c ****   }
+ 652              		.loc 1 181 5 view .LVU157
+ 181:Core/Hardware/hardware.c ****   }
+ 653              		.loc 1 181 12 is_stmt 0 view .LVU158
+ 654 001c 0220     		movs	r0, #2
+ 655 001e F5E7     		b	.L55
+ 656              	.LVL52:
+ 657              	.L56:
+ 658              	.LCFI13:
+ 659              		.cfi_def_cfa_offset 0
+ 660              		.cfi_restore 3
+ 661              		.cfi_restore 14
+ 175:Core/Hardware/hardware.c ****   }
+ 662              		.loc 1 175 12 view .LVU159
+ 663 0020 0120     		movs	r0, #1
+ 664              	.LVL53:
+ 185:Core/Hardware/hardware.c **** 
+ 665              		.loc 1 185 1 view .LVU160
+ 666 0022 7047     		bx	lr
+ 667              	.L64:
+ 668              		.align	2
+ 669              	.L63:
+ 670 0024 00000000 		.word	.LC7
+ 671              		.cfi_endproc
+ 672              	.LFE154:
+ 674              		.section	.rodata.hardware_read_mag.str1.4,"aMS",%progbits,1
+ 675              		.align	2
+ 676              	.LC8:
+ 677 0000 4D414720 		.ascii	"MAG read ERROR\015\012\000"
+ 677      72656164 
+ 677      20455252 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 19
 
 
- 694              		.cfi_def_cfa_offset 8
- 695              		.cfi_offset 3, -8
- 696              		.cfi_offset 14, -4
- 169:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
- 697              		.loc 1 169 24 discriminator 1 view .LVU163
- 698 0004 90F8D121 		ldrb	r2, [r0, #465]	@ zero_extendqisi2
- 169:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
- 699              		.loc 1 169 18 discriminator 1 view .LVU164
- 700 0008 0AB9     		cbnz	r2, .L73
- 171:Core/Hardware/hardware.c ****     return HW_ERROR;
- 701              		.loc 1 171 12 view .LVU165
- 702 000a 0120     		movs	r0, #1
- 703              	.LVL55:
- 704              	.L66:
- 179:Core/Hardware/hardware.c **** }
- 705              		.loc 1 179 1 view .LVU166
- 706 000c 08BD     		pop	{r3, pc}
- 707              	.LVL56:
- 708              	.L73:
- 173:Core/Hardware/hardware.c ****   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
- 709              		.loc 1 173 3 is_stmt 1 view .LVU167
- 173:Core/Hardware/hardware.c ****   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
- 710              		.loc 1 173 7 is_stmt 0 view .LVU168
- 711 000e 5C30     		adds	r0, r0, #92
- 712              	.LVL57:
- 173:Core/Hardware/hardware.c ****   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
- 713              		.loc 1 173 7 view .LVU169
- 714 0010 FFF7FEFF 		bl	hmc5883l_read_mag
- 715              	.LVL58:
- 173:Core/Hardware/hardware.c ****   if (hmc5883l_read_mag(&hw->mag) != HMC5883L_OK)
- 716              		.loc 1 173 6 view .LVU170
- 717 0014 0028     		cmp	r0, #0
- 718 0016 F9D0     		beq	.L66
- 175:Core/Hardware/hardware.c ****     Hardware_UART_Printf("MAG read ERROR\r\n");
- 719              		.loc 1 175 5 is_stmt 1 view .LVU171
- 720 0018 0348     		ldr	r0, .L74
- 721 001a FFF7FEFF 		bl	Hardware_UART_Printf
- 722              	.LVL59:
- 176:Core/Hardware/hardware.c ****     return HW_MAG_ERROR;
- 723              		.loc 1 176 5 view .LVU172
- 176:Core/Hardware/hardware.c ****     return HW_MAG_ERROR;
- 724              		.loc 1 176 12 is_stmt 0 view .LVU173
- 725 001e 0320     		movs	r0, #3
- 726 0020 F4E7     		b	.L66
- 727              	.LVL60:
- 728              	.L67:
- 729              	.LCFI15:
- 730              		.cfi_def_cfa_offset 0
- 731              		.cfi_restore 3
- 732              		.cfi_restore 14
- 171:Core/Hardware/hardware.c ****     return HW_ERROR;
- 733              		.loc 1 171 12 view .LVU174
- 734 0022 0120     		movs	r0, #1
- 735              	.LVL61:
- 179:Core/Hardware/hardware.c **** }
- 736              		.loc 1 179 1 view .LVU175
- 737 0024 7047     		bx	lr
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 20
+ 677      4F520D0A 
+ 677      00
+ 678              		.section	.text.hardware_read_mag,"ax",%progbits
+ 679              		.align	1
+ 680              		.global	hardware_read_mag
+ 681              		.syntax unified
+ 682              		.thumb
+ 683              		.thumb_func
+ 685              	hardware_read_mag:
+ 686              	.LVL54:
+ 687              	.LFB155:
+ 188:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
+ 688              		.loc 1 188 1 is_stmt 1 view -0
+ 689              		.cfi_startproc
+ 690              		@ args = 0, pretend = 0, frame = 0
+ 691              		@ frame_needed = 0, uses_anonymous_args = 0
+ 189:Core/Hardware/hardware.c ****   {
+ 692              		.loc 1 189 3 view .LVU162
+ 189:Core/Hardware/hardware.c ****   {
+ 693              		.loc 1 189 6 is_stmt 0 view .LVU163
+ 694 0000 78B1     		cbz	r0, .L67
+ 188:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->mag_ready)
+ 695              		.loc 1 188 1 discriminator 1 view .LVU164
+ 696 0002 08B5     		push	{r3, lr}
+ 697              	.LCFI14:
+ 698              		.cfi_def_cfa_offset 8
+ 699              		.cfi_offset 3, -8
+ 700              		.cfi_offset 14, -4
+ 189:Core/Hardware/hardware.c ****   {
+ 701              		.loc 1 189 24 discriminator 1 view .LVU165
+ 702 0004 90F8E121 		ldrb	r2, [r0, #481]	@ zero_extendqisi2
+ 189:Core/Hardware/hardware.c ****   {
+ 703              		.loc 1 189 18 discriminator 1 view .LVU166
+ 704 0008 0AB9     		cbnz	r2, .L73
+ 191:Core/Hardware/hardware.c ****   }
+ 705              		.loc 1 191 12 view .LVU167
+ 706 000a 0120     		movs	r0, #1
+ 707              	.LVL55:
+ 708              	.L66:
+ 201:Core/Hardware/hardware.c **** 
+ 709              		.loc 1 201 1 view .LVU168
+ 710 000c 08BD     		pop	{r3, pc}
+ 711              	.LVL56:
+ 712              	.L73:
+ 194:Core/Hardware/hardware.c ****   {
+ 713              		.loc 1 194 3 is_stmt 1 view .LVU169
+ 194:Core/Hardware/hardware.c ****   {
+ 714              		.loc 1 194 7 is_stmt 0 view .LVU170
+ 715 000e 5C30     		adds	r0, r0, #92
+ 716              	.LVL57:
+ 194:Core/Hardware/hardware.c ****   {
+ 717              		.loc 1 194 7 view .LVU171
+ 718 0010 FFF7FEFF 		bl	hmc5883l_read_mag
+ 719              	.LVL58:
+ 194:Core/Hardware/hardware.c ****   {
+ 720              		.loc 1 194 6 view .LVU172
+ 721 0014 0028     		cmp	r0, #0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 20
 
 
- 738              	.L75:
- 739 0026 00BF     		.align	2
- 740              	.L74:
- 741 0028 00000000 		.word	.LC8
- 742              		.cfi_endproc
- 743              	.LFE151:
- 745              		.section	.rodata.hardware_process_gps.str1.4,"aMS",%progbits,1
- 746              		.align	2
- 747              	.LC9:
- 748 0000 47505320 		.ascii	"GPS read ERROR\015\012\000"
- 748      72656164 
- 748      20455252 
- 748      4F520D0A 
- 748      00
- 749              		.section	.text.hardware_process_gps,"ax",%progbits
- 750              		.align	1
- 751              		.global	hardware_process_gps
- 752              		.syntax unified
- 753              		.thumb
- 754              		.thumb_func
- 756              	hardware_process_gps:
- 757              	.LVL62:
- 758              	.LFB152:
- 182:Core/Hardware/hardware.c **** {
- 759              		.loc 1 182 1 is_stmt 1 view -0
- 760              		.cfi_startproc
- 761              		@ args = 0, pretend = 0, frame = 0
- 762              		@ frame_needed = 0, uses_anonymous_args = 0
- 183:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
- 763              		.loc 1 183 3 view .LVU177
- 183:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
- 764              		.loc 1 183 6 is_stmt 0 view .LVU178
- 765 0000 78B1     		cbz	r0, .L78
- 182:Core/Hardware/hardware.c **** {
- 766              		.loc 1 182 1 discriminator 1 view .LVU179
- 767 0002 08B5     		push	{r3, lr}
- 768              	.LCFI16:
- 769              		.cfi_def_cfa_offset 8
- 770              		.cfi_offset 3, -8
- 771              		.cfi_offset 14, -4
- 183:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
- 772              		.loc 1 183 24 discriminator 1 view .LVU180
- 773 0004 90F8D221 		ldrb	r2, [r0, #466]	@ zero_extendqisi2
- 183:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
- 774              		.loc 1 183 18 discriminator 1 view .LVU181
- 775 0008 0AB9     		cbnz	r2, .L84
- 185:Core/Hardware/hardware.c ****     return HW_ERROR;
- 776              		.loc 1 185 12 view .LVU182
- 777 000a 0120     		movs	r0, #1
- 778              	.LVL63:
- 779              	.L77:
- 193:Core/Hardware/hardware.c **** }
- 780              		.loc 1 193 1 view .LVU183
- 781 000c 08BD     		pop	{r3, pc}
- 782              	.LVL64:
- 783              	.L84:
- 187:Core/Hardware/hardware.c ****   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 21
+ 722 0016 F9D0     		beq	.L66
+ 196:Core/Hardware/hardware.c ****     return HW_MAG_ERROR;
+ 723              		.loc 1 196 5 is_stmt 1 view .LVU173
+ 724 0018 0348     		ldr	r0, .L74
+ 725 001a FFF7FEFF 		bl	Hardware_UART_Printf
+ 726              	.LVL59:
+ 197:Core/Hardware/hardware.c ****   }
+ 727              		.loc 1 197 5 view .LVU174
+ 197:Core/Hardware/hardware.c ****   }
+ 728              		.loc 1 197 12 is_stmt 0 view .LVU175
+ 729 001e 0320     		movs	r0, #3
+ 730 0020 F4E7     		b	.L66
+ 731              	.LVL60:
+ 732              	.L67:
+ 733              	.LCFI15:
+ 734              		.cfi_def_cfa_offset 0
+ 735              		.cfi_restore 3
+ 736              		.cfi_restore 14
+ 191:Core/Hardware/hardware.c ****   }
+ 737              		.loc 1 191 12 view .LVU176
+ 738 0022 0120     		movs	r0, #1
+ 739              	.LVL61:
+ 201:Core/Hardware/hardware.c **** 
+ 740              		.loc 1 201 1 view .LVU177
+ 741 0024 7047     		bx	lr
+ 742              	.L75:
+ 743 0026 00BF     		.align	2
+ 744              	.L74:
+ 745 0028 00000000 		.word	.LC8
+ 746              		.cfi_endproc
+ 747              	.LFE155:
+ 749              		.section	.rodata.hardware_process_gps.str1.4,"aMS",%progbits,1
+ 750              		.align	2
+ 751              	.LC9:
+ 752 0000 47505320 		.ascii	"GPS read ERROR\015\012\000"
+ 752      72656164 
+ 752      20455252 
+ 752      4F520D0A 
+ 752      00
+ 753              		.section	.text.hardware_process_gps,"ax",%progbits
+ 754              		.align	1
+ 755              		.global	hardware_process_gps
+ 756              		.syntax unified
+ 757              		.thumb
+ 758              		.thumb_func
+ 760              	hardware_process_gps:
+ 761              	.LVL62:
+ 762              	.LFB156:
+ 204:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
+ 763              		.loc 1 204 1 is_stmt 1 view -0
+ 764              		.cfi_startproc
+ 765              		@ args = 0, pretend = 0, frame = 0
+ 766              		@ frame_needed = 0, uses_anonymous_args = 0
+ 205:Core/Hardware/hardware.c ****   {
+ 767              		.loc 1 205 3 view .LVU179
+ 205:Core/Hardware/hardware.c ****   {
+ 768              		.loc 1 205 6 is_stmt 0 view .LVU180
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 21
 
 
- 784              		.loc 1 187 3 is_stmt 1 view .LVU184
- 187:Core/Hardware/hardware.c ****   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
- 785              		.loc 1 187 7 is_stmt 0 view .LVU185
- 786 000e 8830     		adds	r0, r0, #136
- 787              	.LVL65:
- 187:Core/Hardware/hardware.c ****   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
- 788              		.loc 1 187 7 view .LVU186
- 789 0010 FFF7FEFF 		bl	neo8m_process
- 790              	.LVL66:
- 187:Core/Hardware/hardware.c ****   if (neo8m_process(&hw->gps, byte) != NEO8M_OK)
- 791              		.loc 1 187 6 view .LVU187
- 792 0014 0028     		cmp	r0, #0
- 793 0016 F9D0     		beq	.L77
- 189:Core/Hardware/hardware.c ****     Hardware_UART_Printf("GPS read ERROR\r\n");
- 794              		.loc 1 189 5 is_stmt 1 view .LVU188
- 795 0018 0348     		ldr	r0, .L85
- 796 001a FFF7FEFF 		bl	Hardware_UART_Printf
- 797              	.LVL67:
- 190:Core/Hardware/hardware.c ****     return HW_ERROR;
- 798              		.loc 1 190 5 view .LVU189
- 190:Core/Hardware/hardware.c ****     return HW_ERROR;
- 799              		.loc 1 190 12 is_stmt 0 view .LVU190
- 800 001e 0120     		movs	r0, #1
- 801 0020 F4E7     		b	.L77
- 802              	.LVL68:
- 803              	.L78:
- 804              	.LCFI17:
- 805              		.cfi_def_cfa_offset 0
- 806              		.cfi_restore 3
- 807              		.cfi_restore 14
- 185:Core/Hardware/hardware.c ****     return HW_ERROR;
- 808              		.loc 1 185 12 view .LVU191
- 809 0022 0120     		movs	r0, #1
- 810              	.LVL69:
- 193:Core/Hardware/hardware.c **** }
- 811              		.loc 1 193 1 view .LVU192
- 812 0024 7047     		bx	lr
- 813              	.L86:
- 814 0026 00BF     		.align	2
- 815              	.L85:
- 816 0028 00000000 		.word	.LC9
- 817              		.cfi_endproc
- 818              	.LFE152:
- 820              		.global	count
- 821              		.section	.rodata
- 822              		.align	2
- 823              		.set	.LANCHOR0,. + 0
- 824              	.LC0:
- 825 0000 00000000 		.word	hi2c1
- 826 0004 68       		.byte	104
- 827 0005 00       		.byte	0
- 828 0006 00       		.byte	0
- 829 0007 00       		.space	1
- 830 0008 64000000 		.word	100
- 831              	.LC1:
- 832 000c 00000000 		.word	hi2c1
- 833 0010 1E       		.byte	30
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 22
+ 769 0000 78B1     		cbz	r0, .L78
+ 204:Core/Hardware/hardware.c ****   if (hw == NULL || !hw->gps_ready)
+ 770              		.loc 1 204 1 discriminator 1 view .LVU181
+ 771 0002 08B5     		push	{r3, lr}
+ 772              	.LCFI16:
+ 773              		.cfi_def_cfa_offset 8
+ 774              		.cfi_offset 3, -8
+ 775              		.cfi_offset 14, -4
+ 205:Core/Hardware/hardware.c ****   {
+ 776              		.loc 1 205 24 discriminator 1 view .LVU182
+ 777 0004 90F8E221 		ldrb	r2, [r0, #482]	@ zero_extendqisi2
+ 205:Core/Hardware/hardware.c ****   {
+ 778              		.loc 1 205 18 discriminator 1 view .LVU183
+ 779 0008 0AB9     		cbnz	r2, .L84
+ 207:Core/Hardware/hardware.c ****   }
+ 780              		.loc 1 207 12 view .LVU184
+ 781 000a 0120     		movs	r0, #1
+ 782              	.LVL63:
+ 783              	.L77:
+ 217:Core/Hardware/hardware.c **** 
+ 784              		.loc 1 217 1 view .LVU185
+ 785 000c 08BD     		pop	{r3, pc}
+ 786              	.LVL64:
+ 787              	.L84:
+ 210:Core/Hardware/hardware.c ****   {
+ 788              		.loc 1 210 3 is_stmt 1 view .LVU186
+ 210:Core/Hardware/hardware.c ****   {
+ 789              		.loc 1 210 7 is_stmt 0 view .LVU187
+ 790 000e 8830     		adds	r0, r0, #136
+ 791              	.LVL65:
+ 210:Core/Hardware/hardware.c ****   {
+ 792              		.loc 1 210 7 view .LVU188
+ 793 0010 FFF7FEFF 		bl	neo8m_process
+ 794              	.LVL66:
+ 210:Core/Hardware/hardware.c ****   {
+ 795              		.loc 1 210 6 view .LVU189
+ 796 0014 0028     		cmp	r0, #0
+ 797 0016 F9D0     		beq	.L77
+ 212:Core/Hardware/hardware.c ****     return HW_ERROR;
+ 798              		.loc 1 212 5 is_stmt 1 view .LVU190
+ 799 0018 0348     		ldr	r0, .L85
+ 800 001a FFF7FEFF 		bl	Hardware_UART_Printf
+ 801              	.LVL67:
+ 213:Core/Hardware/hardware.c ****   }
+ 802              		.loc 1 213 5 view .LVU191
+ 213:Core/Hardware/hardware.c ****   }
+ 803              		.loc 1 213 12 is_stmt 0 view .LVU192
+ 804 001e 0120     		movs	r0, #1
+ 805 0020 F4E7     		b	.L77
+ 806              	.LVL68:
+ 807              	.L78:
+ 808              	.LCFI17:
+ 809              		.cfi_def_cfa_offset 0
+ 810              		.cfi_restore 3
+ 811              		.cfi_restore 14
+ 207:Core/Hardware/hardware.c ****   }
+ 812              		.loc 1 207 12 view .LVU193
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 22
 
 
- 834 0011 04       		.byte	4
- 835 0012 03       		.byte	3
- 836 0013 06       		.byte	6
- 837 0014 00       		.byte	0
- 838 0015 000000   		.space	3
- 839 0018 64000000 		.word	100
- 840              		.section	.bss.count,"aw",%nobits
- 841              		.align	2
- 842              		.set	.LANCHOR1,. + 0
- 845              	count:
- 846 0000 00000000 		.space	4
- 847              		.text
- 848              	.Letext0:
- 849              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
- 850              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
- 851              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
- 852              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
- 853              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
- 854              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
- 855              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
- 856              		.file 9 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
- 857              		.file 10 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
- 858              		.file 11 "Core/Lib/axis.h"
- 859              		.file 12 "Core/Lib/mpu6050.h"
- 860              		.file 13 "Core/Lib/hmc5883l.h"
- 861              		.file 14 "Core/Lib/neo8m.h"
- 862              		.file 15 "Core/Hardware/hardware.h"
- 863              		.file 16 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
- 864              		.file 17 "<built-in>"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s 			page 23
+ 813 0022 0120     		movs	r0, #1
+ 814              	.LVL69:
+ 217:Core/Hardware/hardware.c **** 
+ 815              		.loc 1 217 1 view .LVU194
+ 816 0024 7047     		bx	lr
+ 817              	.L86:
+ 818 0026 00BF     		.align	2
+ 819              	.L85:
+ 820 0028 00000000 		.word	.LC9
+ 821              		.cfi_endproc
+ 822              	.LFE156:
+ 824              		.section	.text.HW_Power_GPS_On,"ax",%progbits
+ 825              		.align	1
+ 826              		.global	HW_Power_GPS_On
+ 827              		.syntax unified
+ 828              		.thumb
+ 829              		.thumb_func
+ 831              	HW_Power_GPS_On:
+ 832              	.LFB161:
+ 256:Core/Hardware/hardware.c **** 
+ 257:Core/Hardware/hardware.c **** 
+ 258:Core/Hardware/hardware.c **** void HW_Power_GPS_On(void)
+ 259:Core/Hardware/hardware.c **** {
+ 833              		.loc 1 259 1 is_stmt 1 view -0
+ 834              		.cfi_startproc
+ 835              		@ args = 0, pretend = 0, frame = 0
+ 836              		@ frame_needed = 0, uses_anonymous_args = 0
+ 837 0000 08B5     		push	{r3, lr}
+ 838              	.LCFI18:
+ 839              		.cfi_def_cfa_offset 8
+ 840              		.cfi_offset 3, -8
+ 841              		.cfi_offset 14, -4
+ 260:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_GPS_GPIO_Port, GATE_GPS_Pin, MOSFET_ON);
+ 842              		.loc 1 260 3 view .LVU196
+ 843 0002 0122     		movs	r2, #1
+ 844 0004 0421     		movs	r1, #4
+ 845 0006 0248     		ldr	r0, .L89
+ 846 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 847              	.LVL70:
+ 261:Core/Hardware/hardware.c **** }
+ 848              		.loc 1 261 1 is_stmt 0 view .LVU197
+ 849 000c 08BD     		pop	{r3, pc}
+ 850              	.L90:
+ 851 000e 00BF     		.align	2
+ 852              	.L89:
+ 853 0010 00100258 		.word	1476530176
+ 854              		.cfi_endproc
+ 855              	.LFE161:
+ 857              		.section	.text.HW_Power_GPS_Off,"ax",%progbits
+ 858              		.align	1
+ 859              		.global	HW_Power_GPS_Off
+ 860              		.syntax unified
+ 861              		.thumb
+ 862              		.thumb_func
+ 864              	HW_Power_GPS_Off:
+ 865              	.LFB162:
+ 262:Core/Hardware/hardware.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 23
+
+
+ 263:Core/Hardware/hardware.c **** void HW_Power_GPS_Off(void)
+ 264:Core/Hardware/hardware.c **** {
+ 866              		.loc 1 264 1 is_stmt 1 view -0
+ 867              		.cfi_startproc
+ 868              		@ args = 0, pretend = 0, frame = 0
+ 869              		@ frame_needed = 0, uses_anonymous_args = 0
+ 870 0000 08B5     		push	{r3, lr}
+ 871              	.LCFI19:
+ 872              		.cfi_def_cfa_offset 8
+ 873              		.cfi_offset 3, -8
+ 874              		.cfi_offset 14, -4
+ 265:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_GPS_GPIO_Port, GATE_GPS_Pin, MOSFET_OFF);
+ 875              		.loc 1 265 3 view .LVU199
+ 876 0002 0022     		movs	r2, #0
+ 877 0004 0421     		movs	r1, #4
+ 878 0006 0248     		ldr	r0, .L93
+ 879 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 880              	.LVL71:
+ 266:Core/Hardware/hardware.c **** }
+ 881              		.loc 1 266 1 is_stmt 0 view .LVU200
+ 882 000c 08BD     		pop	{r3, pc}
+ 883              	.L94:
+ 884 000e 00BF     		.align	2
+ 885              	.L93:
+ 886 0010 00100258 		.word	1476530176
+ 887              		.cfi_endproc
+ 888              	.LFE162:
+ 890              		.section	.text.HW_Power_Camera_On,"ax",%progbits
+ 891              		.align	1
+ 892              		.global	HW_Power_Camera_On
+ 893              		.syntax unified
+ 894              		.thumb
+ 895              		.thumb_func
+ 897              	HW_Power_Camera_On:
+ 898              	.LFB163:
+ 267:Core/Hardware/hardware.c **** 
+ 268:Core/Hardware/hardware.c **** void HW_Power_Camera_On(void)
+ 269:Core/Hardware/hardware.c **** {
+ 899              		.loc 1 269 1 is_stmt 1 view -0
+ 900              		.cfi_startproc
+ 901              		@ args = 0, pretend = 0, frame = 0
+ 902              		@ frame_needed = 0, uses_anonymous_args = 0
+ 903 0000 08B5     		push	{r3, lr}
+ 904              	.LCFI20:
+ 905              		.cfi_def_cfa_offset 8
+ 906              		.cfi_offset 3, -8
+ 907              		.cfi_offset 14, -4
+ 270:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_CAM_GPIO_Port, GATE_CAM_Pin, MOSFET_ON);
+ 908              		.loc 1 270 3 view .LVU202
+ 909 0002 0122     		movs	r2, #1
+ 910 0004 0821     		movs	r1, #8
+ 911 0006 0648     		ldr	r0, .L97
+ 912 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 913              	.LVL72:
+ 271:Core/Hardware/hardware.c ****   HAL_Delay(10);
+ 914              		.loc 1 271 3 view .LVU203
+ 915 000c 0A20     		movs	r0, #10
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 24
+
+
+ 916 000e FFF7FEFF 		bl	HAL_Delay
+ 917              	.LVL73:
+ 272:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(CAM_PWDN_GPIO_Port, CAM_PWDN_Pin, GPIO_PIN_RESET);
+ 918              		.loc 1 272 3 view .LVU204
+ 919 0012 0022     		movs	r2, #0
+ 920 0014 2021     		movs	r1, #32
+ 921 0016 0348     		ldr	r0, .L97+4
+ 922 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 923              	.LVL74:
+ 273:Core/Hardware/hardware.c **** }
+ 924              		.loc 1 273 1 is_stmt 0 view .LVU205
+ 925 001c 08BD     		pop	{r3, pc}
+ 926              	.L98:
+ 927 001e 00BF     		.align	2
+ 928              	.L97:
+ 929 0020 00040258 		.word	1476527104
+ 930 0024 00180258 		.word	1476532224
+ 931              		.cfi_endproc
+ 932              	.LFE163:
+ 934              		.section	.text.HW_Power_Camera_Off,"ax",%progbits
+ 935              		.align	1
+ 936              		.global	HW_Power_Camera_Off
+ 937              		.syntax unified
+ 938              		.thumb
+ 939              		.thumb_func
+ 941              	HW_Power_Camera_Off:
+ 942              	.LFB164:
+ 274:Core/Hardware/hardware.c **** 
+ 275:Core/Hardware/hardware.c **** void HW_Power_Camera_Off(void)
+ 276:Core/Hardware/hardware.c **** {
+ 943              		.loc 1 276 1 is_stmt 1 view -0
+ 944              		.cfi_startproc
+ 945              		@ args = 0, pretend = 0, frame = 0
+ 946              		@ frame_needed = 0, uses_anonymous_args = 0
+ 947 0000 08B5     		push	{r3, lr}
+ 948              	.LCFI21:
+ 949              		.cfi_def_cfa_offset 8
+ 950              		.cfi_offset 3, -8
+ 951              		.cfi_offset 14, -4
+ 277:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(CAM_PWDN_GPIO_Port, CAM_PWDN_Pin, GPIO_PIN_SET);
+ 952              		.loc 1 277 3 view .LVU207
+ 953 0002 0122     		movs	r2, #1
+ 954 0004 2021     		movs	r1, #32
+ 955 0006 0648     		ldr	r0, .L101
+ 956 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 957              	.LVL75:
+ 278:Core/Hardware/hardware.c ****   HAL_Delay(10);
+ 958              		.loc 1 278 3 view .LVU208
+ 959 000c 0A20     		movs	r0, #10
+ 960 000e FFF7FEFF 		bl	HAL_Delay
+ 961              	.LVL76:
+ 279:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_CAM_GPIO_Port, GATE_CAM_Pin, MOSFET_OFF);
+ 962              		.loc 1 279 3 view .LVU209
+ 963 0012 0022     		movs	r2, #0
+ 964 0014 0821     		movs	r1, #8
+ 965 0016 0348     		ldr	r0, .L101+4
+ 966 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 25
+
+
+ 967              	.LVL77:
+ 280:Core/Hardware/hardware.c **** }
+ 968              		.loc 1 280 1 is_stmt 0 view .LVU210
+ 969 001c 08BD     		pop	{r3, pc}
+ 970              	.L102:
+ 971 001e 00BF     		.align	2
+ 972              	.L101:
+ 973 0020 00180258 		.word	1476532224
+ 974 0024 00040258 		.word	1476527104
+ 975              		.cfi_endproc
+ 976              	.LFE164:
+ 978              		.section	.text.HW_Power_LoRa_On,"ax",%progbits
+ 979              		.align	1
+ 980              		.global	HW_Power_LoRa_On
+ 981              		.syntax unified
+ 982              		.thumb
+ 983              		.thumb_func
+ 985              	HW_Power_LoRa_On:
+ 986              	.LFB165:
+ 281:Core/Hardware/hardware.c **** 
+ 282:Core/Hardware/hardware.c **** void HW_Power_LoRa_On(void)
+ 283:Core/Hardware/hardware.c **** {
+ 987              		.loc 1 283 1 is_stmt 1 view -0
+ 988              		.cfi_startproc
+ 989              		@ args = 0, pretend = 0, frame = 0
+ 990              		@ frame_needed = 0, uses_anonymous_args = 0
+ 991 0000 08B5     		push	{r3, lr}
+ 992              	.LCFI22:
+ 993              		.cfi_def_cfa_offset 8
+ 994              		.cfi_offset 3, -8
+ 995              		.cfi_offset 14, -4
+ 284:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_LORA_GPIO_Port, GATE_LORA_Pin, MOSFET_ON);
+ 996              		.loc 1 284 3 view .LVU212
+ 997 0002 0122     		movs	r2, #1
+ 998 0004 0421     		movs	r1, #4
+ 999 0006 0248     		ldr	r0, .L105
+ 1000 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1001              	.LVL78:
+ 285:Core/Hardware/hardware.c **** }
+ 1002              		.loc 1 285 1 is_stmt 0 view .LVU213
+ 1003 000c 08BD     		pop	{r3, pc}
+ 1004              	.L106:
+ 1005 000e 00BF     		.align	2
+ 1006              	.L105:
+ 1007 0010 00080258 		.word	1476528128
+ 1008              		.cfi_endproc
+ 1009              	.LFE165:
+ 1011              		.section	.text.HW_Power_LoRa_Off,"ax",%progbits
+ 1012              		.align	1
+ 1013              		.global	HW_Power_LoRa_Off
+ 1014              		.syntax unified
+ 1015              		.thumb
+ 1016              		.thumb_func
+ 1018              	HW_Power_LoRa_Off:
+ 1019              	.LFB166:
+ 286:Core/Hardware/hardware.c **** 
+ 287:Core/Hardware/hardware.c **** void HW_Power_LoRa_Off(void)
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 26
+
+
+ 288:Core/Hardware/hardware.c **** {
+ 1020              		.loc 1 288 1 is_stmt 1 view -0
+ 1021              		.cfi_startproc
+ 1022              		@ args = 0, pretend = 0, frame = 0
+ 1023              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1024 0000 08B5     		push	{r3, lr}
+ 1025              	.LCFI23:
+ 1026              		.cfi_def_cfa_offset 8
+ 1027              		.cfi_offset 3, -8
+ 1028              		.cfi_offset 14, -4
+ 289:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_LORA_GPIO_Port, GATE_LORA_Pin, MOSFET_OFF);
+ 1029              		.loc 1 289 3 view .LVU215
+ 1030 0002 0022     		movs	r2, #0
+ 1031 0004 0421     		movs	r1, #4
+ 1032 0006 0248     		ldr	r0, .L109
+ 1033 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1034              	.LVL79:
+ 290:Core/Hardware/hardware.c **** }
+ 1035              		.loc 1 290 1 is_stmt 0 view .LVU216
+ 1036 000c 08BD     		pop	{r3, pc}
+ 1037              	.L110:
+ 1038 000e 00BF     		.align	2
+ 1039              	.L109:
+ 1040 0010 00080258 		.word	1476528128
+ 1041              		.cfi_endproc
+ 1042              	.LFE166:
+ 1044              		.section	.text.HW_Power_IMU_On,"ax",%progbits
+ 1045              		.align	1
+ 1046              		.global	HW_Power_IMU_On
+ 1047              		.syntax unified
+ 1048              		.thumb
+ 1049              		.thumb_func
+ 1051              	HW_Power_IMU_On:
+ 1052              	.LFB167:
+ 291:Core/Hardware/hardware.c **** 
+ 292:Core/Hardware/hardware.c **** void HW_Power_IMU_On(void)
+ 293:Core/Hardware/hardware.c **** {
+ 1053              		.loc 1 293 1 is_stmt 1 view -0
+ 1054              		.cfi_startproc
+ 1055              		@ args = 0, pretend = 0, frame = 0
+ 1056              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1057 0000 08B5     		push	{r3, lr}
+ 1058              	.LCFI24:
+ 1059              		.cfi_def_cfa_offset 8
+ 1060              		.cfi_offset 3, -8
+ 1061              		.cfi_offset 14, -4
+ 294:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_IMU_GPIO_Port, GATE_IMU_Pin, MOSFET_ON);
+ 1062              		.loc 1 294 3 view .LVU218
+ 1063 0002 0122     		movs	r2, #1
+ 1064 0004 0821     		movs	r1, #8
+ 1065 0006 0248     		ldr	r0, .L113
+ 1066 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1067              	.LVL80:
+ 295:Core/Hardware/hardware.c **** }
+ 1068              		.loc 1 295 1 is_stmt 0 view .LVU219
+ 1069 000c 08BD     		pop	{r3, pc}
+ 1070              	.L114:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 27
+
+
+ 1071 000e 00BF     		.align	2
+ 1072              	.L113:
+ 1073 0010 00080258 		.word	1476528128
+ 1074              		.cfi_endproc
+ 1075              	.LFE167:
+ 1077              		.section	.text.HW_Power_IMU_Off,"ax",%progbits
+ 1078              		.align	1
+ 1079              		.global	HW_Power_IMU_Off
+ 1080              		.syntax unified
+ 1081              		.thumb
+ 1082              		.thumb_func
+ 1084              	HW_Power_IMU_Off:
+ 1085              	.LFB168:
+ 296:Core/Hardware/hardware.c **** 
+ 297:Core/Hardware/hardware.c **** void HW_Power_IMU_Off(void)
+ 298:Core/Hardware/hardware.c **** {
+ 1086              		.loc 1 298 1 is_stmt 1 view -0
+ 1087              		.cfi_startproc
+ 1088              		@ args = 0, pretend = 0, frame = 0
+ 1089              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1090 0000 08B5     		push	{r3, lr}
+ 1091              	.LCFI25:
+ 1092              		.cfi_def_cfa_offset 8
+ 1093              		.cfi_offset 3, -8
+ 1094              		.cfi_offset 14, -4
+ 299:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_IMU_GPIO_Port, GATE_IMU_Pin, MOSFET_OFF);
+ 1095              		.loc 1 299 3 view .LVU221
+ 1096 0002 0022     		movs	r2, #0
+ 1097 0004 0821     		movs	r1, #8
+ 1098 0006 0248     		ldr	r0, .L117
+ 1099 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1100              	.LVL81:
+ 300:Core/Hardware/hardware.c **** }
+ 1101              		.loc 1 300 1 is_stmt 0 view .LVU222
+ 1102 000c 08BD     		pop	{r3, pc}
+ 1103              	.L118:
+ 1104 000e 00BF     		.align	2
+ 1105              	.L117:
+ 1106 0010 00080258 		.word	1476528128
+ 1107              		.cfi_endproc
+ 1108              	.LFE168:
+ 1110              		.section	.text.HW_Power_Magnetometer_On,"ax",%progbits
+ 1111              		.align	1
+ 1112              		.global	HW_Power_Magnetometer_On
+ 1113              		.syntax unified
+ 1114              		.thumb
+ 1115              		.thumb_func
+ 1117              	HW_Power_Magnetometer_On:
+ 1118              	.LFB169:
+ 301:Core/Hardware/hardware.c **** 
+ 302:Core/Hardware/hardware.c **** void HW_Power_Magnetometer_On(void)
+ 303:Core/Hardware/hardware.c **** {
+ 1119              		.loc 1 303 1 is_stmt 1 view -0
+ 1120              		.cfi_startproc
+ 1121              		@ args = 0, pretend = 0, frame = 0
+ 1122              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1123 0000 08B5     		push	{r3, lr}
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 28
+
+
+ 1124              	.LCFI26:
+ 1125              		.cfi_def_cfa_offset 8
+ 1126              		.cfi_offset 3, -8
+ 1127              		.cfi_offset 14, -4
+ 304:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_MAG_GPIO_Port, GATE_MAG_Pin, MOSFET_ON);
+ 1128              		.loc 1 304 3 view .LVU224
+ 1129 0002 0122     		movs	r2, #1
+ 1130 0004 4FF48041 		mov	r1, #16384
+ 1131 0008 0148     		ldr	r0, .L121
+ 1132 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1133              	.LVL82:
+ 305:Core/Hardware/hardware.c **** }
+ 1134              		.loc 1 305 1 is_stmt 0 view .LVU225
+ 1135 000e 08BD     		pop	{r3, pc}
+ 1136              	.L122:
+ 1137              		.align	2
+ 1138              	.L121:
+ 1139 0010 00040258 		.word	1476527104
+ 1140              		.cfi_endproc
+ 1141              	.LFE169:
+ 1143              		.section	.text.HW_Power_Magnetometer_Off,"ax",%progbits
+ 1144              		.align	1
+ 1145              		.global	HW_Power_Magnetometer_Off
+ 1146              		.syntax unified
+ 1147              		.thumb
+ 1148              		.thumb_func
+ 1150              	HW_Power_Magnetometer_Off:
+ 1151              	.LFB170:
+ 306:Core/Hardware/hardware.c **** 
+ 307:Core/Hardware/hardware.c **** void HW_Power_Magnetometer_Off(void)
+ 308:Core/Hardware/hardware.c **** {
+ 1152              		.loc 1 308 1 is_stmt 1 view -0
+ 1153              		.cfi_startproc
+ 1154              		@ args = 0, pretend = 0, frame = 0
+ 1155              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1156 0000 08B5     		push	{r3, lr}
+ 1157              	.LCFI27:
+ 1158              		.cfi_def_cfa_offset 8
+ 1159              		.cfi_offset 3, -8
+ 1160              		.cfi_offset 14, -4
+ 309:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_MAG_GPIO_Port, GATE_MAG_Pin, MOSFET_OFF);
+ 1161              		.loc 1 309 3 view .LVU227
+ 1162 0002 0022     		movs	r2, #0
+ 1163 0004 4FF48041 		mov	r1, #16384
+ 1164 0008 0148     		ldr	r0, .L125
+ 1165 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1166              	.LVL83:
+ 310:Core/Hardware/hardware.c **** }
+ 1167              		.loc 1 310 1 is_stmt 0 view .LVU228
+ 1168 000e 08BD     		pop	{r3, pc}
+ 1169              	.L126:
+ 1170              		.align	2
+ 1171              	.L125:
+ 1172 0010 00040258 		.word	1476527104
+ 1173              		.cfi_endproc
+ 1174              	.LFE170:
+ 1176              		.section	.text.HW_Power_Temperature_On,"ax",%progbits
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 29
+
+
+ 1177              		.align	1
+ 1178              		.global	HW_Power_Temperature_On
+ 1179              		.syntax unified
+ 1180              		.thumb
+ 1181              		.thumb_func
+ 1183              	HW_Power_Temperature_On:
+ 1184              	.LFB171:
+ 311:Core/Hardware/hardware.c **** 
+ 312:Core/Hardware/hardware.c **** void HW_Power_Temperature_On(void)
+ 313:Core/Hardware/hardware.c **** {
+ 1185              		.loc 1 313 1 is_stmt 1 view -0
+ 1186              		.cfi_startproc
+ 1187              		@ args = 0, pretend = 0, frame = 0
+ 1188              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1189 0000 08B5     		push	{r3, lr}
+ 1190              	.LCFI28:
+ 1191              		.cfi_def_cfa_offset 8
+ 1192              		.cfi_offset 3, -8
+ 1193              		.cfi_offset 14, -4
+ 314:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_TEMP_GPIO_Port, GATE_TEMP_Pin, MOSFET_ON);
+ 1194              		.loc 1 314 3 view .LVU230
+ 1195 0002 0122     		movs	r2, #1
+ 1196 0004 4FF40051 		mov	r1, #8192
+ 1197 0008 0148     		ldr	r0, .L129
+ 1198 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1199              	.LVL84:
+ 315:Core/Hardware/hardware.c **** }
+ 1200              		.loc 1 315 1 is_stmt 0 view .LVU231
+ 1201 000e 08BD     		pop	{r3, pc}
+ 1202              	.L130:
+ 1203              		.align	2
+ 1204              	.L129:
+ 1205 0010 00040258 		.word	1476527104
+ 1206              		.cfi_endproc
+ 1207              	.LFE171:
+ 1209              		.section	.text.HW_Power_Temperature_Off,"ax",%progbits
+ 1210              		.align	1
+ 1211              		.global	HW_Power_Temperature_Off
+ 1212              		.syntax unified
+ 1213              		.thumb
+ 1214              		.thumb_func
+ 1216              	HW_Power_Temperature_Off:
+ 1217              	.LFB172:
+ 316:Core/Hardware/hardware.c **** 
+ 317:Core/Hardware/hardware.c **** void HW_Power_Temperature_Off(void)
+ 318:Core/Hardware/hardware.c **** {
+ 1218              		.loc 1 318 1 is_stmt 1 view -0
+ 1219              		.cfi_startproc
+ 1220              		@ args = 0, pretend = 0, frame = 0
+ 1221              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1222 0000 08B5     		push	{r3, lr}
+ 1223              	.LCFI29:
+ 1224              		.cfi_def_cfa_offset 8
+ 1225              		.cfi_offset 3, -8
+ 1226              		.cfi_offset 14, -4
+ 319:Core/Hardware/hardware.c ****   HAL_GPIO_WritePin(GATE_TEMP_GPIO_Port, GATE_TEMP_Pin, MOSFET_OFF);
+ 1227              		.loc 1 319 3 view .LVU233
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 30
+
+
+ 1228 0002 0022     		movs	r2, #0
+ 1229 0004 4FF40051 		mov	r1, #8192
+ 1230 0008 0148     		ldr	r0, .L133
+ 1231 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1232              	.LVL85:
+ 320:Core/Hardware/hardware.c **** }
+ 1233              		.loc 1 320 1 is_stmt 0 view .LVU234
+ 1234 000e 08BD     		pop	{r3, pc}
+ 1235              	.L134:
+ 1236              		.align	2
+ 1237              	.L133:
+ 1238 0010 00040258 		.word	1476527104
+ 1239              		.cfi_endproc
+ 1240              	.LFE172:
+ 1242              		.section	.text.HW_Power_All_Sensors_Off,"ax",%progbits
+ 1243              		.align	1
+ 1244              		.global	HW_Power_All_Sensors_Off
+ 1245              		.syntax unified
+ 1246              		.thumb
+ 1247              		.thumb_func
+ 1249              	HW_Power_All_Sensors_Off:
+ 1250              	.LFB173:
+ 321:Core/Hardware/hardware.c **** 
+ 322:Core/Hardware/hardware.c **** void HW_Power_All_Sensors_Off(void)
+ 323:Core/Hardware/hardware.c **** {
+ 1251              		.loc 1 323 1 is_stmt 1 view -0
+ 1252              		.cfi_startproc
+ 1253              		@ args = 0, pretend = 0, frame = 0
+ 1254              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1255 0000 08B5     		push	{r3, lr}
+ 1256              	.LCFI30:
+ 1257              		.cfi_def_cfa_offset 8
+ 1258              		.cfi_offset 3, -8
+ 1259              		.cfi_offset 14, -4
+ 324:Core/Hardware/hardware.c ****   HW_Power_GPS_Off();
+ 1260              		.loc 1 324 3 view .LVU236
+ 1261 0002 FFF7FEFF 		bl	HW_Power_GPS_Off
+ 1262              	.LVL86:
+ 325:Core/Hardware/hardware.c ****   HW_Power_Camera_Off();
+ 1263              		.loc 1 325 3 view .LVU237
+ 1264 0006 FFF7FEFF 		bl	HW_Power_Camera_Off
+ 1265              	.LVL87:
+ 326:Core/Hardware/hardware.c ****   HW_Power_LoRa_Off();
+ 1266              		.loc 1 326 3 view .LVU238
+ 1267 000a FFF7FEFF 		bl	HW_Power_LoRa_Off
+ 1268              	.LVL88:
+ 327:Core/Hardware/hardware.c ****   HW_Power_IMU_Off();
+ 1269              		.loc 1 327 3 view .LVU239
+ 1270 000e FFF7FEFF 		bl	HW_Power_IMU_Off
+ 1271              	.LVL89:
+ 328:Core/Hardware/hardware.c ****   HW_Power_Magnetometer_Off();
+ 1272              		.loc 1 328 3 view .LVU240
+ 1273 0012 FFF7FEFF 		bl	HW_Power_Magnetometer_Off
+ 1274              	.LVL90:
+ 329:Core/Hardware/hardware.c ****   HW_Power_Temperature_Off();
+ 1275              		.loc 1 329 3 view .LVU241
+ 1276 0016 FFF7FEFF 		bl	HW_Power_Temperature_Off
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 31
+
+
+ 1277              	.LVL91:
+ 330:Core/Hardware/hardware.c **** }
+ 1278              		.loc 1 330 1 is_stmt 0 view .LVU242
+ 1279 001a 08BD     		pop	{r3, pc}
+ 1280              		.cfi_endproc
+ 1281              	.LFE173:
+ 1283              		.section	.rodata
+ 1284              		.align	2
+ 1285              		.set	.LANCHOR0,. + 0
+ 1286              	.LC0:
+ 1287 0000 00000000 		.word	hi2c4
+ 1288 0004 68       		.byte	104
+ 1289 0005 00       		.byte	0
+ 1290 0006 00       		.byte	0
+ 1291 0007 00       		.space	1
+ 1292 0008 64000000 		.word	100
+ 1293              	.LC1:
+ 1294 000c 00000000 		.word	hi2c4
+ 1295 0010 1E       		.byte	30
+ 1296 0011 04       		.byte	4
+ 1297 0012 03       		.byte	3
+ 1298 0013 06       		.byte	6
+ 1299 0014 00       		.byte	0
+ 1300 0015 000000   		.space	3
+ 1301 0018 64000000 		.word	100
+ 1302              		.section	.bss.sensor_count,"aw",%nobits
+ 1303              		.align	2
+ 1304              		.set	.LANCHOR1,. + 0
+ 1307              	sensor_count:
+ 1308 0000 00000000 		.space	4
+ 1309              		.text
+ 1310              	.Letext0:
+ 1311              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1312              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1313              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1314              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1315              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1316              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1317              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 1318              		.file 9 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 1319              		.file 10 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi
+ 1320              		.file 11 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 1321              		.file 12 "Core/Lib/axis.h"
+ 1322              		.file 13 "Core/Lib/mpu6050.h"
+ 1323              		.file 14 "Core/Lib/hmc5883l.h"
+ 1324              		.file 15 "Core/Lib/neo8m.h"
+ 1325              		.file 16 "Core/Lib/INA219.h"
+ 1326              		.file 17 "Core/Lib/cubesat_data.h"
+ 1327              		.file 18 "Core/Hardware/hardware.h"
+ 1328              		.file 19 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 1329              		.file 20 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 1330              		.file 21 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 32
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 hardware.c
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:19     .text.hardware_init:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:25     .text.hardware_init:00000000 hardware_init
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:208    .text.hardware_init:000000b8 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:215    .text.hardware_is_ready:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:221    .text.hardware_is_ready:00000000 hardware_is_ready
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:253    .text.hardware_is_ready:00000014 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:258    .text.hardware_get_mpu:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:264    .text.hardware_get_mpu:00000000 hardware_get_mpu
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:285    .text.hardware_get_mag:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:291    .text.hardware_get_mag:00000000 hardware_get_mag
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:316    .text.hardware_get_gps:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:322    .text.hardware_get_gps:00000000 hardware_get_gps
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:347    .text.Hardware_UART_Printf:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:353    .text.Hardware_UART_Printf:00000000 Hardware_UART_Printf
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:419    .text.Hardware_UART_Printf:00000034 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:424    .rodata.hardware_init_process.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:440    .text.hardware_init_process:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:446    .text.hardware_init_process:00000000 hardware_init_process
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:589    .text.hardware_init_process:00000088 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:599    .rodata.hardware_read_imu.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:603    .text.hardware_read_imu:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:609    .text.hardware_read_imu:00000000 hardware_read_imu
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:666    .text.hardware_read_imu:00000024 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:671    .rodata.hardware_read_mag.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:675    .text.hardware_read_mag:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:681    .text.hardware_read_mag:00000000 hardware_read_mag
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:741    .text.hardware_read_mag:00000028 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:746    .rodata.hardware_process_gps.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:750    .text.hardware_process_gps:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:756    .text.hardware_process_gps:00000000 hardware_process_gps
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:816    .text.hardware_process_gps:00000028 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:845    .bss.count:00000000 count
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:822    .rodata:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cc8gIQz0.s:841    .bss.count:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:19     .text.hardware_init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:25     .text.hardware_init:00000000 hardware_init
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:208    .text.hardware_init:000000b8 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:215    .text.hardware_is_ready:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:221    .text.hardware_is_ready:00000000 hardware_is_ready
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:253    .text.hardware_is_ready:00000014 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:258    .text.hardware_get_mpu:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:264    .text.hardware_get_mpu:00000000 hardware_get_mpu
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:285    .text.hardware_get_mag:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:291    .text.hardware_get_mag:00000000 hardware_get_mag
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:316    .text.hardware_get_gps:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:322    .text.hardware_get_gps:00000000 hardware_get_gps
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:347    .text.Hardware_UART_Printf:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:353    .text.Hardware_UART_Printf:00000000 Hardware_UART_Printf
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:419    .text.Hardware_UART_Printf:00000034 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:424    .rodata.hardware_init_process.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:440    .text.hardware_init_process:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:446    .text.hardware_init_process:00000000 hardware_init_process
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:593    .text.hardware_init_process:0000008c $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:603    .rodata.hardware_read_imu.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:607    .text.hardware_read_imu:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:613    .text.hardware_read_imu:00000000 hardware_read_imu
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:670    .text.hardware_read_imu:00000024 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:675    .rodata.hardware_read_mag.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:679    .text.hardware_read_mag:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:685    .text.hardware_read_mag:00000000 hardware_read_mag
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:745    .text.hardware_read_mag:00000028 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:750    .rodata.hardware_process_gps.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:754    .text.hardware_process_gps:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:760    .text.hardware_process_gps:00000000 hardware_process_gps
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:820    .text.hardware_process_gps:00000028 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:825    .text.HW_Power_GPS_On:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:831    .text.HW_Power_GPS_On:00000000 HW_Power_GPS_On
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:853    .text.HW_Power_GPS_On:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:858    .text.HW_Power_GPS_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:864    .text.HW_Power_GPS_Off:00000000 HW_Power_GPS_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:886    .text.HW_Power_GPS_Off:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:891    .text.HW_Power_Camera_On:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:897    .text.HW_Power_Camera_On:00000000 HW_Power_Camera_On
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:929    .text.HW_Power_Camera_On:00000020 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:935    .text.HW_Power_Camera_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:941    .text.HW_Power_Camera_Off:00000000 HW_Power_Camera_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:973    .text.HW_Power_Camera_Off:00000020 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:979    .text.HW_Power_LoRa_On:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:985    .text.HW_Power_LoRa_On:00000000 HW_Power_LoRa_On
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1007   .text.HW_Power_LoRa_On:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1012   .text.HW_Power_LoRa_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1018   .text.HW_Power_LoRa_Off:00000000 HW_Power_LoRa_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1040   .text.HW_Power_LoRa_Off:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1045   .text.HW_Power_IMU_On:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1051   .text.HW_Power_IMU_On:00000000 HW_Power_IMU_On
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1073   .text.HW_Power_IMU_On:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1078   .text.HW_Power_IMU_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1084   .text.HW_Power_IMU_Off:00000000 HW_Power_IMU_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1106   .text.HW_Power_IMU_Off:00000010 $d
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccnx13RD.s 			page 33
+
+
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1111   .text.HW_Power_Magnetometer_On:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1117   .text.HW_Power_Magnetometer_On:00000000 HW_Power_Magnetometer_On
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1139   .text.HW_Power_Magnetometer_On:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1144   .text.HW_Power_Magnetometer_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1150   .text.HW_Power_Magnetometer_Off:00000000 HW_Power_Magnetometer_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1172   .text.HW_Power_Magnetometer_Off:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1177   .text.HW_Power_Temperature_On:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1183   .text.HW_Power_Temperature_On:00000000 HW_Power_Temperature_On
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1205   .text.HW_Power_Temperature_On:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1210   .text.HW_Power_Temperature_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1216   .text.HW_Power_Temperature_Off:00000000 HW_Power_Temperature_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1238   .text.HW_Power_Temperature_Off:00000010 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1243   .text.HW_Power_All_Sensors_Off:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1249   .text.HW_Power_All_Sensors_Off:00000000 HW_Power_All_Sensors_Off
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1284   .rodata:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1303   .bss.sensor_count:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccnx13RD.s:1307   .bss.sensor_count:00000000 sensor_count
 
 UNDEFINED SYMBOLS
 memset
@@ -1344,4 +1948,6 @@ mpu6050_init_process
 mpu6050_read_all
 hmc5883l_read_mag
 neo8m_process
-hi2c1
+HAL_GPIO_WritePin
+HAL_Delay
+hi2c4

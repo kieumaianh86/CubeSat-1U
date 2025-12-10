@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -21,7 +21,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 1
   18              		.section	.rodata.Logic_Safe_Init.str1.4,"aMS",%progbits,1
   19              		.align	2
   20              	.LC0:
-  21 0000 53414645 		.ascii	"SAFE: Entered - error code %d\015\012\000"
+  21 0000 53414645 		.ascii	"SAFE: Entered - error code 0x%02X\015\012\000"
   21      3A20456E 
   21      74657265 
   21      64202D20 
@@ -33,7 +33,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 1
   26              		.thumb
   27              		.thumb_func
   29              	Logic_Safe_Init:
-  30              	.LFB147:
+  30              	.LFB151:
   31              		.file 1 "Core/Logic/logic_safe.c"
    1:Core/Logic/logic_safe.c **** #include "logic_safe.h"
    2:Core/Logic/logic_safe.c **** #include "cubesat_data.h"
@@ -41,10 +41,11 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 1
    4:Core/Logic/logic_safe.c **** #include "hardware.h"
    5:Core/Logic/logic_safe.c **** 
    6:Core/Logic/logic_safe.c **** static uint32_t safe_start_tick = 0;
-   7:Core/Logic/logic_safe.c **** 
-   8:Core/Logic/logic_safe.c **** safe_error_t Logic_Safe_Init(void)
-   9:Core/Logic/logic_safe.c **** {
-  32              		.loc 1 9 1 view -0
+   7:Core/Logic/logic_safe.c **** static uint32_t last_check_tick = 0;
+   8:Core/Logic/logic_safe.c **** 
+   9:Core/Logic/logic_safe.c **** safe_error_t Logic_Safe_Init(void)
+  10:Core/Logic/logic_safe.c **** {
+  32              		.loc 1 10 1 view -0
   33              		.cfi_startproc
   34              		@ args = 0, pretend = 0, frame = 0
   35              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -55,639 +56,676 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 1
   40              		.cfi_offset 4, -12
   41              		.cfi_offset 5, -8
   42              		.cfi_offset 14, -4
-  10:Core/Logic/logic_safe.c ****     safe_start_tick = HAL_GetTick();
-  43              		.loc 1 10 5 view .LVU1
-  44              		.loc 1 10 23 is_stmt 0 view .LVU2
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 2
+  11:Core/Logic/logic_safe.c ****     safe_start_tick = HAL_GetTick();
+  43              		.loc 1 11 5 view .LVU1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 2
 
 
+  44              		.loc 1 11 23 is_stmt 0 view .LVU2
   45 0002 FFF7FEFF 		bl	HAL_GetTick
   46              	.LVL0:
-  47              		.loc 1 10 21 view .LVU3
-  48 0006 094B     		ldr	r3, .L3
+  47              		.loc 1 11 21 view .LVU3
+  48 0006 0A4B     		ldr	r3, .L3
   49 0008 1860     		str	r0, [r3]
-  11:Core/Logic/logic_safe.c ****     
-  12:Core/Logic/logic_safe.c ****     cubesat_status_t* status = Logic_GetStatus();
+  12:Core/Logic/logic_safe.c ****     last_check_tick = 0;
   50              		.loc 1 12 5 is_stmt 1 view .LVU4
-  51              		.loc 1 12 32 is_stmt 0 view .LVU5
-  52 000a FFF7FEFF 		bl	Logic_GetStatus
-  53              	.LVL1:
-  54 000e 0446     		mov	r4, r0
-  55              	.LVL2:
-  13:Core/Logic/logic_safe.c ****     status->sensors_recovered = false;
-  56              		.loc 1 13 5 is_stmt 1 view .LVU6
-  57              		.loc 1 13 31 is_stmt 0 view .LVU7
-  58 0010 0025     		movs	r5, #0
-  59 0012 0576     		strb	r5, [r0, #24]
-  14:Core/Logic/logic_safe.c ****     status->flash_recovered = false;
-  60              		.loc 1 14 5 is_stmt 1 view .LVU8
-  61              		.loc 1 14 29 is_stmt 0 view .LVU9
-  62 0014 4576     		strb	r5, [r0, #25]
-  15:Core/Logic/logic_safe.c ****     status->lora_recovered = false;
-  63              		.loc 1 15 5 is_stmt 1 view .LVU10
-  64              		.loc 1 15 28 is_stmt 0 view .LVU11
-  65 0016 8576     		strb	r5, [r0, #26]
-  16:Core/Logic/logic_safe.c ****     status->temp_recovered = false;
-  66              		.loc 1 16 5 is_stmt 1 view .LVU12
-  67              		.loc 1 16 28 is_stmt 0 view .LVU13
-  68 0018 C576     		strb	r5, [r0, #27]
-  17:Core/Logic/logic_safe.c ****     
-  18:Core/Logic/logic_safe.c ****     HW_Power_All_Sensors_Off();
-  69              		.loc 1 18 5 is_stmt 1 view .LVU14
-  70 001a FFF7FEFF 		bl	HW_Power_All_Sensors_Off
-  71              	.LVL3:
-  19:Core/Logic/logic_safe.c ****     
-  20:Core/Logic/logic_safe.c ****     Logic_Log("SAFE: Entered - error code %d\r\n", status->error_code);
-  72              		.loc 1 20 5 view .LVU15
-  73 001e E18A     		ldrh	r1, [r4, #22]
-  74 0020 0348     		ldr	r0, .L3+4
-  75 0022 FFF7FEFF 		bl	Logic_Log
-  76              	.LVL4:
+  51              		.loc 1 12 21 is_stmt 0 view .LVU5
+  52 000a 0025     		movs	r5, #0
+  53 000c 094B     		ldr	r3, .L3+4
+  54 000e 1D60     		str	r5, [r3]
+  13:Core/Logic/logic_safe.c ****     
+  14:Core/Logic/logic_safe.c ****     cubesat_status_t* status = Logic_GetStatus();
+  55              		.loc 1 14 5 is_stmt 1 view .LVU6
+  56              		.loc 1 14 32 is_stmt 0 view .LVU7
+  57 0010 FFF7FEFF 		bl	Logic_GetStatus
+  58              	.LVL1:
+  59 0014 0446     		mov	r4, r0
+  60              	.LVL2:
+  15:Core/Logic/logic_safe.c ****     
+  16:Core/Logic/logic_safe.c ****     // Reset recovery flags
+  17:Core/Logic/logic_safe.c ****     status->sensors_recovered = false;
+  61              		.loc 1 17 5 is_stmt 1 view .LVU8
+  62              		.loc 1 17 31 is_stmt 0 view .LVU9
+  63 0016 0576     		strb	r5, [r0, #24]
+  18:Core/Logic/logic_safe.c ****     status->flash_recovered = false;
+  64              		.loc 1 18 5 is_stmt 1 view .LVU10
+  65              		.loc 1 18 29 is_stmt 0 view .LVU11
+  66 0018 4576     		strb	r5, [r0, #25]
+  19:Core/Logic/logic_safe.c ****     status->lora_recovered = false;
+  67              		.loc 1 19 5 is_stmt 1 view .LVU12
+  68              		.loc 1 19 28 is_stmt 0 view .LVU13
+  69 001a 8576     		strb	r5, [r0, #26]
+  20:Core/Logic/logic_safe.c ****     status->temp_recovered = false;
+  70              		.loc 1 20 5 is_stmt 1 view .LVU14
+  71              		.loc 1 20 28 is_stmt 0 view .LVU15
+  72 001c C576     		strb	r5, [r0, #27]
   21:Core/Logic/logic_safe.c ****     
-  22:Core/Logic/logic_safe.c ****     return SAFE_OK;
-  77              		.loc 1 22 5 view .LVU16
-  23:Core/Logic/logic_safe.c **** }
-  78              		.loc 1 23 1 is_stmt 0 view .LVU17
-  79 0026 2846     		mov	r0, r5
-  80 0028 38BD     		pop	{r3, r4, r5, pc}
-  81              	.LVL5:
-  82              	.L4:
-  83              		.loc 1 23 1 view .LVU18
-  84 002a 00BF     		.align	2
-  85              	.L3:
-  86 002c 00000000 		.word	.LANCHOR0
-  87 0030 00000000 		.word	.LC0
-  88              		.cfi_endproc
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 3
+  22:Core/Logic/logic_safe.c ****     HW_Power_All_Sensors_Off();
+  73              		.loc 1 22 5 is_stmt 1 view .LVU16
+  74 001e FFF7FEFF 		bl	HW_Power_All_Sensors_Off
+  75              	.LVL3:
+  23:Core/Logic/logic_safe.c ****     
+  24:Core/Logic/logic_safe.c ****     Logic_Log("SAFE: Entered - error code 0x%02X\r\n", status->error_code);
+  76              		.loc 1 24 5 view .LVU17
+  77 0022 E18A     		ldrh	r1, [r4, #22]
+  78 0024 0448     		ldr	r0, .L3+8
+  79 0026 FFF7FEFF 		bl	Logic_Log
+  80              	.LVL4:
+  25:Core/Logic/logic_safe.c ****     
+  26:Core/Logic/logic_safe.c ****     return SAFE_OK;
+  81              		.loc 1 26 5 view .LVU18
+  27:Core/Logic/logic_safe.c **** }
+  82              		.loc 1 27 1 is_stmt 0 view .LVU19
+  83 002a 2846     		mov	r0, r5
+  84 002c 38BD     		pop	{r3, r4, r5, pc}
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 3
 
 
-  89              	.LFE147:
-  91              		.section	.rodata.Logic_Safe_Process.str1.4,"aMS",%progbits,1
-  92              		.align	2
-  93              	.LC1:
-  94 0000 53414645 		.ascii	"SAFE: Battery < 15%%, go to SLEEP\015\012\000"
-  94      3A204261 
-  94      74746572 
-  94      79203C20 
-  94      31352525 
-  95              		.align	2
-  96              	.LC2:
-  97 0024 53414645 		.ascii	"SAFE: Check - bat=%d%%, temp=%.1f, sensors=%d\015\012"
-  97      3A204368 
-  97      65636B20 
-  97      2D206261 
-  97      743D2564 
-  98 0053 00       		.ascii	"\000"
-  99              		.align	2
- 100              	.LC3:
- 101 0054 53414645 		.ascii	"SAFE: All recovered, exit to STANDBY\015\012\000"
- 101      3A20416C 
- 101      6C207265 
- 101      636F7665 
- 101      7265642C 
- 102 007b 00       		.align	2
- 103              	.LC4:
- 104 007c 53414645 		.ascii	"SAFE: Timeout 60s + battery >= 25%%, exit to STANDB"
- 104      3A205469 
- 104      6D656F75 
- 104      74203630 
- 104      73202B20 
- 105 00af 590D0A00 		.ascii	"Y\015\012\000"
- 106              		.section	.text.Logic_Safe_Process,"ax",%progbits
- 107              		.align	1
- 108              		.global	Logic_Safe_Process
- 109              		.syntax unified
- 110              		.thumb
- 111              		.thumb_func
- 113              	Logic_Safe_Process:
- 114              	.LVL6:
- 115              	.LFB148:
-  24:Core/Logic/logic_safe.c **** 
-  25:Core/Logic/logic_safe.c **** safe_error_t Logic_Safe_Process(uint32_t dt_ms)
-  26:Core/Logic/logic_safe.c **** {
- 116              		.loc 1 26 1 is_stmt 1 view -0
- 117              		.cfi_startproc
- 118              		@ args = 0, pretend = 0, frame = 0
- 119              		@ frame_needed = 0, uses_anonymous_args = 0
- 120              		.loc 1 26 1 is_stmt 0 view .LVU20
- 121 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
- 122              	.LCFI1:
- 123              		.cfi_def_cfa_offset 24
- 124              		.cfi_offset 4, -24
- 125              		.cfi_offset 5, -20
- 126              		.cfi_offset 6, -16
- 127              		.cfi_offset 7, -12
- 128              		.cfi_offset 8, -8
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 4
+  85              	.LVL5:
+  86              	.L4:
+  87              		.loc 1 27 1 view .LVU20
+  88 002e 00BF     		.align	2
+  89              	.L3:
+  90 0030 00000000 		.word	.LANCHOR0
+  91 0034 00000000 		.word	.LANCHOR1
+  92 0038 00000000 		.word	.LC0
+  93              		.cfi_endproc
+  94              	.LFE151:
+  96              		.section	.rodata.Logic_Safe_Process.str1.4,"aMS",%progbits,1
+  97              		.align	2
+  98              	.LC1:
+  99 0000 53414645 		.ascii	"SAFE: Battery < 15%%, go to SLEEP\015\012\000"
+  99      3A204261 
+  99      74746572 
+  99      79203C20 
+  99      31352525 
+ 100              		.align	2
+ 101              	.LC2:
+ 102 0024 53414645 		.ascii	"SAFE: bat=%d%%, temp=%.1f, sensors=%d\015\012\000"
+ 102      3A206261 
+ 102      743D2564 
+ 102      25252C20 
+ 102      74656D70 
+ 103              		.align	2
+ 104              	.LC3:
+ 105 004c 53414645 		.ascii	"SAFE: All recovered, exit to STANDBY\015\012\000"
+ 105      3A20416C 
+ 105      6C207265 
+ 105      636F7665 
+ 105      7265642C 
+ 106 0073 00       		.align	2
+ 107              	.LC4:
+ 108 0074 53414645 		.ascii	"SAFE: Timeout + battery OK, exit to STANDBY\015\012"
+ 108      3A205469 
+ 108      6D656F75 
+ 108      74202B20 
+ 108      62617474 
+ 109 00a1 00       		.ascii	"\000"
+ 110              		.section	.text.Logic_Safe_Process,"ax",%progbits
+ 111              		.align	1
+ 112              		.global	Logic_Safe_Process
+ 113              		.syntax unified
+ 114              		.thumb
+ 115              		.thumb_func
+ 117              	Logic_Safe_Process:
+ 118              	.LFB152:
+  28:Core/Logic/logic_safe.c **** 
+  29:Core/Logic/logic_safe.c **** safe_error_t Logic_Safe_Process(void)
+  30:Core/Logic/logic_safe.c **** {
+ 119              		.loc 1 30 1 is_stmt 1 view -0
+ 120              		.cfi_startproc
+ 121              		@ args = 0, pretend = 0, frame = 0
+ 122              		@ frame_needed = 0, uses_anonymous_args = 0
+ 123 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 124              	.LCFI1:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 4
 
 
- 129              		.cfi_offset 14, -4
- 130 0004 2DED028B 		vpush.64	{d8}
- 131              	.LCFI2:
- 132              		.cfi_def_cfa_offset 32
- 133              		.cfi_offset 80, -32
- 134              		.cfi_offset 81, -28
- 135 0008 82B0     		sub	sp, sp, #8
- 136              	.LCFI3:
- 137              		.cfi_def_cfa_offset 40
-  27:Core/Logic/logic_safe.c ****     uint32_t total_timer = HAL_GetTick() - safe_start_tick;
- 138              		.loc 1 27 5 is_stmt 1 view .LVU21
- 139              		.loc 1 27 28 is_stmt 0 view .LVU22
- 140 000a FFF7FEFF 		bl	HAL_GetTick
- 141              	.LVL7:
- 142              		.loc 1 27 42 view .LVU23
- 143 000e 2F4B     		ldr	r3, .L20
- 144 0010 1D68     		ldr	r5, [r3]
- 145              		.loc 1 27 14 view .LVU24
- 146 0012 451B     		subs	r5, r0, r5
- 147              	.LVL8:
-  28:Core/Logic/logic_safe.c ****     
-  29:Core/Logic/logic_safe.c ****     cubesat_status_t* status = Logic_GetStatus();
- 148              		.loc 1 29 5 is_stmt 1 view .LVU25
- 149              		.loc 1 29 32 is_stmt 0 view .LVU26
- 150 0014 FFF7FEFF 		bl	Logic_GetStatus
- 151              	.LVL9:
- 152 0018 0646     		mov	r6, r0
- 153              	.LVL10:
-  30:Core/Logic/logic_safe.c ****     system_health_t* health = Logic_GetHealth();
- 154              		.loc 1 30 5 is_stmt 1 view .LVU27
- 155              		.loc 1 30 31 is_stmt 0 view .LVU28
- 156 001a FFF7FEFF 		bl	Logic_GetHealth
- 157              	.LVL11:
- 158              		.loc 1 30 31 view .LVU29
- 159 001e 0446     		mov	r4, r0
- 160              	.LVL12:
-  31:Core/Logic/logic_safe.c ****     
-  32:Core/Logic/logic_safe.c ****     // Chu kỳ 10s kiểm tra
-  33:Core/Logic/logic_safe.c ****     if (total_timer >= SAFE_CHECK_INTERVAL)
- 161              		.loc 1 33 5 is_stmt 1 view .LVU30
- 162              		.loc 1 33 8 is_stmt 0 view .LVU31
- 163 0020 42F20F73 		movw	r3, #9999
- 164 0024 9D42     		cmp	r5, r3
- 165 0026 10D8     		bhi	.L16
- 166              	.LVL13:
- 167              	.L6:
-  34:Core/Logic/logic_safe.c ****     {        
-  35:Core/Logic/logic_safe.c ****         // Đọc pin
-  36:Core/Logic/logic_safe.c ****         uint8_t battery = Logic_Battery_Read();
-  37:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
-  38:Core/Logic/logic_safe.c ****         
-  39:Core/Logic/logic_safe.c ****         // Pin <15% -> SLEEP
-  40:Core/Logic/logic_safe.c ****         if (battery < BATTERY_SLEEP)
-  41:Core/Logic/logic_safe.c ****         {
-  42:Core/Logic/logic_safe.c ****             Logic_Log("SAFE: Battery < 15%%, go to SLEEP\r\n");
-  43:Core/Logic/logic_safe.c ****             return SAFE_EXIT_TO_SLEEP;
-  44:Core/Logic/logic_safe.c ****         }
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 5
+ 125              		.cfi_def_cfa_offset 24
+ 126              		.cfi_offset 4, -24
+ 127              		.cfi_offset 5, -20
+ 128              		.cfi_offset 6, -16
+ 129              		.cfi_offset 7, -12
+ 130              		.cfi_offset 8, -8
+ 131              		.cfi_offset 14, -4
+ 132 0004 2DED028B 		vpush.64	{d8}
+ 133              	.LCFI2:
+ 134              		.cfi_def_cfa_offset 32
+ 135              		.cfi_offset 80, -32
+ 136              		.cfi_offset 81, -28
+ 137 0008 82B0     		sub	sp, sp, #8
+ 138              	.LCFI3:
+ 139              		.cfi_def_cfa_offset 40
+  31:Core/Logic/logic_safe.c ****     uint32_t total_timer = HAL_GetTick() - safe_start_tick;
+ 140              		.loc 1 31 5 view .LVU22
+ 141              		.loc 1 31 28 is_stmt 0 view .LVU23
+ 142 000a FFF7FEFF 		bl	HAL_GetTick
+ 143              	.LVL6:
+ 144              		.loc 1 31 42 view .LVU24
+ 145 000e 344B     		ldr	r3, .L20
+ 146 0010 1F68     		ldr	r7, [r3]
+ 147              		.loc 1 31 14 view .LVU25
+ 148 0012 C71B     		subs	r7, r0, r7
+ 149              	.LVL7:
+  32:Core/Logic/logic_safe.c ****     uint32_t check_elapsed = HAL_GetTick() - last_check_tick;
+ 150              		.loc 1 32 5 is_stmt 1 view .LVU26
+ 151              		.loc 1 32 30 is_stmt 0 view .LVU27
+ 152 0014 FFF7FEFF 		bl	HAL_GetTick
+ 153              	.LVL8:
+ 154              		.loc 1 32 44 view .LVU28
+ 155 0018 324B     		ldr	r3, .L20+4
+ 156 001a 1D68     		ldr	r5, [r3]
+ 157              		.loc 1 32 14 view .LVU29
+ 158 001c 451B     		subs	r5, r0, r5
+ 159              	.LVL9:
+  33:Core/Logic/logic_safe.c ****     
+  34:Core/Logic/logic_safe.c ****     cubesat_status_t* status = Logic_GetStatus();
+ 160              		.loc 1 34 5 is_stmt 1 view .LVU30
+ 161              		.loc 1 34 32 is_stmt 0 view .LVU31
+ 162 001e FFF7FEFF 		bl	Logic_GetStatus
+ 163              	.LVL10:
+ 164 0022 0646     		mov	r6, r0
+ 165              	.LVL11:
+  35:Core/Logic/logic_safe.c ****     system_health_t* health = Logic_GetHealth();
+ 166              		.loc 1 35 5 is_stmt 1 view .LVU32
+ 167              		.loc 1 35 31 is_stmt 0 view .LVU33
+ 168 0024 FFF7FEFF 		bl	Logic_GetHealth
+ 169              	.LVL12:
+ 170              		.loc 1 35 31 view .LVU34
+ 171 0028 0446     		mov	r4, r0
+ 172              	.LVL13:
+  36:Core/Logic/logic_safe.c ****     
+  37:Core/Logic/logic_safe.c ****     // Check every 10s
+  38:Core/Logic/logic_safe.c ****     if (check_elapsed >= SAFE_CHECK_INTERVAL)
+ 173              		.loc 1 38 5 is_stmt 1 view .LVU35
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 5
 
 
+ 174              		.loc 1 38 8 is_stmt 0 view .LVU36
+ 175 002a 42F20F73 		movw	r3, #9999
+ 176 002e 9D42     		cmp	r5, r3
+ 177 0030 11D8     		bhi	.L16
+ 178              	.LVL14:
+ 179              	.L6:
+  39:Core/Logic/logic_safe.c ****     {
+  40:Core/Logic/logic_safe.c ****         last_check_tick = HAL_GetTick();
+  41:Core/Logic/logic_safe.c ****         
+  42:Core/Logic/logic_safe.c ****         // Read battery
+  43:Core/Logic/logic_safe.c ****         uint8_t battery = Logic_Battery_Read();
+  44:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
   45:Core/Logic/logic_safe.c ****         
-  46:Core/Logic/logic_safe.c ****         // Kiểm tra nhiệt độ
-  47:Core/Logic/logic_safe.c ****         float temp = Logic_Temp_Read();
-  48:Core/Logic/logic_safe.c ****         health->temperature = temp;
-  49:Core/Logic/logic_safe.c ****         if (Logic_Temp_Check_Safe())
-  50:Core/Logic/logic_safe.c ****         {
-  51:Core/Logic/logic_safe.c ****             status->temp_recovered = true;
-  52:Core/Logic/logic_safe.c ****         }
-  53:Core/Logic/logic_safe.c ****         
-  54:Core/Logic/logic_safe.c ****         // Check WHO_AM_I sensors
-  55:Core/Logic/logic_safe.c ****         uint8_t working = Logic_Sensor_Count_Working();
-  56:Core/Logic/logic_safe.c ****         health->working_sensor_count = working;
-  57:Core/Logic/logic_safe.c ****         if (working >= SENSOR_MIN_WORKING)
-  58:Core/Logic/logic_safe.c ****         {
-  59:Core/Logic/logic_safe.c ****             status->sensors_recovered = true;
-  60:Core/Logic/logic_safe.c ****         }
-  61:Core/Logic/logic_safe.c ****         
-  62:Core/Logic/logic_safe.c ****         // Test flash
-  63:Core/Logic/logic_safe.c ****         if (Logic_Flash_Check_Min_Free())
-  64:Core/Logic/logic_safe.c ****         {
-  65:Core/Logic/logic_safe.c ****             status->flash_recovered = true;
-  66:Core/Logic/logic_safe.c ****         }
-  67:Core/Logic/logic_safe.c ****         
-  68:Core/Logic/logic_safe.c ****         // Test LoRa
-  69:Core/Logic/logic_safe.c ****         // if lora_test_ok()
-  70:Core/Logic/logic_safe.c ****         {
-  71:Core/Logic/logic_safe.c ****             status->lora_recovered = true;
-  72:Core/Logic/logic_safe.c ****             health->lora_ok = true;
+  46:Core/Logic/logic_safe.c ****         // Battery <15% -> SLEEP
+  47:Core/Logic/logic_safe.c ****         if (battery < BATTERY_SLEEP)
+  48:Core/Logic/logic_safe.c ****         {
+  49:Core/Logic/logic_safe.c ****             Logic_Log("SAFE: Battery < 15%%, go to SLEEP\r\n");
+  50:Core/Logic/logic_safe.c ****             return SAFE_EXIT_TO_SLEEP;
+  51:Core/Logic/logic_safe.c ****         }
+  52:Core/Logic/logic_safe.c ****         
+  53:Core/Logic/logic_safe.c ****         // Check temperature
+  54:Core/Logic/logic_safe.c ****         float temp = Logic_Temp_Read();
+  55:Core/Logic/logic_safe.c ****         health->temperature = temp;
+  56:Core/Logic/logic_safe.c ****         if (Logic_Temp_Check_Safe())
+  57:Core/Logic/logic_safe.c ****         {
+  58:Core/Logic/logic_safe.c ****             status->temp_recovered = true;
+  59:Core/Logic/logic_safe.c ****         }
+  60:Core/Logic/logic_safe.c ****         
+  61:Core/Logic/logic_safe.c ****         // Check WHO_AM_I sensors
+  62:Core/Logic/logic_safe.c ****         uint8_t working = Logic_Sensor_Count_Working();
+  63:Core/Logic/logic_safe.c ****         health->working_sensor_count = working;
+  64:Core/Logic/logic_safe.c ****         if (working >= SENSOR_MIN_WORKING)
+  65:Core/Logic/logic_safe.c ****         {
+  66:Core/Logic/logic_safe.c ****             status->sensors_recovered = true;
+  67:Core/Logic/logic_safe.c ****         }
+  68:Core/Logic/logic_safe.c ****         
+  69:Core/Logic/logic_safe.c ****         // Test SD card
+  70:Core/Logic/logic_safe.c ****         if (Logic_Flash_Check_Min_Free())
+  71:Core/Logic/logic_safe.c ****         {
+  72:Core/Logic/logic_safe.c ****             status->flash_recovered = true;
   73:Core/Logic/logic_safe.c ****         }
   74:Core/Logic/logic_safe.c ****         
-  75:Core/Logic/logic_safe.c ****         Logic_Log("SAFE: Check - bat=%d%%, temp=%.1f, sensors=%d\r\n", 
-  76:Core/Logic/logic_safe.c ****                   battery, temp, working);
-  77:Core/Logic/logic_safe.c ****     }
-  78:Core/Logic/logic_safe.c ****     
-  79:Core/Logic/logic_safe.c ****     // Exit conditions
-  80:Core/Logic/logic_safe.c ****     // Pin ≥30%, sensors ≥3, flash OK, nhiệt độ OK -> STANDBY
-  81:Core/Logic/logic_safe.c ****     if (health->battery_percent >= BATTERY_LOW &&
- 168              		.loc 1 81 5 is_stmt 1 view .LVU32
- 169              		.loc 1 81 15 is_stmt 0 view .LVU33
- 170 0028 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
- 171              		.loc 1 81 8 view .LVU34
- 172 002a 1D2B     		cmp	r3, #29
- 173 002c 05D9     		bls	.L12
-  82:Core/Logic/logic_safe.c ****         status->sensors_recovered &&
- 174              		.loc 1 82 15 discriminator 1 view .LVU35
- 175 002e 327E     		ldrb	r2, [r6, #24]	@ zero_extendqisi2
-  81:Core/Logic/logic_safe.c ****         status->sensors_recovered &&
- 176              		.loc 1 81 48 discriminator 1 view .LVU36
- 177 0030 1AB1     		cbz	r2, .L12
-  83:Core/Logic/logic_safe.c ****         status->flash_recovered &&
- 178              		.loc 1 83 15 view .LVU37
- 179 0032 727E     		ldrb	r2, [r6, #25]	@ zero_extendqisi2
-  82:Core/Logic/logic_safe.c ****         status->sensors_recovered &&
- 180              		.loc 1 82 35 view .LVU38
- 181 0034 0AB1     		cbz	r2, .L12
-  84:Core/Logic/logic_safe.c ****         status->temp_recovered)
- 182              		.loc 1 84 15 view .LVU39
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 6
+  75:Core/Logic/logic_safe.c ****         // Test LoRa (simplified - assume OK for now)
+  76:Core/Logic/logic_safe.c ****         status->lora_recovered = true;
+  77:Core/Logic/logic_safe.c ****         health->lora_ok = true;
+  78:Core/Logic/logic_safe.c ****         
+  79:Core/Logic/logic_safe.c ****         Logic_Log("SAFE: bat=%d%%, temp=%.1f, sensors=%d\r\n", 
+  80:Core/Logic/logic_safe.c ****                   battery, temp, working);
+  81:Core/Logic/logic_safe.c ****     }
+  82:Core/Logic/logic_safe.c ****     
+  83:Core/Logic/logic_safe.c ****     // Exit condition 1: All recovered
+  84:Core/Logic/logic_safe.c ****     if (health->battery_percent >= BATTERY_LOW &&
+ 180              		.loc 1 84 5 is_stmt 1 view .LVU37
+ 181              		.loc 1 84 15 is_stmt 0 view .LVU38
+ 182 0032 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 183              		.loc 1 84 8 view .LVU39
+ 184 0034 1D2B     		cmp	r3, #29
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 6
 
 
- 183 0036 F27E     		ldrb	r2, [r6, #27]	@ zero_extendqisi2
-  83:Core/Logic/logic_safe.c ****         status->flash_recovered &&
- 184              		.loc 1 83 33 view .LVU40
- 185 0038 C2BB     		cbnz	r2, .L17
- 186              	.L12:
-  85:Core/Logic/logic_safe.c ****     {
-  86:Core/Logic/logic_safe.c ****         Logic_Log("SAFE: All recovered, exit to STANDBY\r\n");
-  87:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
-  88:Core/Logic/logic_safe.c ****     }
-  89:Core/Logic/logic_safe.c ****     
-  90:Core/Logic/logic_safe.c ****     // Timeout 60s + pin ≥25% -> STANDBY
-  91:Core/Logic/logic_safe.c ****     if (total_timer >= SAFE_TOTAL_TIMEOUT && 
- 187              		.loc 1 91 5 is_stmt 1 view .LVU41
- 188              		.loc 1 91 8 is_stmt 0 view .LVU42
- 189 003a 4EF65F22 		movw	r2, #59999
- 190 003e 9542     		cmp	r5, r2
- 191 0040 3ED9     		bls	.L13
- 192              		.loc 1 91 43 discriminator 1 view .LVU43
- 193 0042 182B     		cmp	r3, #24
- 194 0044 37D8     		bhi	.L18
-  92:Core/Logic/logic_safe.c ****         health->battery_percent >= BATTERY_COMM_MIN)
-  93:Core/Logic/logic_safe.c ****     {
-  94:Core/Logic/logic_safe.c ****         Logic_Log("SAFE: Timeout 60s + battery >= 25%%, exit to STANDBY\r\n");
-  95:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
-  96:Core/Logic/logic_safe.c ****     }
-  97:Core/Logic/logic_safe.c ****     
-  98:Core/Logic/logic_safe.c ****     return SAFE_IN_PROGRESS;
- 195              		.loc 1 98 12 view .LVU44
- 196 0046 0120     		movs	r0, #1
- 197 0048 3BE0     		b	.L8
- 198              	.LVL14:
- 199              	.L16:
- 200              	.LBB2:
-  36:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
- 201              		.loc 1 36 9 is_stmt 1 view .LVU45
-  36:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
- 202              		.loc 1 36 27 is_stmt 0 view .LVU46
- 203 004a FFF7FEFF 		bl	Logic_Battery_Read
- 204              	.LVL15:
-  36:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
- 205              		.loc 1 36 27 view .LVU47
- 206 004e 0746     		mov	r7, r0
- 207              	.LVL16:
-  37:Core/Logic/logic_safe.c ****         
- 208              		.loc 1 37 9 is_stmt 1 view .LVU48
-  37:Core/Logic/logic_safe.c ****         
- 209              		.loc 1 37 33 is_stmt 0 view .LVU49
- 210 0050 2070     		strb	r0, [r4]
-  40:Core/Logic/logic_safe.c ****         {
- 211              		.loc 1 40 9 is_stmt 1 view .LVU50
-  40:Core/Logic/logic_safe.c ****         {
- 212              		.loc 1 40 12 is_stmt 0 view .LVU51
- 213 0052 0E28     		cmp	r0, #14
- 214 0054 25D9     		bls	.L19
-  47:Core/Logic/logic_safe.c ****         health->temperature = temp;
- 215              		.loc 1 47 9 is_stmt 1 view .LVU52
-  47:Core/Logic/logic_safe.c ****         health->temperature = temp;
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 7
+ 185 0036 06D9     		bls	.L12
+  85:Core/Logic/logic_safe.c ****         status->sensors_recovered &&
+ 186              		.loc 1 85 15 discriminator 1 view .LVU40
+ 187 0038 327E     		ldrb	r2, [r6, #24]	@ zero_extendqisi2
+  84:Core/Logic/logic_safe.c ****         status->sensors_recovered &&
+ 188              		.loc 1 84 48 discriminator 1 view .LVU41
+ 189 003a 22B1     		cbz	r2, .L12
+  86:Core/Logic/logic_safe.c ****         status->flash_recovered &&
+ 190              		.loc 1 86 15 view .LVU42
+ 191 003c 727E     		ldrb	r2, [r6, #25]	@ zero_extendqisi2
+  85:Core/Logic/logic_safe.c ****         status->sensors_recovered &&
+ 192              		.loc 1 85 35 view .LVU43
+ 193 003e 12B1     		cbz	r2, .L12
+  87:Core/Logic/logic_safe.c ****         status->temp_recovered)
+ 194              		.loc 1 87 15 view .LVU44
+ 195 0040 F27E     		ldrb	r2, [r6, #27]	@ zero_extendqisi2
+  86:Core/Logic/logic_safe.c ****         status->flash_recovered &&
+ 196              		.loc 1 86 33 view .LVU45
+ 197 0042 002A     		cmp	r2, #0
+ 198 0044 3CD1     		bne	.L17
+ 199              	.L12:
+  88:Core/Logic/logic_safe.c ****     {
+  89:Core/Logic/logic_safe.c ****         Logic_Log("SAFE: All recovered, exit to STANDBY\r\n");
+  90:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
+  91:Core/Logic/logic_safe.c ****     }
+  92:Core/Logic/logic_safe.c ****     
+  93:Core/Logic/logic_safe.c ****     // Exit condition 2: Timeout + battery OK
+  94:Core/Logic/logic_safe.c ****     if (total_timer >= SAFE_TOTAL_TIMEOUT && 
+ 200              		.loc 1 94 5 is_stmt 1 view .LVU46
+ 201              		.loc 1 94 8 is_stmt 0 view .LVU47
+ 202 0046 4EF65F22 		movw	r2, #59999
+ 203 004a 9742     		cmp	r7, r2
+ 204 004c 42D9     		bls	.L13
+ 205              		.loc 1 94 43 discriminator 1 view .LVU48
+ 206 004e 182B     		cmp	r3, #24
+ 207 0050 3BD8     		bhi	.L18
+  95:Core/Logic/logic_safe.c ****         health->battery_percent >= BATTERY_COMM_MIN)
+  96:Core/Logic/logic_safe.c ****     {
+  97:Core/Logic/logic_safe.c ****         Logic_Log("SAFE: Timeout + battery OK, exit to STANDBY\r\n");
+  98:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
+  99:Core/Logic/logic_safe.c ****     }
+ 100:Core/Logic/logic_safe.c ****     
+ 101:Core/Logic/logic_safe.c ****     return SAFE_IN_PROGRESS;
+ 208              		.loc 1 101 12 view .LVU49
+ 209 0052 0120     		movs	r0, #1
+ 210 0054 3FE0     		b	.L8
+ 211              	.LVL15:
+ 212              	.L16:
+ 213              	.LBB2:
+  40:Core/Logic/logic_safe.c ****         
+ 214              		.loc 1 40 9 is_stmt 1 view .LVU50
+  40:Core/Logic/logic_safe.c ****         
+ 215              		.loc 1 40 27 is_stmt 0 view .LVU51
+ 216 0056 FFF7FEFF 		bl	HAL_GetTick
+ 217              	.LVL16:
+  40:Core/Logic/logic_safe.c ****         
+ 218              		.loc 1 40 25 view .LVU52
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 7
 
 
- 216              		.loc 1 47 22 is_stmt 0 view .LVU53
- 217 0056 FFF7FEFF 		bl	Logic_Temp_Read
- 218              	.LVL17:
-  47:Core/Logic/logic_safe.c ****         health->temperature = temp;
- 219              		.loc 1 47 22 view .LVU54
- 220 005a B0EE408A 		vmov.f32	s16, s0
- 221              	.LVL18:
-  48:Core/Logic/logic_safe.c ****         if (Logic_Temp_Check_Safe())
- 222              		.loc 1 48 9 is_stmt 1 view .LVU55
-  48:Core/Logic/logic_safe.c ****         if (Logic_Temp_Check_Safe())
- 223              		.loc 1 48 29 is_stmt 0 view .LVU56
- 224 005e 84ED010A 		vstr.32	s0, [r4, #4]
-  49:Core/Logic/logic_safe.c ****         {
- 225              		.loc 1 49 9 is_stmt 1 view .LVU57
-  49:Core/Logic/logic_safe.c ****         {
- 226              		.loc 1 49 13 is_stmt 0 view .LVU58
- 227 0062 FFF7FEFF 		bl	Logic_Temp_Check_Safe
- 228              	.LVL19:
-  49:Core/Logic/logic_safe.c ****         {
- 229              		.loc 1 49 12 view .LVU59
- 230 0066 08B1     		cbz	r0, .L9
-  51:Core/Logic/logic_safe.c ****         }
- 231              		.loc 1 51 13 is_stmt 1 view .LVU60
-  51:Core/Logic/logic_safe.c ****         }
- 232              		.loc 1 51 36 is_stmt 0 view .LVU61
- 233 0068 0123     		movs	r3, #1
- 234 006a F376     		strb	r3, [r6, #27]
- 235              	.L9:
-  55:Core/Logic/logic_safe.c ****         health->working_sensor_count = working;
- 236              		.loc 1 55 9 is_stmt 1 view .LVU62
-  55:Core/Logic/logic_safe.c ****         health->working_sensor_count = working;
- 237              		.loc 1 55 27 is_stmt 0 view .LVU63
- 238 006c FFF7FEFF 		bl	Logic_Sensor_Count_Working
- 239              	.LVL20:
- 240 0070 8046     		mov	r8, r0
- 241              	.LVL21:
-  56:Core/Logic/logic_safe.c ****         if (working >= SENSOR_MIN_WORKING)
- 242              		.loc 1 56 9 is_stmt 1 view .LVU64
-  56:Core/Logic/logic_safe.c ****         if (working >= SENSOR_MIN_WORKING)
- 243              		.loc 1 56 38 is_stmt 0 view .LVU65
- 244 0072 A075     		strb	r0, [r4, #22]
-  57:Core/Logic/logic_safe.c ****         {
- 245              		.loc 1 57 9 is_stmt 1 view .LVU66
-  57:Core/Logic/logic_safe.c ****         {
- 246              		.loc 1 57 12 is_stmt 0 view .LVU67
- 247 0074 0228     		cmp	r0, #2
- 248 0076 01D9     		bls	.L10
-  59:Core/Logic/logic_safe.c ****         }
- 249              		.loc 1 59 13 is_stmt 1 view .LVU68
-  59:Core/Logic/logic_safe.c ****         }
- 250              		.loc 1 59 39 is_stmt 0 view .LVU69
- 251 0078 0123     		movs	r3, #1
- 252 007a 3376     		strb	r3, [r6, #24]
- 253              	.L10:
-  63:Core/Logic/logic_safe.c ****         {
- 254              		.loc 1 63 9 is_stmt 1 view .LVU70
-  63:Core/Logic/logic_safe.c ****         {
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 8
+ 219 005a 224B     		ldr	r3, .L20+4
+ 220 005c 1860     		str	r0, [r3]
+  43:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
+ 221              		.loc 1 43 9 is_stmt 1 view .LVU53
+  43:Core/Logic/logic_safe.c ****         health->battery_percent = battery;
+ 222              		.loc 1 43 27 is_stmt 0 view .LVU54
+ 223 005e FFF7FEFF 		bl	Logic_Battery_Read
+ 224              	.LVL17:
+ 225 0062 0546     		mov	r5, r0
+ 226              	.LVL18:
+  44:Core/Logic/logic_safe.c ****         
+ 227              		.loc 1 44 9 is_stmt 1 view .LVU55
+  44:Core/Logic/logic_safe.c ****         
+ 228              		.loc 1 44 33 is_stmt 0 view .LVU56
+ 229 0064 2070     		strb	r0, [r4]
+  47:Core/Logic/logic_safe.c ****         {
+ 230              		.loc 1 47 9 is_stmt 1 view .LVU57
+  47:Core/Logic/logic_safe.c ****         {
+ 231              		.loc 1 47 12 is_stmt 0 view .LVU58
+ 232 0066 0E28     		cmp	r0, #14
+ 233 0068 25D9     		bls	.L19
+  54:Core/Logic/logic_safe.c ****         health->temperature = temp;
+ 234              		.loc 1 54 9 is_stmt 1 view .LVU59
+  54:Core/Logic/logic_safe.c ****         health->temperature = temp;
+ 235              		.loc 1 54 22 is_stmt 0 view .LVU60
+ 236 006a FFF7FEFF 		bl	Logic_Temp_Read
+ 237              	.LVL19:
+  54:Core/Logic/logic_safe.c ****         health->temperature = temp;
+ 238              		.loc 1 54 22 view .LVU61
+ 239 006e B0EE408A 		vmov.f32	s16, s0
+ 240              	.LVL20:
+  55:Core/Logic/logic_safe.c ****         if (Logic_Temp_Check_Safe())
+ 241              		.loc 1 55 9 is_stmt 1 view .LVU62
+  55:Core/Logic/logic_safe.c ****         if (Logic_Temp_Check_Safe())
+ 242              		.loc 1 55 29 is_stmt 0 view .LVU63
+ 243 0072 84ED010A 		vstr.32	s0, [r4, #4]
+  56:Core/Logic/logic_safe.c ****         {
+ 244              		.loc 1 56 9 is_stmt 1 view .LVU64
+  56:Core/Logic/logic_safe.c ****         {
+ 245              		.loc 1 56 13 is_stmt 0 view .LVU65
+ 246 0076 FFF7FEFF 		bl	Logic_Temp_Check_Safe
+ 247              	.LVL21:
+  56:Core/Logic/logic_safe.c ****         {
+ 248              		.loc 1 56 12 view .LVU66
+ 249 007a 08B1     		cbz	r0, .L9
+  58:Core/Logic/logic_safe.c ****         }
+ 250              		.loc 1 58 13 is_stmt 1 view .LVU67
+  58:Core/Logic/logic_safe.c ****         }
+ 251              		.loc 1 58 36 is_stmt 0 view .LVU68
+ 252 007c 0123     		movs	r3, #1
+ 253 007e F376     		strb	r3, [r6, #27]
+ 254              	.L9:
+  62:Core/Logic/logic_safe.c ****         health->working_sensor_count = working;
+ 255              		.loc 1 62 9 is_stmt 1 view .LVU69
+  62:Core/Logic/logic_safe.c ****         health->working_sensor_count = working;
+ 256              		.loc 1 62 27 is_stmt 0 view .LVU70
+ 257 0080 FFF7FEFF 		bl	Logic_Sensor_Count_Working
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 8
 
 
- 255              		.loc 1 63 13 is_stmt 0 view .LVU71
- 256 007c FFF7FEFF 		bl	Logic_Flash_Check_Min_Free
- 257              	.LVL22:
-  63:Core/Logic/logic_safe.c ****         {
- 258              		.loc 1 63 12 view .LVU72
- 259 0080 08B1     		cbz	r0, .L11
-  65:Core/Logic/logic_safe.c ****         }
- 260              		.loc 1 65 13 is_stmt 1 view .LVU73
-  65:Core/Logic/logic_safe.c ****         }
- 261              		.loc 1 65 37 is_stmt 0 view .LVU74
- 262 0082 0123     		movs	r3, #1
- 263 0084 7376     		strb	r3, [r6, #25]
- 264              	.L11:
-  71:Core/Logic/logic_safe.c ****             health->lora_ok = true;
- 265              		.loc 1 71 13 is_stmt 1 view .LVU75
-  71:Core/Logic/logic_safe.c ****             health->lora_ok = true;
- 266              		.loc 1 71 36 is_stmt 0 view .LVU76
- 267 0086 0123     		movs	r3, #1
- 268 0088 B376     		strb	r3, [r6, #26]
+ 258              	.LVL22:
+ 259 0084 8046     		mov	r8, r0
+ 260              	.LVL23:
+  63:Core/Logic/logic_safe.c ****         if (working >= SENSOR_MIN_WORKING)
+ 261              		.loc 1 63 9 is_stmt 1 view .LVU71
+  63:Core/Logic/logic_safe.c ****         if (working >= SENSOR_MIN_WORKING)
+ 262              		.loc 1 63 38 is_stmt 0 view .LVU72
+ 263 0086 2076     		strb	r0, [r4, #24]
+  64:Core/Logic/logic_safe.c ****         {
+ 264              		.loc 1 64 9 is_stmt 1 view .LVU73
+  64:Core/Logic/logic_safe.c ****         {
+ 265              		.loc 1 64 12 is_stmt 0 view .LVU74
+ 266 0088 0228     		cmp	r0, #2
+ 267 008a 01D9     		bls	.L10
+  66:Core/Logic/logic_safe.c ****         }
+ 268              		.loc 1 66 13 is_stmt 1 view .LVU75
+  66:Core/Logic/logic_safe.c ****         }
+ 269              		.loc 1 66 39 is_stmt 0 view .LVU76
+ 270 008c 0123     		movs	r3, #1
+ 271 008e 3376     		strb	r3, [r6, #24]
+ 272              	.L10:
+  70:Core/Logic/logic_safe.c ****         {
+ 273              		.loc 1 70 9 is_stmt 1 view .LVU77
+  70:Core/Logic/logic_safe.c ****         {
+ 274              		.loc 1 70 13 is_stmt 0 view .LVU78
+ 275 0090 FFF7FEFF 		bl	Logic_Flash_Check_Min_Free
+ 276              	.LVL24:
+  70:Core/Logic/logic_safe.c ****         {
+ 277              		.loc 1 70 12 view .LVU79
+ 278 0094 08B1     		cbz	r0, .L11
   72:Core/Logic/logic_safe.c ****         }
- 269              		.loc 1 72 13 is_stmt 1 view .LVU77
+ 279              		.loc 1 72 13 is_stmt 1 view .LVU80
   72:Core/Logic/logic_safe.c ****         }
- 270              		.loc 1 72 29 is_stmt 0 view .LVU78
- 271 008a E375     		strb	r3, [r4, #23]
-  75:Core/Logic/logic_safe.c ****                   battery, temp, working);
- 272              		.loc 1 75 9 is_stmt 1 view .LVU79
- 273 008c CDF80080 		str	r8, [sp]
- 274 0090 B7EEC87A 		vcvt.f64.f32	d7, s16
- 275 0094 53EC172B 		vmov	r2, r3, d7
- 276 0098 3946     		mov	r1, r7
- 277 009a 0D48     		ldr	r0, .L20+4
- 278 009c FFF7FEFF 		bl	Logic_Log
- 279              	.LVL23:
- 280 00a0 C2E7     		b	.L6
- 281              	.LVL24:
- 282              	.L19:
-  42:Core/Logic/logic_safe.c ****             return SAFE_EXIT_TO_SLEEP;
- 283              		.loc 1 42 13 view .LVU80
- 284 00a2 0C48     		ldr	r0, .L20+8
- 285              	.LVL25:
-  42:Core/Logic/logic_safe.c ****             return SAFE_EXIT_TO_SLEEP;
- 286              		.loc 1 42 13 is_stmt 0 view .LVU81
- 287 00a4 FFF7FEFF 		bl	Logic_Log
- 288              	.LVL26:
-  43:Core/Logic/logic_safe.c ****         }
- 289              		.loc 1 43 13 is_stmt 1 view .LVU82
-  43:Core/Logic/logic_safe.c ****         }
- 290              		.loc 1 43 20 is_stmt 0 view .LVU83
- 291 00a8 0320     		movs	r0, #3
- 292 00aa 0AE0     		b	.L8
- 293              	.L17:
-  43:Core/Logic/logic_safe.c ****         }
- 294              		.loc 1 43 20 view .LVU84
- 295              	.LBE2:
-  86:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
- 296              		.loc 1 86 9 is_stmt 1 view .LVU85
- 297 00ac 0A48     		ldr	r0, .L20+12
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 9
+ 280              		.loc 1 72 37 is_stmt 0 view .LVU81
+ 281 0096 0123     		movs	r3, #1
+ 282 0098 7376     		strb	r3, [r6, #25]
+ 283              	.L11:
+  76:Core/Logic/logic_safe.c ****         health->lora_ok = true;
+ 284              		.loc 1 76 9 is_stmt 1 view .LVU82
+  76:Core/Logic/logic_safe.c ****         health->lora_ok = true;
+ 285              		.loc 1 76 32 is_stmt 0 view .LVU83
+ 286 009a 0123     		movs	r3, #1
+ 287 009c B376     		strb	r3, [r6, #26]
+  77:Core/Logic/logic_safe.c ****         
+ 288              		.loc 1 77 9 is_stmt 1 view .LVU84
+  77:Core/Logic/logic_safe.c ****         
+ 289              		.loc 1 77 25 is_stmt 0 view .LVU85
+ 290 009e 6376     		strb	r3, [r4, #25]
+  79:Core/Logic/logic_safe.c ****                   battery, temp, working);
+ 291              		.loc 1 79 9 is_stmt 1 view .LVU86
+ 292 00a0 CDF80080 		str	r8, [sp]
+ 293 00a4 B7EEC87A 		vcvt.f64.f32	d7, s16
+ 294 00a8 53EC172B 		vmov	r2, r3, d7
+ 295 00ac 2946     		mov	r1, r5
+ 296 00ae 0E48     		ldr	r0, .L20+8
+ 297 00b0 FFF7FEFF 		bl	Logic_Log
+ 298              	.LVL25:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 9
 
 
- 298 00ae FFF7FEFF 		bl	Logic_Log
- 299              	.LVL27:
-  87:Core/Logic/logic_safe.c ****     }
- 300              		.loc 1 87 9 view .LVU86
-  87:Core/Logic/logic_safe.c ****     }
- 301              		.loc 1 87 16 is_stmt 0 view .LVU87
- 302 00b2 0220     		movs	r0, #2
- 303 00b4 05E0     		b	.L8
- 304              	.L18:
-  94:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
- 305              		.loc 1 94 9 is_stmt 1 view .LVU88
- 306 00b6 0948     		ldr	r0, .L20+16
- 307 00b8 FFF7FEFF 		bl	Logic_Log
- 308              	.LVL28:
-  95:Core/Logic/logic_safe.c ****     }
- 309              		.loc 1 95 9 view .LVU89
-  95:Core/Logic/logic_safe.c ****     }
- 310              		.loc 1 95 16 is_stmt 0 view .LVU90
- 311 00bc 0220     		movs	r0, #2
- 312 00be 00E0     		b	.L8
- 313              	.L13:
- 314              		.loc 1 98 12 view .LVU91
- 315 00c0 0120     		movs	r0, #1
- 316              	.L8:
-  99:Core/Logic/logic_safe.c **** }
- 317              		.loc 1 99 1 view .LVU92
- 318 00c2 02B0     		add	sp, sp, #8
- 319              	.LCFI4:
- 320              		.cfi_def_cfa_offset 32
- 321              		@ sp needed
- 322 00c4 BDEC028B 		vldm	sp!, {d8}
- 323              	.LCFI5:
- 324              		.cfi_restore 80
- 325              		.cfi_restore 81
- 326              		.cfi_def_cfa_offset 24
- 327 00c8 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
- 328              	.LVL29:
- 329              	.L21:
- 330              		.loc 1 99 1 view .LVU93
- 331              		.align	2
- 332              	.L20:
- 333 00cc 00000000 		.word	.LANCHOR0
- 334 00d0 24000000 		.word	.LC2
- 335 00d4 00000000 		.word	.LC1
- 336 00d8 54000000 		.word	.LC3
- 337 00dc 7C000000 		.word	.LC4
- 338              		.cfi_endproc
- 339              	.LFE148:
- 341              		.section	.rodata.Logic_Safe_Reset.str1.4,"aMS",%progbits,1
- 342              		.align	2
- 343              	.LC5:
- 344 0000 53414645 		.ascii	"SAFE: Reset\015\012\000"
- 344      3A205265 
- 344      7365740D 
- 344      0A00
- 345              		.section	.text.Logic_Safe_Reset,"ax",%progbits
- 346              		.align	1
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 10
+ 299 00b4 BDE7     		b	.L6
+ 300              	.LVL26:
+ 301              	.L19:
+  49:Core/Logic/logic_safe.c ****             return SAFE_EXIT_TO_SLEEP;
+ 302              		.loc 1 49 13 view .LVU87
+ 303 00b6 0D48     		ldr	r0, .L20+12
+ 304              	.LVL27:
+  49:Core/Logic/logic_safe.c ****             return SAFE_EXIT_TO_SLEEP;
+ 305              		.loc 1 49 13 is_stmt 0 view .LVU88
+ 306 00b8 FFF7FEFF 		bl	Logic_Log
+ 307              	.LVL28:
+  50:Core/Logic/logic_safe.c ****         }
+ 308              		.loc 1 50 13 is_stmt 1 view .LVU89
+  50:Core/Logic/logic_safe.c ****         }
+ 309              		.loc 1 50 20 is_stmt 0 view .LVU90
+ 310 00bc 0320     		movs	r0, #3
+ 311 00be 0AE0     		b	.L8
+ 312              	.L17:
+  50:Core/Logic/logic_safe.c ****         }
+ 313              		.loc 1 50 20 view .LVU91
+ 314              	.LBE2:
+  89:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
+ 315              		.loc 1 89 9 is_stmt 1 view .LVU92
+ 316 00c0 0B48     		ldr	r0, .L20+16
+ 317 00c2 FFF7FEFF 		bl	Logic_Log
+ 318              	.LVL29:
+  90:Core/Logic/logic_safe.c ****     }
+ 319              		.loc 1 90 9 view .LVU93
+  90:Core/Logic/logic_safe.c ****     }
+ 320              		.loc 1 90 16 is_stmt 0 view .LVU94
+ 321 00c6 0220     		movs	r0, #2
+ 322 00c8 05E0     		b	.L8
+ 323              	.L18:
+  97:Core/Logic/logic_safe.c ****         return SAFE_EXIT_TO_STANDBY;
+ 324              		.loc 1 97 9 is_stmt 1 view .LVU95
+ 325 00ca 0A48     		ldr	r0, .L20+20
+ 326 00cc FFF7FEFF 		bl	Logic_Log
+ 327              	.LVL30:
+  98:Core/Logic/logic_safe.c ****     }
+ 328              		.loc 1 98 9 view .LVU96
+  98:Core/Logic/logic_safe.c ****     }
+ 329              		.loc 1 98 16 is_stmt 0 view .LVU97
+ 330 00d0 0220     		movs	r0, #2
+ 331 00d2 00E0     		b	.L8
+ 332              	.L13:
+ 333              		.loc 1 101 12 view .LVU98
+ 334 00d4 0120     		movs	r0, #1
+ 335              	.L8:
+ 102:Core/Logic/logic_safe.c **** }
+ 336              		.loc 1 102 1 view .LVU99
+ 337 00d6 02B0     		add	sp, sp, #8
+ 338              	.LCFI4:
+ 339              		.cfi_def_cfa_offset 32
+ 340              		@ sp needed
+ 341 00d8 BDEC028B 		vldm	sp!, {d8}
+ 342              	.LCFI5:
+ 343              		.cfi_restore 80
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 10
 
 
- 347              		.global	Logic_Safe_Reset
- 348              		.syntax unified
- 349              		.thumb
- 350              		.thumb_func
- 352              	Logic_Safe_Reset:
- 353              	.LFB149:
- 100:Core/Logic/logic_safe.c **** 
- 101:Core/Logic/logic_safe.c **** safe_error_t Logic_Safe_Reset(void)
- 102:Core/Logic/logic_safe.c **** {
- 354              		.loc 1 102 1 is_stmt 1 view -0
- 355              		.cfi_startproc
- 356              		@ args = 0, pretend = 0, frame = 0
- 357              		@ frame_needed = 0, uses_anonymous_args = 0
- 358 0000 10B5     		push	{r4, lr}
- 359              	.LCFI6:
- 360              		.cfi_def_cfa_offset 8
- 361              		.cfi_offset 4, -8
- 362              		.cfi_offset 14, -4
- 103:Core/Logic/logic_safe.c ****     safe_start_tick = 0;
- 363              		.loc 1 103 5 view .LVU95
- 364              		.loc 1 103 21 is_stmt 0 view .LVU96
- 365 0002 0024     		movs	r4, #0
- 366 0004 064B     		ldr	r3, .L24
- 367 0006 1C60     		str	r4, [r3]
- 104:Core/Logic/logic_safe.c ****     
- 105:Core/Logic/logic_safe.c ****     cubesat_status_t* status = Logic_GetStatus();
- 368              		.loc 1 105 5 is_stmt 1 view .LVU97
- 369              		.loc 1 105 32 is_stmt 0 view .LVU98
- 370 0008 FFF7FEFF 		bl	Logic_GetStatus
- 371              	.LVL30:
- 106:Core/Logic/logic_safe.c ****     status->sensors_recovered = false;
- 372              		.loc 1 106 5 is_stmt 1 view .LVU99
- 373              		.loc 1 106 31 is_stmt 0 view .LVU100
- 374 000c 0476     		strb	r4, [r0, #24]
- 107:Core/Logic/logic_safe.c ****     status->flash_recovered = false;
- 375              		.loc 1 107 5 is_stmt 1 view .LVU101
- 376              		.loc 1 107 29 is_stmt 0 view .LVU102
- 377 000e 4476     		strb	r4, [r0, #25]
- 108:Core/Logic/logic_safe.c ****     status->lora_recovered = false;
- 378              		.loc 1 108 5 is_stmt 1 view .LVU103
- 379              		.loc 1 108 28 is_stmt 0 view .LVU104
- 380 0010 8476     		strb	r4, [r0, #26]
- 109:Core/Logic/logic_safe.c ****     status->temp_recovered = false;
- 381              		.loc 1 109 5 is_stmt 1 view .LVU105
- 382              		.loc 1 109 28 is_stmt 0 view .LVU106
- 383 0012 C476     		strb	r4, [r0, #27]
- 110:Core/Logic/logic_safe.c ****     
- 111:Core/Logic/logic_safe.c ****     Logic_Log("SAFE: Reset\r\n");
- 384              		.loc 1 111 5 is_stmt 1 view .LVU107
- 385 0014 0348     		ldr	r0, .L24+4
- 386              	.LVL31:
- 387              		.loc 1 111 5 is_stmt 0 view .LVU108
- 388 0016 FFF7FEFF 		bl	Logic_Log
- 389              	.LVL32:
- 112:Core/Logic/logic_safe.c ****     return SAFE_OK;
- 390              		.loc 1 112 5 is_stmt 1 view .LVU109
- 113:Core/Logic/logic_safe.c **** }
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 11
+ 344              		.cfi_restore 81
+ 345              		.cfi_def_cfa_offset 24
+ 346 00dc BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 347              	.LVL31:
+ 348              	.L21:
+ 349              		.loc 1 102 1 view .LVU100
+ 350              		.align	2
+ 351              	.L20:
+ 352 00e0 00000000 		.word	.LANCHOR0
+ 353 00e4 00000000 		.word	.LANCHOR1
+ 354 00e8 24000000 		.word	.LC2
+ 355 00ec 00000000 		.word	.LC1
+ 356 00f0 4C000000 		.word	.LC3
+ 357 00f4 74000000 		.word	.LC4
+ 358              		.cfi_endproc
+ 359              	.LFE152:
+ 361              		.section	.rodata.Logic_Safe_Reset.str1.4,"aMS",%progbits,1
+ 362              		.align	2
+ 363              	.LC5:
+ 364 0000 53414645 		.ascii	"SAFE: Reset\015\012\000"
+ 364      3A205265 
+ 364      7365740D 
+ 364      0A00
+ 365              		.section	.text.Logic_Safe_Reset,"ax",%progbits
+ 366              		.align	1
+ 367              		.global	Logic_Safe_Reset
+ 368              		.syntax unified
+ 369              		.thumb
+ 370              		.thumb_func
+ 372              	Logic_Safe_Reset:
+ 373              	.LFB153:
+ 103:Core/Logic/logic_safe.c **** 
+ 104:Core/Logic/logic_safe.c **** safe_error_t Logic_Safe_Reset(void)
+ 105:Core/Logic/logic_safe.c **** {
+ 374              		.loc 1 105 1 is_stmt 1 view -0
+ 375              		.cfi_startproc
+ 376              		@ args = 0, pretend = 0, frame = 0
+ 377              		@ frame_needed = 0, uses_anonymous_args = 0
+ 378 0000 10B5     		push	{r4, lr}
+ 379              	.LCFI6:
+ 380              		.cfi_def_cfa_offset 8
+ 381              		.cfi_offset 4, -8
+ 382              		.cfi_offset 14, -4
+ 106:Core/Logic/logic_safe.c ****     safe_start_tick = 0;
+ 383              		.loc 1 106 5 view .LVU102
+ 384              		.loc 1 106 21 is_stmt 0 view .LVU103
+ 385 0002 0024     		movs	r4, #0
+ 386 0004 074B     		ldr	r3, .L24
+ 387 0006 1C60     		str	r4, [r3]
+ 107:Core/Logic/logic_safe.c ****     last_check_tick = 0;
+ 388              		.loc 1 107 5 is_stmt 1 view .LVU104
+ 389              		.loc 1 107 21 is_stmt 0 view .LVU105
+ 390 0008 074B     		ldr	r3, .L24+4
+ 391 000a 1C60     		str	r4, [r3]
+ 108:Core/Logic/logic_safe.c ****     
+ 109:Core/Logic/logic_safe.c ****     cubesat_status_t* status = Logic_GetStatus();
+ 392              		.loc 1 109 5 is_stmt 1 view .LVU106
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 11
 
 
- 391              		.loc 1 113 1 is_stmt 0 view .LVU110
- 392 001a 2046     		mov	r0, r4
- 393 001c 10BD     		pop	{r4, pc}
- 394              	.L25:
- 395 001e 00BF     		.align	2
- 396              	.L24:
- 397 0020 00000000 		.word	.LANCHOR0
- 398 0024 00000000 		.word	.LC5
- 399              		.cfi_endproc
- 400              	.LFE149:
- 402              		.section	.text.Logic_Safe_GetTimer,"ax",%progbits
- 403              		.align	1
- 404              		.global	Logic_Safe_GetTimer
- 405              		.syntax unified
- 406              		.thumb
- 407              		.thumb_func
- 409              	Logic_Safe_GetTimer:
- 410              	.LFB150:
- 114:Core/Logic/logic_safe.c **** 
- 115:Core/Logic/logic_safe.c **** uint32_t Logic_Safe_GetTimer(void)
- 116:Core/Logic/logic_safe.c **** {
- 411              		.loc 1 116 1 is_stmt 1 view -0
- 412              		.cfi_startproc
- 413              		@ args = 0, pretend = 0, frame = 0
- 414              		@ frame_needed = 0, uses_anonymous_args = 0
- 415 0000 10B5     		push	{r4, lr}
- 416              	.LCFI7:
- 417              		.cfi_def_cfa_offset 8
- 418              		.cfi_offset 4, -8
- 419              		.cfi_offset 14, -4
- 117:Core/Logic/logic_safe.c ****     return safe_start_tick - HAL_GetTick();
- 420              		.loc 1 117 5 view .LVU112
- 421              		.loc 1 117 28 is_stmt 0 view .LVU113
- 422 0002 034B     		ldr	r3, .L28
- 423 0004 1C68     		ldr	r4, [r3]
- 424              		.loc 1 117 30 view .LVU114
- 425 0006 FFF7FEFF 		bl	HAL_GetTick
- 426              	.LVL33:
- 118:Core/Logic/logic_safe.c **** }
- 427              		.loc 1 118 1 view .LVU115
- 428 000a 201A     		subs	r0, r4, r0
- 429 000c 10BD     		pop	{r4, pc}
- 430              	.L29:
- 431 000e 00BF     		.align	2
- 432              	.L28:
- 433 0010 00000000 		.word	.LANCHOR0
- 434              		.cfi_endproc
- 435              	.LFE150:
- 437              		.section	.bss.safe_start_tick,"aw",%nobits
- 438              		.align	2
- 439              		.set	.LANCHOR0,. + 0
- 442              	safe_start_tick:
- 443 0000 00000000 		.space	4
- 444              		.text
- 445              	.Letext0:
- 446              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
- 447              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 12
+ 393              		.loc 1 109 32 is_stmt 0 view .LVU107
+ 394 000c FFF7FEFF 		bl	Logic_GetStatus
+ 395              	.LVL32:
+ 110:Core/Logic/logic_safe.c ****     status->sensors_recovered = false;
+ 396              		.loc 1 110 5 is_stmt 1 view .LVU108
+ 397              		.loc 1 110 31 is_stmt 0 view .LVU109
+ 398 0010 0476     		strb	r4, [r0, #24]
+ 111:Core/Logic/logic_safe.c ****     status->flash_recovered = false;
+ 399              		.loc 1 111 5 is_stmt 1 view .LVU110
+ 400              		.loc 1 111 29 is_stmt 0 view .LVU111
+ 401 0012 4476     		strb	r4, [r0, #25]
+ 112:Core/Logic/logic_safe.c ****     status->lora_recovered = false;
+ 402              		.loc 1 112 5 is_stmt 1 view .LVU112
+ 403              		.loc 1 112 28 is_stmt 0 view .LVU113
+ 404 0014 8476     		strb	r4, [r0, #26]
+ 113:Core/Logic/logic_safe.c ****     status->temp_recovered = false;
+ 405              		.loc 1 113 5 is_stmt 1 view .LVU114
+ 406              		.loc 1 113 28 is_stmt 0 view .LVU115
+ 407 0016 C476     		strb	r4, [r0, #27]
+ 114:Core/Logic/logic_safe.c ****     
+ 115:Core/Logic/logic_safe.c ****     Logic_Log("SAFE: Reset\r\n");
+ 408              		.loc 1 115 5 is_stmt 1 view .LVU116
+ 409 0018 0448     		ldr	r0, .L24+8
+ 410              	.LVL33:
+ 411              		.loc 1 115 5 is_stmt 0 view .LVU117
+ 412 001a FFF7FEFF 		bl	Logic_Log
+ 413              	.LVL34:
+ 116:Core/Logic/logic_safe.c ****     return SAFE_OK;
+ 414              		.loc 1 116 5 is_stmt 1 view .LVU118
+ 117:Core/Logic/logic_safe.c **** }
+ 415              		.loc 1 117 1 is_stmt 0 view .LVU119
+ 416 001e 2046     		mov	r0, r4
+ 417 0020 10BD     		pop	{r4, pc}
+ 418              	.L25:
+ 419 0022 00BF     		.align	2
+ 420              	.L24:
+ 421 0024 00000000 		.word	.LANCHOR0
+ 422 0028 00000000 		.word	.LANCHOR1
+ 423 002c 00000000 		.word	.LC5
+ 424              		.cfi_endproc
+ 425              	.LFE153:
+ 427              		.section	.text.Logic_Safe_GetTimer,"ax",%progbits
+ 428              		.align	1
+ 429              		.global	Logic_Safe_GetTimer
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 434              	Logic_Safe_GetTimer:
+ 435              	.LFB154:
+ 118:Core/Logic/logic_safe.c **** 
+ 119:Core/Logic/logic_safe.c **** uint32_t Logic_Safe_GetTimer(void)
+ 120:Core/Logic/logic_safe.c **** {
+ 436              		.loc 1 120 1 is_stmt 1 view -0
+ 437              		.cfi_startproc
+ 438              		@ args = 0, pretend = 0, frame = 0
+ 439              		@ frame_needed = 0, uses_anonymous_args = 0
+ 440 0000 08B5     		push	{r3, lr}
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 12
 
 
- 448              		.file 4 "Core/Lib/cubesat_data.h"
- 449              		.file 5 "Core/Logic/logic_safe.h"
- 450              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
- 451              		.file 7 "Core/Logic/logic.h"
- 452              		.file 8 "Core/Hardware/hardware.h"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cceL16O6.s 			page 13
+ 441              	.LCFI7:
+ 442              		.cfi_def_cfa_offset 8
+ 443              		.cfi_offset 3, -8
+ 444              		.cfi_offset 14, -4
+ 121:Core/Logic/logic_safe.c ****     return HAL_GetTick() - safe_start_tick;  
+ 445              		.loc 1 121 5 view .LVU121
+ 446              		.loc 1 121 12 is_stmt 0 view .LVU122
+ 447 0002 FFF7FEFF 		bl	HAL_GetTick
+ 448              	.LVL35:
+ 449              		.loc 1 121 26 view .LVU123
+ 450 0006 024B     		ldr	r3, .L28
+ 451 0008 1B68     		ldr	r3, [r3]
+ 122:Core/Logic/logic_safe.c **** }
+ 452              		.loc 1 122 1 view .LVU124
+ 453 000a C01A     		subs	r0, r0, r3
+ 454 000c 08BD     		pop	{r3, pc}
+ 455              	.L29:
+ 456 000e 00BF     		.align	2
+ 457              	.L28:
+ 458 0010 00000000 		.word	.LANCHOR0
+ 459              		.cfi_endproc
+ 460              	.LFE154:
+ 462              		.section	.bss.last_check_tick,"aw",%nobits
+ 463              		.align	2
+ 464              		.set	.LANCHOR1,. + 0
+ 467              	last_check_tick:
+ 468 0000 00000000 		.space	4
+ 469              		.section	.bss.safe_start_tick,"aw",%nobits
+ 470              		.align	2
+ 471              		.set	.LANCHOR0,. + 0
+ 474              	safe_start_tick:
+ 475 0000 00000000 		.space	4
+ 476              		.text
+ 477              	.Letext0:
+ 478              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 479              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 480              		.file 4 "Core/Lib/cubesat_data.h"
+ 481              		.file 5 "Core/Logic/logic_safe.h"
+ 482              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 483              		.file 7 "Core/Logic/logic.h"
+ 484              		.file 8 "Core/Hardware/hardware.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s 			page 13
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 logic_safe.c
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:19     .rodata.Logic_Safe_Init.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:23     .text.Logic_Safe_Init:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:29     .text.Logic_Safe_Init:00000000 Logic_Safe_Init
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:86     .text.Logic_Safe_Init:0000002c $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:92     .rodata.Logic_Safe_Process.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:107    .text.Logic_Safe_Process:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:113    .text.Logic_Safe_Process:00000000 Logic_Safe_Process
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:333    .text.Logic_Safe_Process:000000cc $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:342    .rodata.Logic_Safe_Reset.str1.4:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:346    .text.Logic_Safe_Reset:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:352    .text.Logic_Safe_Reset:00000000 Logic_Safe_Reset
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:397    .text.Logic_Safe_Reset:00000020 $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:403    .text.Logic_Safe_GetTimer:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:409    .text.Logic_Safe_GetTimer:00000000 Logic_Safe_GetTimer
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:433    .text.Logic_Safe_GetTimer:00000010 $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:438    .bss.safe_start_tick:00000000 $d
-C:\Users\admin\AppData\Local\Temp\cceL16O6.s:442    .bss.safe_start_tick:00000000 safe_start_tick
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:19     .rodata.Logic_Safe_Init.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:23     .text.Logic_Safe_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:29     .text.Logic_Safe_Init:00000000 Logic_Safe_Init
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:90     .text.Logic_Safe_Init:00000030 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:97     .rodata.Logic_Safe_Process.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:111    .text.Logic_Safe_Process:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:117    .text.Logic_Safe_Process:00000000 Logic_Safe_Process
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:352    .text.Logic_Safe_Process:000000e0 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:362    .rodata.Logic_Safe_Reset.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:366    .text.Logic_Safe_Reset:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:372    .text.Logic_Safe_Reset:00000000 Logic_Safe_Reset
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:421    .text.Logic_Safe_Reset:00000024 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:428    .text.Logic_Safe_GetTimer:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:434    .text.Logic_Safe_GetTimer:00000000 Logic_Safe_GetTimer
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:458    .text.Logic_Safe_GetTimer:00000010 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:463    .bss.last_check_tick:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:467    .bss.last_check_tick:00000000 last_check_tick
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:470    .bss.safe_start_tick:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cc8UlCiX.s:474    .bss.safe_start_tick:00000000 safe_start_tick
 
 UNDEFINED SYMBOLS
 HAL_GetTick

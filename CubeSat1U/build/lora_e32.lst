@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 1
 
 
    1              		.cpu cortex-m7
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
   29:Core/Lib/lora_e32.c ****     
   30:Core/Lib/lora_e32.c ****     memset(lora->rx_buffer, 0, sizeof(lora->rx_buffer));
   31:Core/Lib/lora_e32.c ****     
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 2
 
 
   32:Core/Lib/lora_e32.c ****     // Set to normal mode (M0=0, M1=0)
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
   86:Core/Lib/lora_e32.c ****         return false;
   87:Core/Lib/lora_e32.c ****     }
   88:Core/Lib/lora_e32.c ****     
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 3
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 3
 
 
   89:Core/Lib/lora_e32.c ****     return (HAL_GPIO_ReadPin(lora->aux_port, lora->aux_pin) == GPIO_PIN_SET);
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  143:Core/Lib/lora_e32.c ****     {
  144:Core/Lib/lora_e32.c ****         return LORA_E32_TIMEOUT;
  145:Core/Lib/lora_e32.c ****     }
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 4
 
 
  146:Core/Lib/lora_e32.c ****     
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  200:Core/Lib/lora_e32.c ****     // Store received byte in circular buffer
  201:Core/Lib/lora_e32.c ****     uint16_t next_index = (lora->rx_write_index + 1) % RX_BUFFER_SIZE;
  202:Core/Lib/lora_e32.c ****     
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 5
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 5
 
 
  203:Core/Lib/lora_e32.c ****     // Check for buffer overflow
@@ -298,7 +298,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
   66              		.loc 1 218 1 view .LVU8
   67              		.cfi_endproc
   68              	.LFE154:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 6
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 6
 
 
   70              		.section	.text.lora_wait_aux_high,"ax",%progbits
@@ -358,7 +358,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  111              		.loc 1 224 13 is_stmt 0 view .LVU18
  112 0014 FFF7FEFF 		bl	HAL_GetTick
  113              	.LVL11:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 7
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 7
 
 
  224:Core/Lib/lora_e32.c ****     {
@@ -418,7 +418,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  157 0000 0029     		cmp	r1, #0
  158 0002 18BF     		it	ne
  159 0004 0028     		cmpne	r0, #0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 8
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 8
 
 
  160 0006 38D0     		beq	.L13
@@ -478,7 +478,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  197 0022 0282     		strh	r2, [r0, #16]	@ movhi
   22:Core/Lib/lora_e32.c ****     lora->aux_pin = config->aux_pin;
  198              		.loc 1 22 5 is_stmt 1 view .LVU48
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 9
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 9
 
 
   22:Core/Lib/lora_e32.c ****     lora->aux_pin = config->aux_pin;
@@ -538,7 +538,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  234              		.loc 1 33 5 is_stmt 1 view .LVU67
  235 004e 2A46     		mov	r2, r5
  236 0050 2946     		mov	r1, r5
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 10
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 10
 
 
  237 0052 2046     		mov	r0, r4
@@ -598,7 +598,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  280              		.cfi_def_cfa_offset 16
  281              		.cfi_offset 3, -16
  282              		.cfi_offset 4, -12
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 11
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 11
 
 
  283              		.cfi_offset 5, -8
@@ -658,7 +658,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  329              		.loc 1 55 5 is_stmt 1 view .LVU88
  330 000e 0329     		cmp	r1, #3
  331 0010 24D8     		bhi	.L30
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 12
 
 
  332 0012 DFE801F0 		tbb	[pc, r1]
@@ -718,7 +718,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  373 003a FFF7FEFF 		bl	lora_set_mode_pins
  374              	.LVL31:
   62:Core/Lib/lora_e32.c ****     case LORA_E32_MODE_POWER_SAVE:  // M0=0, M1=1
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 13
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 13
 
 
  375              		.loc 1 62 9 is_stmt 1 view .LVU102
@@ -778,7 +778,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  420              		.loc 1 52 16 view .LVU111
  421 0058 0120     		movs	r0, #1
  422              	.LVL41:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 14
 
 
   52:Core/Lib/lora_e32.c ****     }
@@ -838,7 +838,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  469              	.LVL47:
  470              	.L37:
   90:Core/Lib/lora_e32.c **** 
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 15
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 15
 
 
  471              		.loc 1 90 1 view .LVU122
@@ -898,7 +898,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  520              		.cfi_offset 4, -20
  521              		.cfi_offset 5, -16
  522              		.cfi_offset 6, -12
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 16
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 16
 
 
  523              		.cfi_offset 7, -8
@@ -958,7 +958,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  563              		.loc 1 106 16 view .LVU143
  564 0034 0125     		movs	r5, #1
  565 0036 0BE0     		b	.L45
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 17
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 17
 
 
  566              	.L53:
@@ -1018,7 +1018,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  613              	.LVL63:
  614              	.LFB148:
  119:Core/Lib/lora_e32.c ****     if (lora == NULL || !lora->initialized || data == NULL || len == NULL)
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 18
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 18
 
 
  615              		.loc 1 119 1 is_stmt 1 view -0
@@ -1078,7 +1078,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  126:Core/Lib/lora_e32.c ****     uint16_t max_len = *len;
  659              		.loc 1 126 5 is_stmt 1 view .LVU164
  127:Core/Lib/lora_e32.c ****     
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 19
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 19
 
 
  660              		.loc 1 127 5 view .LVU165
@@ -1138,7 +1138,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  698 0052 0AF80730 		strb	r3, [r10, r7]
  135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
  699              		.loc 1 135 13 is_stmt 1 view .LVU182
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 20
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 20
 
 
  135:Core/Lib/lora_e32.c ****             start = HAL_GetTick(); // Reset timeout on data received
@@ -1198,7 +1198,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  741              		.cfi_restore 5
  742              		.cfi_restore 6
  743              		.cfi_restore 7
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 21
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 21
 
 
  744              		.cfi_restore 8
@@ -1258,7 +1258,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  792              		.thumb
  793              		.thumb_func
  795              	LoRa_E32_DataAvailable:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 22
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 22
 
 
  796              	.LVL82:
@@ -1318,7 +1318,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  841              	LoRa_E32_FlushRxBuffer:
  842              	.LVL87:
  843              	.LFB150:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 23
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 23
 
 
  162:Core/Lib/lora_e32.c ****     if (lora == NULL)
@@ -1378,7 +1378,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  887              		.loc 1 179 12 is_stmt 0 view .LVU226
  888 0004 0321     		movs	r1, #3
  889 0006 FFF7FEFF 		bl	LoRa_E32_SetMode
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 24
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 24
 
 
  890              	.LVL89:
@@ -1438,7 +1438,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  936 000a 08BD     		pop	{r3, pc}
  937              	.LVL94:
  938              	.L82:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 25
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 25
 
 
  939              	.LCFI17:
@@ -1498,7 +1498,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  201:Core/Lib/lora_e32.c ****     
  984              		.loc 1 201 54 view .LVU248
  985 0012 5A42     		rsbs	r2, r3, #0
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 26
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 26
 
 
  986 0014 DBB2     		uxtb	r3, r3
@@ -1558,7 +1558,7 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  1027 0042 7047     		bx	lr
  1028              		.cfi_endproc
  1029              	.LFE153:
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 27
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 27
 
 
  1031              		.text
@@ -1573,37 +1573,37 @@ ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 1
  1040              		.file 9 "Core/Lib/lora_e32.h"
  1041              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
  1042              		.file 11 "<built-in>"
-ARM GAS  C:\Users\admin\AppData\Local\Temp\cc8acaCh.s 			page 28
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s 			page 28
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 lora_e32.c
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:19     .text.lora_set_mode_pins:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:24     .text.lora_set_mode_pins:00000000 lora_set_mode_pins
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:71     .text.lora_wait_aux_high:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:76     .text.lora_wait_aux_high:00000000 lora_wait_aux_high
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:142    .text.LoRa_E32_Init:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:148    .text.LoRa_E32_Init:00000000 LoRa_E32_Init
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:299    .text.LoRa_E32_SetMode:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:305    .text.LoRa_E32_SetMode:00000000 LoRa_E32_SetMode
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:334    .text.LoRa_E32_SetMode:00000016 $d
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:338    .text.LoRa_E32_SetMode:0000001a $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:441    .text.LoRa_E32_IsReady:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:447    .text.LoRa_E32_IsReady:00000000 LoRa_E32_IsReady
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:502    .text.LoRa_E32_Send:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:508    .text.LoRa_E32_Send:00000000 LoRa_E32_Send
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:606    .text.LoRa_E32_Receive:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:612    .text.LoRa_E32_Receive:00000000 LoRa_E32_Receive
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:789    .text.LoRa_E32_DataAvailable:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:795    .text.LoRa_E32_DataAvailable:00000000 LoRa_E32_DataAvailable
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:835    .text.LoRa_E32_FlushRxBuffer:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:841    .text.LoRa_E32_FlushRxBuffer:00000000 LoRa_E32_FlushRxBuffer
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:864    .text.LoRa_E32_PowerOff:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:870    .text.LoRa_E32_PowerOff:00000000 LoRa_E32_PowerOff
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:908    .text.LoRa_E32_PowerOn:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:914    .text.LoRa_E32_PowerOn:00000000 LoRa_E32_PowerOn
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:952    .text.LoRa_E32_UART_IRQHandler:00000000 $t
-C:\Users\admin\AppData\Local\Temp\cc8acaCh.s:958    .text.LoRa_E32_UART_IRQHandler:00000000 LoRa_E32_UART_IRQHandler
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:19     .text.lora_set_mode_pins:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:24     .text.lora_set_mode_pins:00000000 lora_set_mode_pins
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:71     .text.lora_wait_aux_high:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:76     .text.lora_wait_aux_high:00000000 lora_wait_aux_high
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:142    .text.LoRa_E32_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:148    .text.LoRa_E32_Init:00000000 LoRa_E32_Init
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:299    .text.LoRa_E32_SetMode:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:305    .text.LoRa_E32_SetMode:00000000 LoRa_E32_SetMode
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:334    .text.LoRa_E32_SetMode:00000016 $d
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:338    .text.LoRa_E32_SetMode:0000001a $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:441    .text.LoRa_E32_IsReady:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:447    .text.LoRa_E32_IsReady:00000000 LoRa_E32_IsReady
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:502    .text.LoRa_E32_Send:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:508    .text.LoRa_E32_Send:00000000 LoRa_E32_Send
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:606    .text.LoRa_E32_Receive:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:612    .text.LoRa_E32_Receive:00000000 LoRa_E32_Receive
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:789    .text.LoRa_E32_DataAvailable:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:795    .text.LoRa_E32_DataAvailable:00000000 LoRa_E32_DataAvailable
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:835    .text.LoRa_E32_FlushRxBuffer:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:841    .text.LoRa_E32_FlushRxBuffer:00000000 LoRa_E32_FlushRxBuffer
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:864    .text.LoRa_E32_PowerOff:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:870    .text.LoRa_E32_PowerOff:00000000 LoRa_E32_PowerOff
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:908    .text.LoRa_E32_PowerOn:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:914    .text.LoRa_E32_PowerOn:00000000 LoRa_E32_PowerOn
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:952    .text.LoRa_E32_UART_IRQHandler:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc6mkeMe.s:958    .text.LoRa_E32_UART_IRQHandler:00000000 LoRa_E32_UART_IRQHandler
 
 UNDEFINED SYMBOLS
 HAL_GPIO_WritePin

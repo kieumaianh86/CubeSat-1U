@@ -23,6 +23,7 @@ cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio_ex.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma_ex.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dcmi.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_exti.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h
@@ -32,6 +33,12 @@ cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rtc_ex.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_sdmmc.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_delayblock.h
+cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sd_ex.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h
 cubesat1u\ov2640.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h

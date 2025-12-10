@@ -1,6 +1,7 @@
 #include "neo8m.h"
 #include "string.h"
 #include"math.h"
+#include "time.h"
 
 //private define
 #define NMEA_MAX_LENGTH     82
@@ -410,4 +411,17 @@ static void neo8m_parse_date(const char *date_str, neo8m_date_t *date)
   buf[0] = date_str[4];
   buf[1] = date_str[5];
   date->year = 2000 + atoi(buf);
+}
+
+// đồng bộ thời gian
+void neo8m_get_unix_timestamp(neo8m_handle_t *h, uint32_t *unix_ts) {
+    struct tm t = {
+        .tm_year = h->data.date.year - 1900,
+        .tm_mon = h->data.date.month - 1,
+        .tm_mday = h->data.date.day,
+        .tm_hour = h->data.time.hour,
+        .tm_min = h->data.time.minute,
+        .tm_sec = h->data.time.second
+    };
+    *unix_ts = mktime(&t);
 }

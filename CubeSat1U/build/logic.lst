@@ -1,0 +1,1112 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"logic.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.Logic_GetHealth,"ax",%progbits
+  19              		.align	1
+  20              		.global	Logic_GetHealth
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Logic_GetHealth:
+  26              	.LFB151:
+  27              		.file 1 "Core/Logic/logic.c"
+   1:Core/Logic/logic.c **** #include "logic.h"
+   2:Core/Logic/logic.c **** #include "INA219.h"
+   3:Core/Logic/logic.c **** #include "mpu6050.h"
+   4:Core/Logic/logic.c **** #include "hardware.h"
+   5:Core/Logic/logic.c **** #include "sdcard.h"
+   6:Core/Logic/logic.c **** #include <stdarg.h>
+   7:Core/Logic/logic.c **** #include <stdio.h>
+   8:Core/Logic/logic.c **** 
+   9:Core/Logic/logic.c **** extern ina219_t hina219;  // FIXED: Was INA219_HandleTypeDef
+  10:Core/Logic/logic.c **** extern mpu6050_handle_t mpu_handle;  // For temperature
+  11:Core/Logic/logic.c **** extern system_health_t health;
+  12:Core/Logic/logic.c **** extern cubesat_status_t status;
+  13:Core/Logic/logic.c **** 
+  14:Core/Logic/logic.c **** system_health_t* Logic_GetHealth(void) { return &health; }
+  28              		.loc 1 14 40 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              		.loc 1 14 42 view .LVU1
+  34              		.loc 1 14 58 is_stmt 0 view .LVU2
+  35 0000 0048     		ldr	r0, .L2
+  36 0002 7047     		bx	lr
+  37              	.L3:
+  38              		.align	2
+  39              	.L2:
+  40 0004 00000000 		.word	health
+  41              		.cfi_endproc
+  42              	.LFE151:
+  44              		.section	.text.Logic_GetStatus,"ax",%progbits
+  45              		.align	1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 2
+
+
+  46              		.global	Logic_GetStatus
+  47              		.syntax unified
+  48              		.thumb
+  49              		.thumb_func
+  51              	Logic_GetStatus:
+  52              	.LFB152:
+  15:Core/Logic/logic.c **** cubesat_status_t* Logic_GetStatus(void) { return &status; }
+  53              		.loc 1 15 41 is_stmt 1 view -0
+  54              		.cfi_startproc
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57              		@ link register save eliminated.
+  58              		.loc 1 15 43 view .LVU4
+  59              		.loc 1 15 59 is_stmt 0 view .LVU5
+  60 0000 0048     		ldr	r0, .L5
+  61 0002 7047     		bx	lr
+  62              	.L6:
+  63              		.align	2
+  64              	.L5:
+  65 0004 00000000 		.word	status
+  66              		.cfi_endproc
+  67              	.LFE152:
+  69              		.section	.text.Logic_Battery_Read,"ax",%progbits
+  70              		.align	1
+  71              		.global	Logic_Battery_Read
+  72              		.syntax unified
+  73              		.thumb
+  74              		.thumb_func
+  76              	Logic_Battery_Read:
+  77              	.LFB153:
+  16:Core/Logic/logic.c **** 
+  17:Core/Logic/logic.c **** uint8_t Logic_Battery_Read(void)
+  18:Core/Logic/logic.c **** {
+  78              		.loc 1 18 1 is_stmt 1 view -0
+  79              		.cfi_startproc
+  80              		@ args = 0, pretend = 0, frame = 0
+  81              		@ frame_needed = 0, uses_anonymous_args = 0
+  82 0000 08B5     		push	{r3, lr}
+  83              	.LCFI0:
+  84              		.cfi_def_cfa_offset 8
+  85              		.cfi_offset 3, -8
+  86              		.cfi_offset 14, -4
+  19:Core/Logic/logic.c ****     // FIXED: Access struct fields directly, not via function with pointers
+  20:Core/Logic/logic.c ****     /* if (INA219_ReadAll(&hina219) == INA219_OK)
+  21:Core/Logic/logic.c ****     {
+  22:Core/Logic/logic.c ****         float voltage_v = hina219.voltage;
+  23:Core/Logic/logic.c ****         
+  24:Core/Logic/logic.c ****         // 4.2V=100%, 3.0V=0%
+  25:Core/Logic/logic.c ****         if (voltage_v >= 4.2f) return 100;
+  26:Core/Logic/logic.c ****         if (voltage_v <= 3.0f) return 0;
+  27:Core/Logic/logic.c ****         return (uint8_t)((voltage_v - 3.0f) / 1.2f * 100.0f);
+  28:Core/Logic/logic.c ****     } */
+  29:Core/Logic/logic.c ****    if (Checkbattery(&hina219) == battery_OK)
+  87              		.loc 1 29 4 view .LVU7
+  88              		.loc 1 29 8 is_stmt 0 view .LVU8
+  89 0002 0948     		ldr	r0, .L11
+  90 0004 FFF7FEFF 		bl	Checkbattery
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 3
+
+
+  91              	.LVL0:
+  92              		.loc 1 29 7 view .LVU9
+  93 0008 0128     		cmp	r0, #1
+  94 000a 02D0     		beq	.L10
+  95              	.L8:
+  30:Core/Logic/logic.c ****    {
+  31:Core/Logic/logic.c ****     health.battery_percent = ina219_BatteryLife(&hina219);
+  32:Core/Logic/logic.c ****    }
+  33:Core/Logic/logic.c ****    
+  34:Core/Logic/logic.c ****     return health.battery_percent;
+  96              		.loc 1 34 5 is_stmt 1 view .LVU10
+  35:Core/Logic/logic.c **** }
+  97              		.loc 1 35 1 is_stmt 0 view .LVU11
+  98 000c 074B     		ldr	r3, .L11+4
+  99 000e 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 100 0010 08BD     		pop	{r3, pc}
+ 101              	.L10:
+  31:Core/Logic/logic.c ****    }
+ 102              		.loc 1 31 5 is_stmt 1 view .LVU12
+  31:Core/Logic/logic.c ****    }
+ 103              		.loc 1 31 30 is_stmt 0 view .LVU13
+ 104 0012 0548     		ldr	r0, .L11
+ 105 0014 FFF7FEFF 		bl	ina219_BatteryLife
+ 106              	.LVL1:
+  31:Core/Logic/logic.c ****    }
+ 107              		.loc 1 31 28 view .LVU14
+ 108 0018 FCEEC07A 		vcvt.u32.f32	s15, s0
+ 109 001c 17EE903A 		vmov	r3, s15	@ int
+ 110 0020 024A     		ldr	r2, .L11+4
+ 111 0022 1370     		strb	r3, [r2]
+ 112 0024 F2E7     		b	.L8
+ 113              	.L12:
+ 114 0026 00BF     		.align	2
+ 115              	.L11:
+ 116 0028 00000000 		.word	hina219
+ 117 002c 00000000 		.word	health
+ 118              		.cfi_endproc
+ 119              	.LFE153:
+ 121              		.section	.text.Logic_Battery_Check_Critical,"ax",%progbits
+ 122              		.align	1
+ 123              		.global	Logic_Battery_Check_Critical
+ 124              		.syntax unified
+ 125              		.thumb
+ 126              		.thumb_func
+ 128              	Logic_Battery_Check_Critical:
+ 129              	.LFB154:
+  36:Core/Logic/logic.c **** 
+  37:Core/Logic/logic.c **** bool Logic_Battery_Check_Critical(void)
+  38:Core/Logic/logic.c **** {
+ 130              		.loc 1 38 1 is_stmt 1 view -0
+ 131              		.cfi_startproc
+ 132              		@ args = 0, pretend = 0, frame = 0
+ 133              		@ frame_needed = 0, uses_anonymous_args = 0
+ 134 0000 08B5     		push	{r3, lr}
+ 135              	.LCFI1:
+ 136              		.cfi_def_cfa_offset 8
+ 137              		.cfi_offset 3, -8
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 4
+
+
+ 138              		.cfi_offset 14, -4
+  39:Core/Logic/logic.c ****     uint8_t battery = Logic_Battery_Read();
+ 139              		.loc 1 39 5 view .LVU16
+ 140              		.loc 1 39 23 is_stmt 0 view .LVU17
+ 141 0002 FFF7FEFF 		bl	Logic_Battery_Read
+ 142              	.LVL2:
+  40:Core/Logic/logic.c ****     health.battery_percent = battery;
+ 143              		.loc 1 40 5 is_stmt 1 view .LVU18
+ 144              		.loc 1 40 28 is_stmt 0 view .LVU19
+ 145 0006 034B     		ldr	r3, .L15
+ 146 0008 1870     		strb	r0, [r3]
+  41:Core/Logic/logic.c ****     return (battery < BATTERY_CRITICAL);
+ 147              		.loc 1 41 5 is_stmt 1 view .LVU20
+  42:Core/Logic/logic.c **** }
+ 148              		.loc 1 42 1 is_stmt 0 view .LVU21
+ 149 000a 1328     		cmp	r0, #19
+ 150 000c 8CBF     		ite	hi
+ 151 000e 0020     		movhi	r0, #0
+ 152              	.LVL3:
+ 153              		.loc 1 42 1 view .LVU22
+ 154 0010 0120     		movls	r0, #1
+ 155 0012 08BD     		pop	{r3, pc}
+ 156              	.LVL4:
+ 157              	.L16:
+ 158              		.loc 1 42 1 view .LVU23
+ 159              		.align	2
+ 160              	.L15:
+ 161 0014 00000000 		.word	health
+ 162              		.cfi_endproc
+ 163              	.LFE154:
+ 165              		.section	.text.Logic_Battery_Check_Low,"ax",%progbits
+ 166              		.align	1
+ 167              		.global	Logic_Battery_Check_Low
+ 168              		.syntax unified
+ 169              		.thumb
+ 170              		.thumb_func
+ 172              	Logic_Battery_Check_Low:
+ 173              	.LFB155:
+  43:Core/Logic/logic.c **** 
+  44:Core/Logic/logic.c **** bool Logic_Battery_Check_Low(void)
+  45:Core/Logic/logic.c **** {
+ 174              		.loc 1 45 1 is_stmt 1 view -0
+ 175              		.cfi_startproc
+ 176              		@ args = 0, pretend = 0, frame = 0
+ 177              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178 0000 08B5     		push	{r3, lr}
+ 179              	.LCFI2:
+ 180              		.cfi_def_cfa_offset 8
+ 181              		.cfi_offset 3, -8
+ 182              		.cfi_offset 14, -4
+  46:Core/Logic/logic.c ****     uint8_t battery = Logic_Battery_Read();
+ 183              		.loc 1 46 5 view .LVU25
+ 184              		.loc 1 46 23 is_stmt 0 view .LVU26
+ 185 0002 FFF7FEFF 		bl	Logic_Battery_Read
+ 186              	.LVL5:
+  47:Core/Logic/logic.c ****     health.battery_percent = battery;
+ 187              		.loc 1 47 5 is_stmt 1 view .LVU27
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 5
+
+
+ 188              		.loc 1 47 28 is_stmt 0 view .LVU28
+ 189 0006 034B     		ldr	r3, .L19
+ 190 0008 1870     		strb	r0, [r3]
+  48:Core/Logic/logic.c ****     return (battery < BATTERY_LOW);
+ 191              		.loc 1 48 5 is_stmt 1 view .LVU29
+  49:Core/Logic/logic.c **** }
+ 192              		.loc 1 49 1 is_stmt 0 view .LVU30
+ 193 000a 1D28     		cmp	r0, #29
+ 194 000c 8CBF     		ite	hi
+ 195 000e 0020     		movhi	r0, #0
+ 196              	.LVL6:
+ 197              		.loc 1 49 1 view .LVU31
+ 198 0010 0120     		movls	r0, #1
+ 199 0012 08BD     		pop	{r3, pc}
+ 200              	.LVL7:
+ 201              	.L20:
+ 202              		.loc 1 49 1 view .LVU32
+ 203              		.align	2
+ 204              	.L19:
+ 205 0014 00000000 		.word	health
+ 206              		.cfi_endproc
+ 207              	.LFE155:
+ 209              		.section	.text.Logic_Battery_Check_Comm,"ax",%progbits
+ 210              		.align	1
+ 211              		.global	Logic_Battery_Check_Comm
+ 212              		.syntax unified
+ 213              		.thumb
+ 214              		.thumb_func
+ 216              	Logic_Battery_Check_Comm:
+ 217              	.LFB156:
+  50:Core/Logic/logic.c **** 
+  51:Core/Logic/logic.c **** bool Logic_Battery_Check_Comm(void)
+  52:Core/Logic/logic.c **** {
+ 218              		.loc 1 52 1 is_stmt 1 view -0
+ 219              		.cfi_startproc
+ 220              		@ args = 0, pretend = 0, frame = 0
+ 221              		@ frame_needed = 0, uses_anonymous_args = 0
+ 222 0000 08B5     		push	{r3, lr}
+ 223              	.LCFI3:
+ 224              		.cfi_def_cfa_offset 8
+ 225              		.cfi_offset 3, -8
+ 226              		.cfi_offset 14, -4
+  53:Core/Logic/logic.c ****     uint8_t battery = Logic_Battery_Read();
+ 227              		.loc 1 53 5 view .LVU34
+ 228              		.loc 1 53 23 is_stmt 0 view .LVU35
+ 229 0002 FFF7FEFF 		bl	Logic_Battery_Read
+ 230              	.LVL8:
+  54:Core/Logic/logic.c ****     health.battery_percent = battery;
+ 231              		.loc 1 54 5 is_stmt 1 view .LVU36
+ 232              		.loc 1 54 28 is_stmt 0 view .LVU37
+ 233 0006 034B     		ldr	r3, .L23
+ 234 0008 1870     		strb	r0, [r3]
+  55:Core/Logic/logic.c ****     return (battery >= BATTERY_COMM_MIN);
+ 235              		.loc 1 55 5 is_stmt 1 view .LVU38
+  56:Core/Logic/logic.c **** }
+ 236              		.loc 1 56 1 is_stmt 0 view .LVU39
+ 237 000a 1828     		cmp	r0, #24
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 6
+
+
+ 238 000c 94BF     		ite	ls
+ 239 000e 0020     		movls	r0, #0
+ 240              	.LVL9:
+ 241              		.loc 1 56 1 view .LVU40
+ 242 0010 0120     		movhi	r0, #1
+ 243 0012 08BD     		pop	{r3, pc}
+ 244              	.LVL10:
+ 245              	.L24:
+ 246              		.loc 1 56 1 view .LVU41
+ 247              		.align	2
+ 248              	.L23:
+ 249 0014 00000000 		.word	health
+ 250              		.cfi_endproc
+ 251              	.LFE156:
+ 253              		.section	.text.Logic_Temp_Read,"ax",%progbits
+ 254              		.align	1
+ 255              		.global	Logic_Temp_Read
+ 256              		.syntax unified
+ 257              		.thumb
+ 258              		.thumb_func
+ 260              	Logic_Temp_Read:
+ 261              	.LFB157:
+  57:Core/Logic/logic.c **** 
+  58:Core/Logic/logic.c **** float Logic_Temp_Read(void)
+  59:Core/Logic/logic.c **** {
+ 262              		.loc 1 59 1 is_stmt 1 view -0
+ 263              		.cfi_startproc
+ 264              		@ args = 0, pretend = 0, frame = 0
+ 265              		@ frame_needed = 0, uses_anonymous_args = 0
+ 266 0000 08B5     		push	{r3, lr}
+ 267              	.LCFI4:
+ 268              		.cfi_def_cfa_offset 8
+ 269              		.cfi_offset 3, -8
+ 270              		.cfi_offset 14, -4
+  60:Core/Logic/logic.c ****     // FIXED: Read from MPU6050, not DS18B20
+  61:Core/Logic/logic.c ****     if (mpu6050_read_all(&mpu_handle) == MPU6050_OK)
+ 271              		.loc 1 61 5 view .LVU43
+ 272              		.loc 1 61 9 is_stmt 0 view .LVU44
+ 273 0002 0648     		ldr	r0, .L30
+ 274 0004 FFF7FEFF 		bl	mpu6050_read_all
+ 275              	.LVL11:
+ 276              		.loc 1 61 8 view .LVU45
+ 277 0008 18B1     		cbz	r0, .L29
+  62:Core/Logic/logic.c ****     {
+  63:Core/Logic/logic.c ****         return mpu_handle.temp_scaled;
+  64:Core/Logic/logic.c ****     }
+  65:Core/Logic/logic.c ****     return health.temperature;  // Return last known
+ 278              		.loc 1 65 5 is_stmt 1 view .LVU46
+ 279              		.loc 1 65 18 is_stmt 0 view .LVU47
+ 280 000a 054B     		ldr	r3, .L30+4
+ 281 000c 93ED010A 		vldr.32	s0, [r3, #4]
+ 282              	.L25:
+  66:Core/Logic/logic.c **** }
+ 283              		.loc 1 66 1 view .LVU48
+ 284 0010 08BD     		pop	{r3, pc}
+ 285              	.L29:
+  63:Core/Logic/logic.c ****     }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 7
+
+
+ 286              		.loc 1 63 9 is_stmt 1 view .LVU49
+  63:Core/Logic/logic.c ****     }
+ 287              		.loc 1 63 26 is_stmt 0 view .LVU50
+ 288 0012 024B     		ldr	r3, .L30
+ 289 0014 93ED0F0A 		vldr.32	s0, [r3, #60]
+ 290 0018 FAE7     		b	.L25
+ 291              	.L31:
+ 292 001a 00BF     		.align	2
+ 293              	.L30:
+ 294 001c 00000000 		.word	mpu_handle
+ 295 0020 00000000 		.word	health
+ 296              		.cfi_endproc
+ 297              	.LFE157:
+ 299              		.section	.text.Logic_Temp_Check_Safe,"ax",%progbits
+ 300              		.align	1
+ 301              		.global	Logic_Temp_Check_Safe
+ 302              		.syntax unified
+ 303              		.thumb
+ 304              		.thumb_func
+ 306              	Logic_Temp_Check_Safe:
+ 307              	.LFB158:
+  67:Core/Logic/logic.c **** 
+  68:Core/Logic/logic.c **** bool Logic_Temp_Check_Safe(void)
+  69:Core/Logic/logic.c **** {
+ 308              		.loc 1 69 1 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312 0000 08B5     		push	{r3, lr}
+ 313              	.LCFI5:
+ 314              		.cfi_def_cfa_offset 8
+ 315              		.cfi_offset 3, -8
+ 316              		.cfi_offset 14, -4
+  70:Core/Logic/logic.c ****     float temp = Logic_Temp_Read();
+ 317              		.loc 1 70 5 view .LVU52
+ 318              		.loc 1 70 18 is_stmt 0 view .LVU53
+ 319 0002 FFF7FEFF 		bl	Logic_Temp_Read
+ 320              	.LVL12:
+  71:Core/Logic/logic.c ****     health.temperature = temp;
+ 321              		.loc 1 71 5 is_stmt 1 view .LVU54
+ 322              		.loc 1 71 24 is_stmt 0 view .LVU55
+ 323 0006 0B4B     		ldr	r3, .L40
+ 324 0008 83ED010A 		vstr.32	s0, [r3, #4]
+  72:Core/Logic/logic.c ****     return (temp >= TEMP_MIN_SAFE && temp <= TEMP_MAX_SAFE);
+ 325              		.loc 1 72 5 is_stmt 1 view .LVU56
+ 326              		.loc 1 72 35 is_stmt 0 view .LVU57
+ 327 000c FAEE047A 		vmov.f32	s15, #-1.0e+1
+ 328 0010 B4EEE70A 		vcmpe.f32	s0, s15
+ 329 0014 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 330 0018 08DB     		blt	.L38
+ 331              		.loc 1 72 35 discriminator 1 view .LVU58
+ 332 001a DFED077A 		vldr.32	s15, .L40+4
+ 333 001e B4EEE70A 		vcmpe.f32	s0, s15
+ 334 0022 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 335 0026 03D9     		bls	.L36
+ 336              		.loc 1 72 35 view .LVU59
+ 337 0028 0020     		movs	r0, #0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 8
+
+
+ 338 002a 00E0     		b	.L33
+ 339              	.L38:
+ 340 002c 0020     		movs	r0, #0
+ 341              	.L33:
+  73:Core/Logic/logic.c **** }
+ 342              		.loc 1 73 1 discriminator 6 view .LVU60
+ 343 002e 08BD     		pop	{r3, pc}
+ 344              	.L36:
+  72:Core/Logic/logic.c ****     return (temp >= TEMP_MIN_SAFE && temp <= TEMP_MAX_SAFE);
+ 345              		.loc 1 72 35 view .LVU61
+ 346 0030 0120     		movs	r0, #1
+ 347 0032 FCE7     		b	.L33
+ 348              	.L41:
+ 349              		.align	2
+ 350              	.L40:
+ 351 0034 00000000 		.word	health
+ 352 0038 00008C42 		.word	1116471296
+ 353              		.cfi_endproc
+ 354              	.LFE158:
+ 356              		.section	.text.Logic_Sensor_Count_Working,"ax",%progbits
+ 357              		.align	1
+ 358              		.global	Logic_Sensor_Count_Working
+ 359              		.syntax unified
+ 360              		.thumb
+ 361              		.thumb_func
+ 363              	Logic_Sensor_Count_Working:
+ 364              	.LFB159:
+  74:Core/Logic/logic.c **** 
+  75:Core/Logic/logic.c **** uint8_t Logic_Sensor_Count_Working(void)
+  76:Core/Logic/logic.c **** {
+ 365              		.loc 1 76 1 is_stmt 1 view -0
+ 366              		.cfi_startproc
+ 367              		@ args = 0, pretend = 0, frame = 0
+ 368              		@ frame_needed = 0, uses_anonymous_args = 0
+ 369              		@ link register save eliminated.
+  77:Core/Logic/logic.c ****     uint8_t count = 0;
+ 370              		.loc 1 77 5 view .LVU63
+ 371              	.LVL13:
+  78:Core/Logic/logic.c ****     for (int i = 0; i < SENSOR_COUNT; i++)
+ 372              		.loc 1 78 5 view .LVU64
+ 373              	.LBB2:
+ 374              		.loc 1 78 10 view .LVU65
+ 375              		.loc 1 78 14 is_stmt 0 view .LVU66
+ 376 0000 0023     		movs	r3, #0
+ 377              	.LBE2:
+  77:Core/Logic/logic.c ****     uint8_t count = 0;
+ 378              		.loc 1 77 13 view .LVU67
+ 379 0002 1846     		mov	r0, r3
+ 380              	.LBB3:
+ 381              		.loc 1 78 5 view .LVU68
+ 382 0004 00E0     		b	.L43
+ 383              	.LVL14:
+ 384              	.L44:
+ 385              		.loc 1 78 39 is_stmt 1 discriminator 2 view .LVU69
+ 386              		.loc 1 78 40 is_stmt 0 discriminator 2 view .LVU70
+ 387 0006 0133     		adds	r3, r3, #1
+ 388              	.LVL15:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 9
+
+
+ 389              	.L43:
+ 390              		.loc 1 78 21 is_stmt 1 discriminator 1 view .LVU71
+ 391              		.loc 1 78 5 is_stmt 0 discriminator 1 view .LVU72
+ 392 0008 052B     		cmp	r3, #5
+ 393 000a 07DC     		bgt	.L46
+  79:Core/Logic/logic.c ****         if (health.sensor_status[i] == SENSOR_STATUS_OK)
+ 394              		.loc 1 79 9 is_stmt 1 view .LVU73
+ 395              		.loc 1 79 33 is_stmt 0 view .LVU74
+ 396 000c 054A     		ldr	r2, .L47
+ 397 000e 1A44     		add	r2, r2, r3
+ 398 0010 127B     		ldrb	r2, [r2, #12]	@ zero_extendqisi2
+ 399              		.loc 1 79 12 view .LVU75
+ 400 0012 002A     		cmp	r2, #0
+ 401 0014 F7D1     		bne	.L44
+  80:Core/Logic/logic.c ****             count++;
+ 402              		.loc 1 80 13 is_stmt 1 view .LVU76
+ 403              		.loc 1 80 18 is_stmt 0 view .LVU77
+ 404 0016 0130     		adds	r0, r0, #1
+ 405              	.LVL16:
+ 406              		.loc 1 80 18 view .LVU78
+ 407 0018 C0B2     		uxtb	r0, r0
+ 408              	.LVL17:
+ 409              		.loc 1 80 18 view .LVU79
+ 410 001a F4E7     		b	.L44
+ 411              	.L46:
+ 412              		.loc 1 80 18 view .LVU80
+ 413              	.LBE3:
+  81:Core/Logic/logic.c ****     health.working_sensor_count = count;
+ 414              		.loc 1 81 5 is_stmt 1 view .LVU81
+ 415              		.loc 1 81 33 is_stmt 0 view .LVU82
+ 416 001c 014B     		ldr	r3, .L47
+ 417              	.LVL18:
+ 418              		.loc 1 81 33 view .LVU83
+ 419 001e 1876     		strb	r0, [r3, #24]
+  82:Core/Logic/logic.c ****     return count;
+ 420              		.loc 1 82 5 is_stmt 1 view .LVU84
+  83:Core/Logic/logic.c **** }
+ 421              		.loc 1 83 1 is_stmt 0 view .LVU85
+ 422 0020 7047     		bx	lr
+ 423              	.L48:
+ 424 0022 00BF     		.align	2
+ 425              	.L47:
+ 426 0024 00000000 		.word	health
+ 427              		.cfi_endproc
+ 428              	.LFE159:
+ 430              		.section	.text.Logic_Sensor_Mark_Dead,"ax",%progbits
+ 431              		.align	1
+ 432              		.global	Logic_Sensor_Mark_Dead
+ 433              		.syntax unified
+ 434              		.thumb
+ 435              		.thumb_func
+ 437              	Logic_Sensor_Mark_Dead:
+ 438              	.LVL19:
+ 439              	.LFB160:
+  84:Core/Logic/logic.c **** 
+  85:Core/Logic/logic.c **** void Logic_Sensor_Mark_Dead(sensor_id_t sensor)
+  86:Core/Logic/logic.c **** {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 10
+
+
+ 440              		.loc 1 86 1 is_stmt 1 view -0
+ 441              		.cfi_startproc
+ 442              		@ args = 0, pretend = 0, frame = 0
+ 443              		@ frame_needed = 0, uses_anonymous_args = 0
+ 444              		@ link register save eliminated.
+  87:Core/Logic/logic.c ****     if (sensor < SENSOR_COUNT)
+ 445              		.loc 1 87 5 view .LVU87
+ 446              		.loc 1 87 8 is_stmt 0 view .LVU88
+ 447 0000 0528     		cmp	r0, #5
+ 448 0002 03D8     		bhi	.L49
+  88:Core/Logic/logic.c ****         health.sensor_status[sensor] = SENSOR_STATUS_DEAD;
+ 449              		.loc 1 88 9 is_stmt 1 view .LVU89
+ 450              		.loc 1 88 38 is_stmt 0 view .LVU90
+ 451 0004 024B     		ldr	r3, .L51
+ 452 0006 1844     		add	r0, r0, r3
+ 453              	.LVL20:
+ 454              		.loc 1 88 38 view .LVU91
+ 455 0008 0223     		movs	r3, #2
+ 456 000a 0373     		strb	r3, [r0, #12]
+ 457              	.L49:
+  89:Core/Logic/logic.c **** }
+ 458              		.loc 1 89 1 view .LVU92
+ 459 000c 7047     		bx	lr
+ 460              	.L52:
+ 461 000e 00BF     		.align	2
+ 462              	.L51:
+ 463 0010 00000000 		.word	health
+ 464              		.cfi_endproc
+ 465              	.LFE160:
+ 467              		.section	.text.Logic_Sensor_Check_Critical_Fail,"ax",%progbits
+ 468              		.align	1
+ 469              		.global	Logic_Sensor_Check_Critical_Fail
+ 470              		.syntax unified
+ 471              		.thumb
+ 472              		.thumb_func
+ 474              	Logic_Sensor_Check_Critical_Fail:
+ 475              	.LFB161:
+  90:Core/Logic/logic.c **** 
+  91:Core/Logic/logic.c **** bool Logic_Sensor_Check_Critical_Fail(void)
+  92:Core/Logic/logic.c **** {
+ 476              		.loc 1 92 1 is_stmt 1 view -0
+ 477              		.cfi_startproc
+ 478              		@ args = 0, pretend = 0, frame = 0
+ 479              		@ frame_needed = 0, uses_anonymous_args = 0
+ 480              		@ link register save eliminated.
+  93:Core/Logic/logic.c ****     uint8_t dead_count = 0;
+ 481              		.loc 1 93 5 view .LVU94
+ 482              	.LVL21:
+  94:Core/Logic/logic.c ****     for (int i = 0; i < SENSOR_COUNT; i++)
+ 483              		.loc 1 94 5 view .LVU95
+ 484              	.LBB4:
+ 485              		.loc 1 94 10 view .LVU96
+ 486              		.loc 1 94 14 is_stmt 0 view .LVU97
+ 487 0000 0023     		movs	r3, #0
+ 488              	.LBE4:
+  93:Core/Logic/logic.c ****     uint8_t dead_count = 0;
+ 489              		.loc 1 93 13 view .LVU98
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 11
+
+
+ 490 0002 1846     		mov	r0, r3
+ 491              	.LBB5:
+ 492              		.loc 1 94 5 view .LVU99
+ 493 0004 00E0     		b	.L54
+ 494              	.LVL22:
+ 495              	.L55:
+ 496              		.loc 1 94 39 is_stmt 1 discriminator 2 view .LVU100
+ 497              		.loc 1 94 40 is_stmt 0 discriminator 2 view .LVU101
+ 498 0006 0133     		adds	r3, r3, #1
+ 499              	.LVL23:
+ 500              	.L54:
+ 501              		.loc 1 94 21 is_stmt 1 discriminator 1 view .LVU102
+ 502              		.loc 1 94 5 is_stmt 0 discriminator 1 view .LVU103
+ 503 0008 052B     		cmp	r3, #5
+ 504 000a 07DC     		bgt	.L57
+  95:Core/Logic/logic.c ****         if (health.sensor_status[i] == SENSOR_STATUS_DEAD)
+ 505              		.loc 1 95 9 is_stmt 1 view .LVU104
+ 506              		.loc 1 95 33 is_stmt 0 view .LVU105
+ 507 000c 064A     		ldr	r2, .L58
+ 508 000e 1A44     		add	r2, r2, r3
+ 509 0010 127B     		ldrb	r2, [r2, #12]	@ zero_extendqisi2
+ 510              		.loc 1 95 12 view .LVU106
+ 511 0012 022A     		cmp	r2, #2
+ 512 0014 F7D1     		bne	.L55
+  96:Core/Logic/logic.c ****             dead_count++;
+ 513              		.loc 1 96 13 is_stmt 1 view .LVU107
+ 514              		.loc 1 96 23 is_stmt 0 view .LVU108
+ 515 0016 0130     		adds	r0, r0, #1
+ 516              	.LVL24:
+ 517              		.loc 1 96 23 view .LVU109
+ 518 0018 C0B2     		uxtb	r0, r0
+ 519              	.LVL25:
+ 520              		.loc 1 96 23 view .LVU110
+ 521 001a F4E7     		b	.L55
+ 522              	.L57:
+ 523              		.loc 1 96 23 view .LVU111
+ 524              	.LBE5:
+  97:Core/Logic/logic.c ****     return (dead_count >= SENSOR_CRITICAL_FAIL);
+ 525              		.loc 1 97 5 is_stmt 1 view .LVU112
+  98:Core/Logic/logic.c **** }
+ 526              		.loc 1 98 1 is_stmt 0 view .LVU113
+ 527 001c 0328     		cmp	r0, #3
+ 528 001e 94BF     		ite	ls
+ 529 0020 0020     		movls	r0, #0
+ 530              	.LVL26:
+ 531              		.loc 1 98 1 view .LVU114
+ 532 0022 0120     		movhi	r0, #1
+ 533 0024 7047     		bx	lr
+ 534              	.L59:
+ 535 0026 00BF     		.align	2
+ 536              	.L58:
+ 537 0028 00000000 		.word	health
+ 538              		.cfi_endproc
+ 539              	.LFE161:
+ 541              		.section	.text.Logic_Flash_Check_Min_Free,"ax",%progbits
+ 542              		.align	1
+ 543              		.global	Logic_Flash_Check_Min_Free
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 12
+
+
+ 544              		.syntax unified
+ 545              		.thumb
+ 546              		.thumb_func
+ 548              	Logic_Flash_Check_Min_Free:
+ 549              	.LFB162:
+  99:Core/Logic/logic.c **** 
+ 100:Core/Logic/logic.c **** bool Logic_Flash_Check_Min_Free(void)
+ 101:Core/Logic/logic.c **** {
+ 550              		.loc 1 101 1 is_stmt 1 view -0
+ 551              		.cfi_startproc
+ 552              		@ args = 0, pretend = 0, frame = 0
+ 553              		@ frame_needed = 0, uses_anonymous_args = 0
+ 554 0000 08B5     		push	{r3, lr}
+ 555              	.LCFI6:
+ 556              		.cfi_def_cfa_offset 8
+ 557              		.cfi_offset 3, -8
+ 558              		.cfi_offset 14, -4
+ 102:Core/Logic/logic.c ****     
+ 103:Core/Logic/logic.c ****     health.flash_free_kb = SD_GetFreeKB();
+ 559              		.loc 1 103 5 view .LVU116
+ 560              		.loc 1 103 28 is_stmt 0 view .LVU117
+ 561 0002 FFF7FEFF 		bl	SD_GetFreeKB
+ 562              	.LVL27:
+ 563              		.loc 1 103 26 view .LVU118
+ 564 0006 034B     		ldr	r3, .L62
+ 565 0008 9860     		str	r0, [r3, #8]
+ 104:Core/Logic/logic.c ****     return (health.flash_free_kb >= SD_MIN_FREE_KB);
+ 566              		.loc 1 104 5 is_stmt 1 view .LVU119
+ 105:Core/Logic/logic.c **** }
+ 567              		.loc 1 105 1 is_stmt 0 view .LVU120
+ 568 000a 6328     		cmp	r0, #99
+ 569 000c 94BF     		ite	ls
+ 570 000e 0020     		movls	r0, #0
+ 571 0010 0120     		movhi	r0, #1
+ 572 0012 08BD     		pop	{r3, pc}
+ 573              	.L63:
+ 574              		.align	2
+ 575              	.L62:
+ 576 0014 00000000 		.word	health
+ 577              		.cfi_endproc
+ 578              	.LFE162:
+ 580              		.section	.text.Logic_Flash_Get_Free_KB,"ax",%progbits
+ 581              		.align	1
+ 582              		.global	Logic_Flash_Get_Free_KB
+ 583              		.syntax unified
+ 584              		.thumb
+ 585              		.thumb_func
+ 587              	Logic_Flash_Get_Free_KB:
+ 588              	.LFB163:
+ 106:Core/Logic/logic.c **** 
+ 107:Core/Logic/logic.c **** uint32_t Logic_Flash_Get_Free_KB(void)
+ 108:Core/Logic/logic.c **** {
+ 589              		.loc 1 108 1 is_stmt 1 view -0
+ 590              		.cfi_startproc
+ 591              		@ args = 0, pretend = 0, frame = 0
+ 592              		@ frame_needed = 0, uses_anonymous_args = 0
+ 593              		@ link register save eliminated.
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 13
+
+
+ 109:Core/Logic/logic.c ****     return health.flash_free_kb;
+ 594              		.loc 1 109 5 view .LVU122
+ 110:Core/Logic/logic.c **** }
+ 595              		.loc 1 110 1 is_stmt 0 view .LVU123
+ 596 0000 014B     		ldr	r3, .L65
+ 597 0002 9868     		ldr	r0, [r3, #8]
+ 598 0004 7047     		bx	lr
+ 599              	.L66:
+ 600 0006 00BF     		.align	2
+ 601              	.L65:
+ 602 0008 00000000 		.word	health
+ 603              		.cfi_endproc
+ 604              	.LFE163:
+ 606              		.section	.text.Logic_Command_Get_Pending,"ax",%progbits
+ 607              		.align	1
+ 608              		.global	Logic_Command_Get_Pending
+ 609              		.syntax unified
+ 610              		.thumb
+ 611              		.thumb_func
+ 613              	Logic_Command_Get_Pending:
+ 614              	.LFB164:
+ 111:Core/Logic/logic.c **** 
+ 112:Core/Logic/logic.c **** gcs_command_t Logic_Command_Get_Pending(void) { return status.pending; }
+ 615              		.loc 1 112 47 is_stmt 1 view -0
+ 616              		.cfi_startproc
+ 617              		@ args = 0, pretend = 0, frame = 0
+ 618              		@ frame_needed = 0, uses_anonymous_args = 0
+ 619              		@ link register save eliminated.
+ 620              		.loc 1 112 49 view .LVU125
+ 621              		.loc 1 112 72 is_stmt 0 view .LVU126
+ 622 0000 014B     		ldr	r3, .L68
+ 623 0002 187D     		ldrb	r0, [r3, #20]	@ zero_extendqisi2
+ 624 0004 7047     		bx	lr
+ 625              	.L69:
+ 626 0006 00BF     		.align	2
+ 627              	.L68:
+ 628 0008 00000000 		.word	status
+ 629              		.cfi_endproc
+ 630              	.LFE164:
+ 632              		.section	.text.Logic_Command_Set,"ax",%progbits
+ 633              		.align	1
+ 634              		.global	Logic_Command_Set
+ 635              		.syntax unified
+ 636              		.thumb
+ 637              		.thumb_func
+ 639              	Logic_Command_Set:
+ 640              	.LVL28:
+ 641              	.LFB165:
+ 113:Core/Logic/logic.c **** void Logic_Command_Set(gcs_command_t cmd) { status.pending = cmd; }
+ 642              		.loc 1 113 43 is_stmt 1 view -0
+ 643              		.cfi_startproc
+ 644              		@ args = 0, pretend = 0, frame = 0
+ 645              		@ frame_needed = 0, uses_anonymous_args = 0
+ 646              		@ link register save eliminated.
+ 647              		.loc 1 113 45 view .LVU128
+ 648              		.loc 1 113 60 is_stmt 0 view .LVU129
+ 649 0000 014B     		ldr	r3, .L71
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 14
+
+
+ 650 0002 1875     		strb	r0, [r3, #20]
+ 651              		.loc 1 113 67 view .LVU130
+ 652 0004 7047     		bx	lr
+ 653              	.L72:
+ 654 0006 00BF     		.align	2
+ 655              	.L71:
+ 656 0008 00000000 		.word	status
+ 657              		.cfi_endproc
+ 658              	.LFE165:
+ 660              		.section	.text.Logic_Command_Clear,"ax",%progbits
+ 661              		.align	1
+ 662              		.global	Logic_Command_Clear
+ 663              		.syntax unified
+ 664              		.thumb
+ 665              		.thumb_func
+ 667              	Logic_Command_Clear:
+ 668              	.LFB166:
+ 114:Core/Logic/logic.c **** void Logic_Command_Clear(void) { status.pending = CMD_NONE; }
+ 669              		.loc 1 114 32 is_stmt 1 view -0
+ 670              		.cfi_startproc
+ 671              		@ args = 0, pretend = 0, frame = 0
+ 672              		@ frame_needed = 0, uses_anonymous_args = 0
+ 673              		@ link register save eliminated.
+ 674              		.loc 1 114 34 view .LVU132
+ 675              		.loc 1 114 49 is_stmt 0 view .LVU133
+ 676 0000 014B     		ldr	r3, .L74
+ 677 0002 0022     		movs	r2, #0
+ 678 0004 1A75     		strb	r2, [r3, #20]
+ 679              		.loc 1 114 61 view .LVU134
+ 680 0006 7047     		bx	lr
+ 681              	.L75:
+ 682              		.align	2
+ 683              	.L74:
+ 684 0008 00000000 		.word	status
+ 685              		.cfi_endproc
+ 686              	.LFE166:
+ 688              		.section	.rodata.Logic_Log.str1.4,"aMS",%progbits,1
+ 689              		.align	2
+ 690              	.LC0:
+ 691 0000 257300   		.ascii	"%s\000"
+ 692              		.section	.text.Logic_Log,"ax",%progbits
+ 693              		.align	1
+ 694              		.global	Logic_Log
+ 695              		.syntax unified
+ 696              		.thumb
+ 697              		.thumb_func
+ 699              	Logic_Log:
+ 700              	.LVL29:
+ 701              	.LFB167:
+ 115:Core/Logic/logic.c **** 
+ 116:Core/Logic/logic.c **** void Logic_Log(const char *format, ...)
+ 117:Core/Logic/logic.c **** {
+ 702              		.loc 1 117 1 is_stmt 1 view -0
+ 703              		.cfi_startproc
+ 704              		@ args = 4, pretend = 16, frame = 264
+ 705              		@ frame_needed = 0, uses_anonymous_args = 1
+ 706              		.loc 1 117 1 is_stmt 0 view .LVU136
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 15
+
+
+ 707 0000 0FB4     		push	{r0, r1, r2, r3}
+ 708              	.LCFI7:
+ 709              		.cfi_def_cfa_offset 16
+ 710              		.cfi_offset 0, -16
+ 711              		.cfi_offset 1, -12
+ 712              		.cfi_offset 2, -8
+ 713              		.cfi_offset 3, -4
+ 714 0002 00B5     		push	{lr}
+ 715              	.LCFI8:
+ 716              		.cfi_def_cfa_offset 20
+ 717              		.cfi_offset 14, -20
+ 718 0004 C3B0     		sub	sp, sp, #268
+ 719              	.LCFI9:
+ 720              		.cfi_def_cfa_offset 288
+ 721 0006 44AB     		add	r3, sp, #272
+ 722 0008 53F8042B 		ldr	r2, [r3], #4
+ 118:Core/Logic/logic.c ****     char buffer[256];
+ 723              		.loc 1 118 5 is_stmt 1 view .LVU137
+ 119:Core/Logic/logic.c ****     va_list args;
+ 724              		.loc 1 119 5 view .LVU138
+ 120:Core/Logic/logic.c ****     va_start(args, format);
+ 725              		.loc 1 120 5 view .LVU139
+ 726 000c 0193     		str	r3, [sp, #4]
+ 121:Core/Logic/logic.c ****     vsnprintf(buffer, sizeof(buffer), format, args); 
+ 727              		.loc 1 121 5 view .LVU140
+ 728 000e 4FF48071 		mov	r1, #256
+ 729 0012 02A8     		add	r0, sp, #8
+ 730 0014 FFF7FEFF 		bl	vsnprintf
+ 731              	.LVL30:
+ 122:Core/Logic/logic.c ****     va_end(args);
+ 732              		.loc 1 122 5 view .LVU141
+ 123:Core/Logic/logic.c ****     
+ 124:Core/Logic/logic.c ****     Hardware_UART_Printf("%s", buffer);
+ 733              		.loc 1 124 5 view .LVU142
+ 734 0018 02A9     		add	r1, sp, #8
+ 735 001a 0448     		ldr	r0, .L78
+ 736 001c FFF7FEFF 		bl	Hardware_UART_Printf
+ 737              	.LVL31:
+ 125:Core/Logic/logic.c **** }
+ 738              		.loc 1 125 1 is_stmt 0 view .LVU143
+ 739 0020 43B0     		add	sp, sp, #268
+ 740              	.LCFI10:
+ 741              		.cfi_def_cfa_offset 20
+ 742              		@ sp needed
+ 743 0022 5DF804EB 		ldr	lr, [sp], #4
+ 744              	.LCFI11:
+ 745              		.cfi_restore 14
+ 746              		.cfi_def_cfa_offset 16
+ 747 0026 04B0     		add	sp, sp, #16
+ 748              	.LCFI12:
+ 749              		.cfi_restore 3
+ 750              		.cfi_restore 2
+ 751              		.cfi_restore 1
+ 752              		.cfi_restore 0
+ 753              		.cfi_def_cfa_offset 0
+ 754 0028 7047     		bx	lr
+ 755              	.L79:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 16
+
+
+ 756 002a 00BF     		.align	2
+ 757              	.L78:
+ 758 002c 00000000 		.word	.LC0
+ 759              		.cfi_endproc
+ 760              	.LFE167:
+ 762              		.section	.text.Logic_GPS_GetUnixTime,"ax",%progbits
+ 763              		.align	1
+ 764              		.global	Logic_GPS_GetUnixTime
+ 765              		.syntax unified
+ 766              		.thumb
+ 767              		.thumb_func
+ 769              	Logic_GPS_GetUnixTime:
+ 770              	.LFB168:
+ 126:Core/Logic/logic.c **** 
+ 127:Core/Logic/logic.c **** uint32_t Logic_GPS_GetUnixTime(void) 
+ 128:Core/Logic/logic.c **** {
+ 771              		.loc 1 128 1 is_stmt 1 view -0
+ 772              		.cfi_startproc
+ 773              		@ args = 0, pretend = 0, frame = 40
+ 774              		@ frame_needed = 0, uses_anonymous_args = 0
+ 775 0000 00B5     		push	{lr}
+ 776              	.LCFI13:
+ 777              		.cfi_def_cfa_offset 4
+ 778              		.cfi_offset 14, -4
+ 779 0002 8BB0     		sub	sp, sp, #44
+ 780              	.LCFI14:
+ 781              		.cfi_def_cfa_offset 48
+ 129:Core/Logic/logic.c ****     extern neo8m_handle_t gps_handle;
+ 782              		.loc 1 129 5 view .LVU145
+ 130:Core/Logic/logic.c ****     struct tm t = {
+ 783              		.loc 1 130 5 view .LVU146
+ 784              		.loc 1 130 15 is_stmt 0 view .LVU147
+ 785 0004 2422     		movs	r2, #36
+ 786 0006 0021     		movs	r1, #0
+ 787 0008 01A8     		add	r0, sp, #4
+ 788 000a FFF7FEFF 		bl	memset
+ 789              	.LVL32:
+ 131:Core/Logic/logic.c ****         .tm_year = gps_handle.data.date.year - 1900,
+ 132:Core/Logic/logic.c ****         .tm_mon = gps_handle.data.date.month - 1,
+ 133:Core/Logic/logic.c ****         .tm_mday = gps_handle.data.date.day,
+ 134:Core/Logic/logic.c ****         .tm_hour = gps_handle.data.time.hour,
+ 135:Core/Logic/logic.c ****         .tm_min = gps_handle.data.time.minute,
+ 136:Core/Logic/logic.c ****         .tm_sec = gps_handle.data.time.second
+ 790              		.loc 1 136 39 view .LVU148
+ 791 000e 0E4B     		ldr	r3, .L82
+ 792 0010 93F83021 		ldrb	r2, [r3, #304]	@ zero_extendqisi2
+ 130:Core/Logic/logic.c ****     struct tm t = {
+ 793              		.loc 1 130 15 view .LVU149
+ 794 0014 0192     		str	r2, [sp, #4]
+ 135:Core/Logic/logic.c ****         .tm_sec = gps_handle.data.time.second
+ 795              		.loc 1 135 39 view .LVU150
+ 796 0016 93F82F21 		ldrb	r2, [r3, #303]	@ zero_extendqisi2
+ 130:Core/Logic/logic.c ****     struct tm t = {
+ 797              		.loc 1 130 15 view .LVU151
+ 798 001a 0292     		str	r2, [sp, #8]
+ 134:Core/Logic/logic.c ****         .tm_min = gps_handle.data.time.minute,
+ 799              		.loc 1 134 40 view .LVU152
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 17
+
+
+ 800 001c 93F82E21 		ldrb	r2, [r3, #302]	@ zero_extendqisi2
+ 130:Core/Logic/logic.c ****         .tm_year = gps_handle.data.date.year - 1900,
+ 801              		.loc 1 130 15 view .LVU153
+ 802 0020 0392     		str	r2, [sp, #12]
+ 133:Core/Logic/logic.c ****         .tm_hour = gps_handle.data.time.hour,
+ 803              		.loc 1 133 40 view .LVU154
+ 804 0022 93F83421 		ldrb	r2, [r3, #308]	@ zero_extendqisi2
+ 130:Core/Logic/logic.c ****         .tm_year = gps_handle.data.date.year - 1900,
+ 805              		.loc 1 130 15 view .LVU155
+ 806 0026 0492     		str	r2, [sp, #16]
+ 132:Core/Logic/logic.c ****         .tm_mday = gps_handle.data.date.day,
+ 807              		.loc 1 132 39 view .LVU156
+ 808 0028 93F83521 		ldrb	r2, [r3, #309]	@ zero_extendqisi2
+ 132:Core/Logic/logic.c ****         .tm_mday = gps_handle.data.date.day,
+ 809              		.loc 1 132 46 view .LVU157
+ 810 002c 013A     		subs	r2, r2, #1
+ 130:Core/Logic/logic.c ****         .tm_year = gps_handle.data.date.year - 1900,
+ 811              		.loc 1 130 15 view .LVU158
+ 812 002e 0592     		str	r2, [sp, #20]
+ 131:Core/Logic/logic.c ****         .tm_mon = gps_handle.data.date.month - 1,
+ 813              		.loc 1 131 40 view .LVU159
+ 814 0030 B3F83631 		ldrh	r3, [r3, #310]
+ 131:Core/Logic/logic.c ****         .tm_mon = gps_handle.data.date.month - 1,
+ 815              		.loc 1 131 46 view .LVU160
+ 816 0034 A3F26C73 		subw	r3, r3, #1900
+ 130:Core/Logic/logic.c ****         .tm_year = gps_handle.data.date.year - 1900,
+ 817              		.loc 1 130 15 view .LVU161
+ 818 0038 0693     		str	r3, [sp, #24]
+ 137:Core/Logic/logic.c ****     };
+ 138:Core/Logic/logic.c ****     return mktime(&t);
+ 819              		.loc 1 138 5 is_stmt 1 view .LVU162
+ 820              		.loc 1 138 12 is_stmt 0 view .LVU163
+ 821 003a 01A8     		add	r0, sp, #4
+ 822 003c FFF7FEFF 		bl	mktime
+ 823              	.LVL33:
+ 139:Core/Logic/logic.c **** }
+ 824              		.loc 1 139 1 view .LVU164
+ 825 0040 0BB0     		add	sp, sp, #44
+ 826              	.LCFI15:
+ 827              		.cfi_def_cfa_offset 4
+ 828              		@ sp needed
+ 829 0042 5DF804FB 		ldr	pc, [sp], #4
+ 830              	.L83:
+ 831 0046 00BF     		.align	2
+ 832              	.L82:
+ 833 0048 00000000 		.word	gps_handle
+ 834              		.cfi_endproc
+ 835              	.LFE168:
+ 837              		.text
+ 838              	.Letext0:
+ 839              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 840              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 841              		.file 4 "Core/Lib/cubesat_data.h"
+ 842              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 843              		.file 6 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 844              		.file 7 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 845              		.file 8 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 18
+
+
+ 846              		.file 9 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 847              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 848              		.file 11 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 849              		.file 12 "Core/Lib/INA219.h"
+ 850              		.file 13 "Core/Lib/axis.h"
+ 851              		.file 14 "Core/Lib/mpu6050.h"
+ 852              		.file 15 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 853              		.file 16 "Core/Lib/neo8m.h"
+ 854              		.file 17 "Core/Hardware/hardware.h"
+ 855              		.file 18 "Core/Lib/sdcard.h"
+ 856              		.file 19 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 logic.c
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:19     .text.Logic_GetHealth:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:25     .text.Logic_GetHealth:00000000 Logic_GetHealth
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:40     .text.Logic_GetHealth:00000004 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:45     .text.Logic_GetStatus:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:51     .text.Logic_GetStatus:00000000 Logic_GetStatus
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:65     .text.Logic_GetStatus:00000004 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:70     .text.Logic_Battery_Read:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:76     .text.Logic_Battery_Read:00000000 Logic_Battery_Read
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:116    .text.Logic_Battery_Read:00000028 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:122    .text.Logic_Battery_Check_Critical:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:128    .text.Logic_Battery_Check_Critical:00000000 Logic_Battery_Check_Critical
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:161    .text.Logic_Battery_Check_Critical:00000014 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:166    .text.Logic_Battery_Check_Low:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:172    .text.Logic_Battery_Check_Low:00000000 Logic_Battery_Check_Low
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:205    .text.Logic_Battery_Check_Low:00000014 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:210    .text.Logic_Battery_Check_Comm:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:216    .text.Logic_Battery_Check_Comm:00000000 Logic_Battery_Check_Comm
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:249    .text.Logic_Battery_Check_Comm:00000014 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:254    .text.Logic_Temp_Read:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:260    .text.Logic_Temp_Read:00000000 Logic_Temp_Read
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:294    .text.Logic_Temp_Read:0000001c $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:300    .text.Logic_Temp_Check_Safe:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:306    .text.Logic_Temp_Check_Safe:00000000 Logic_Temp_Check_Safe
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:351    .text.Logic_Temp_Check_Safe:00000034 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:357    .text.Logic_Sensor_Count_Working:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:363    .text.Logic_Sensor_Count_Working:00000000 Logic_Sensor_Count_Working
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:426    .text.Logic_Sensor_Count_Working:00000024 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:431    .text.Logic_Sensor_Mark_Dead:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:437    .text.Logic_Sensor_Mark_Dead:00000000 Logic_Sensor_Mark_Dead
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:463    .text.Logic_Sensor_Mark_Dead:00000010 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:468    .text.Logic_Sensor_Check_Critical_Fail:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:474    .text.Logic_Sensor_Check_Critical_Fail:00000000 Logic_Sensor_Check_Critical_Fail
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:537    .text.Logic_Sensor_Check_Critical_Fail:00000028 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:542    .text.Logic_Flash_Check_Min_Free:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:548    .text.Logic_Flash_Check_Min_Free:00000000 Logic_Flash_Check_Min_Free
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:576    .text.Logic_Flash_Check_Min_Free:00000014 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:581    .text.Logic_Flash_Get_Free_KB:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:587    .text.Logic_Flash_Get_Free_KB:00000000 Logic_Flash_Get_Free_KB
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:602    .text.Logic_Flash_Get_Free_KB:00000008 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:607    .text.Logic_Command_Get_Pending:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:613    .text.Logic_Command_Get_Pending:00000000 Logic_Command_Get_Pending
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:628    .text.Logic_Command_Get_Pending:00000008 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:633    .text.Logic_Command_Set:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:639    .text.Logic_Command_Set:00000000 Logic_Command_Set
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:656    .text.Logic_Command_Set:00000008 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:661    .text.Logic_Command_Clear:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:667    .text.Logic_Command_Clear:00000000 Logic_Command_Clear
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:684    .text.Logic_Command_Clear:00000008 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:689    .rodata.Logic_Log.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:693    .text.Logic_Log:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:699    .text.Logic_Log:00000000 Logic_Log
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:758    .text.Logic_Log:0000002c $d
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:763    .text.Logic_GPS_GetUnixTime:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:769    .text.Logic_GPS_GetUnixTime:00000000 Logic_GPS_GetUnixTime
+C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s:833    .text.Logic_GPS_GetUnixTime:00000048 $d
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cc3VIsZy.s 			page 20
+
+
+
+UNDEFINED SYMBOLS
+health
+status
+Checkbattery
+ina219_BatteryLife
+hina219
+mpu6050_read_all
+mpu_handle
+SD_GetFreeKB
+vsnprintf
+Hardware_UART_Printf
+memset
+mktime
+gps_handle

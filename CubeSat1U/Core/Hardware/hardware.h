@@ -7,7 +7,10 @@
 #include "neo8m.h"
 #include "INA219.h"
 #include "OV2640.h"
+#include "sdcard.h"
+#include "lora_e32.h"
 #include "cubesat_data.h"
+#include "stm32h7xx_hal.h"
 
 typedef enum {
   HW_OK = 0,
@@ -35,9 +38,12 @@ typedef struct
 } hardware_t;
 
 //external peripheral handles
-extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2, hi2c4;
 extern UART_HandleTypeDef huart3, huart2;
+extern RTC_HandleTypeDef hrtc;
+extern DMA_HandleTypeDef hdma_dcmi;
 //extern DCMI_HandleTypeDef hdcmi;
+
 
 //initialization functions
 hw_status_t hardware_init(hardware_t *hw);

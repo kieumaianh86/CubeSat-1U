@@ -18,7 +18,7 @@ typedef enum {
 } safe_error_t;
 
 safe_error_t Logic_Safe_Init(void);
-safe_error_t Logic_Safe_Process(uint32_t dt_ms);
+safe_error_t Logic_Safe_Process(void);
 safe_error_t Logic_Safe_Reset(void);
 uint32_t Logic_Safe_GetTimer(void);
 

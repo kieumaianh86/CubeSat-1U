@@ -1,0 +1,1684 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"INA219.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.read_16bit,"ax",%progbits
+  19              		.align	1
+  20              		.global	read_16bit
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	read_16bit:
+  26              	.LVL0:
+  27              	.LFB147:
+  28              		.file 1 "Core/Lib/INA219.c"
+   1:Core/Lib/INA219.c **** #include "INA219.h"
+   2:Core/Lib/INA219.c **** 
+   3:Core/Lib/INA219.c **** const uint8_t ina_reg_config       = 0x00;
+   4:Core/Lib/INA219.c **** const uint8_t ina_reg_shuntvoltage = 0x01;
+   5:Core/Lib/INA219.c **** const uint8_t ina_reg_bus_voltage  = 0x02;
+   6:Core/Lib/INA219.c **** const uint8_t ina_reg_power        = 0x03;
+   7:Core/Lib/INA219.c **** const uint8_t ina_reg_current      = 0x04;
+   8:Core/Lib/INA219.c **** const uint8_t ina_reg_calibration  = 0x05;
+   9:Core/Lib/INA219.c **** 
+  10:Core/Lib/INA219.c **** const uint16_t ina_config_reset    = 0x8000;
+  11:Core/Lib/INA219.c **** 
+  12:Core/Lib/INA219.c **** 
+  13:Core/Lib/INA219.c **** INA219_STATUS_t read_16bit(ina219_t *ina219, uint8_t Register, uint16_t *value) {
+  29              		.loc 1 13 81 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  14:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+  33              		.loc 1 14 5 view .LVU1
+  34              		.loc 1 14 7 is_stmt 0 view .LVU2
+  35 0000 D0B1     		cbz	r0, .L3
+  13:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+  36              		.loc 1 13 81 view .LVU3
+  37 0002 10B5     		push	{r4, lr}
+  38              	.LCFI0:
+  39              		.cfi_def_cfa_offset 8
+  40              		.cfi_offset 4, -8
+  41              		.cfi_offset 14, -4
+  42 0004 86B0     		sub	sp, sp, #24
+  43              	.LCFI1:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 2
+
+
+  44              		.cfi_def_cfa_offset 32
+  45 0006 1446     		mov	r4, r2
+  46 0008 0346     		mov	r3, r0
+  15:Core/Lib/INA219.c ****     if(!ina219->ina219_i2c) return INA219_I2C_ERROR;
+  47              		.loc 1 15 5 is_stmt 1 view .LVU4
+  48              		.loc 1 15 15 is_stmt 0 view .LVU5
+  49 000a 0068     		ldr	r0, [r0]
+  50              	.LVL1:
+  51              		.loc 1 15 7 view .LVU6
+  52 000c B0B1     		cbz	r0, .L4
+  16:Core/Lib/INA219.c **** 
+  17:Core/Lib/INA219.c ****     reg16_t reg;
+  53              		.loc 1 17 5 is_stmt 1 view .LVU7
+  18:Core/Lib/INA219.c **** 
+  19:Core/Lib/INA219.c ****     if (HAL_I2C_Mem_Read(ina219 -> ina219_i2c, ina219 -> Address << 1, Register, 1, reg.bytes, 2, 1
+  54              		.loc 1 19 5 view .LVU8
+  55              		.loc 1 19 55 is_stmt 0 view .LVU9
+  56 000e 93F804C0 		ldrb	ip, [r3, #4]	@ zero_extendqisi2
+  57              		.loc 1 19 9 view .LVU10
+  58 0012 4FF47A73 		mov	r3, #1000
+  59              	.LVL2:
+  60              		.loc 1 19 9 view .LVU11
+  61 0016 0293     		str	r3, [sp, #8]
+  62 0018 0223     		movs	r3, #2
+  63 001a 0193     		str	r3, [sp, #4]
+  64 001c 05AB     		add	r3, sp, #20
+  65 001e 0093     		str	r3, [sp]
+  66 0020 0123     		movs	r3, #1
+  67 0022 0A46     		mov	r2, r1
+  68              	.LVL3:
+  69              		.loc 1 19 9 view .LVU12
+  70 0024 0CFA03F1 		lsl	r1, ip, r3
+  71              	.LVL4:
+  72              		.loc 1 19 9 view .LVU13
+  73 0028 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+  74              	.LVL5:
+  75              		.loc 1 19 8 view .LVU14
+  76 002c 40B9     		cbnz	r0, .L5
+  20:Core/Lib/INA219.c ****     {
+  21:Core/Lib/INA219.c ****         return INA219_I2C_ERROR;
+  22:Core/Lib/INA219.c ****     }
+  23:Core/Lib/INA219.c ****     else {
+  24:Core/Lib/INA219.c ****         *value = reg.data;
+  77              		.loc 1 24 9 is_stmt 1 view .LVU15
+  78              		.loc 1 24 21 is_stmt 0 view .LVU16
+  79 002e BDF81430 		ldrh	r3, [sp, #20]
+  80              		.loc 1 24 16 view .LVU17
+  81 0032 2380     		strh	r3, [r4]	@ movhi
+  25:Core/Lib/INA219.c ****         return INA219_OK;
+  82              		.loc 1 25 9 is_stmt 1 view .LVU18
+  83              	.L2:
+  26:Core/Lib/INA219.c ****     }
+  27:Core/Lib/INA219.c **** }
+  84              		.loc 1 27 1 is_stmt 0 view .LVU19
+  85 0034 06B0     		add	sp, sp, #24
+  86              	.LCFI2:
+  87              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 3
+
+
+  88              		@ sp needed
+  89 0036 10BD     		pop	{r4, pc}
+  90              	.LVL6:
+  91              	.L3:
+  92              	.LCFI3:
+  93              		.cfi_def_cfa_offset 0
+  94              		.cfi_restore 4
+  95              		.cfi_restore 14
+  14:Core/Lib/INA219.c ****     if(!ina219->ina219_i2c) return INA219_I2C_ERROR;
+  96              		.loc 1 14 24 view .LVU20
+  97 0038 0320     		movs	r0, #3
+  98              	.LVL7:
+  99              		.loc 1 27 1 view .LVU21
+ 100 003a 7047     		bx	lr
+ 101              	.LVL8:
+ 102              	.L4:
+ 103              	.LCFI4:
+ 104              		.cfi_def_cfa_offset 32
+ 105              		.cfi_offset 4, -8
+ 106              		.cfi_offset 14, -4
+  15:Core/Lib/INA219.c **** 
+ 107              		.loc 1 15 36 view .LVU22
+ 108 003c 0220     		movs	r0, #2
+ 109 003e F9E7     		b	.L2
+ 110              	.LVL9:
+ 111              	.L5:
+  21:Core/Lib/INA219.c ****     }
+ 112              		.loc 1 21 16 view .LVU23
+ 113 0040 0220     		movs	r0, #2
+ 114 0042 F7E7     		b	.L2
+ 115              		.cfi_endproc
+ 116              	.LFE147:
+ 118              		.section	.text.write_16bit,"ax",%progbits
+ 119              		.align	1
+ 120              		.global	write_16bit
+ 121              		.syntax unified
+ 122              		.thumb
+ 123              		.thumb_func
+ 125              	write_16bit:
+ 126              	.LVL10:
+ 127              	.LFB148:
+  28:Core/Lib/INA219.c **** 
+  29:Core/Lib/INA219.c **** INA219_STATUS_t write_16bit(ina219_t *ina219, uint8_t Register, uint16_t value){
+ 128              		.loc 1 29 80 is_stmt 1 view -0
+ 129              		.cfi_startproc
+ 130              		@ args = 0, pretend = 0, frame = 8
+ 131              		@ frame_needed = 0, uses_anonymous_args = 0
+  30:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 132              		.loc 1 30 5 view .LVU25
+ 133              		.loc 1 30 7 is_stmt 0 view .LVU26
+ 134 0000 D0B1     		cbz	r0, .L12
+ 135 0002 8446     		mov	ip, r0
+  31:Core/Lib/INA219.c ****     if(!ina219->ina219_i2c) return INA219_I2C_ERROR;
+ 136              		.loc 1 31 5 is_stmt 1 view .LVU27
+ 137              		.loc 1 31 15 is_stmt 0 view .LVU28
+ 138 0004 0368     		ldr	r3, [r0]
+ 139              		.loc 1 31 7 view .LVU29
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 4
+
+
+ 140 0006 CBB1     		cbz	r3, .L13
+  29:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 141              		.loc 1 29 80 view .LVU30
+ 142 0008 00B5     		push	{lr}
+ 143              	.LCFI5:
+ 144              		.cfi_def_cfa_offset 4
+ 145              		.cfi_offset 14, -4
+ 146 000a 87B0     		sub	sp, sp, #28
+ 147              	.LCFI6:
+ 148              		.cfi_def_cfa_offset 32
+  32:Core/Lib/INA219.c ****     reg16_t reg;
+ 149              		.loc 1 32 5 is_stmt 1 view .LVU31
+  33:Core/Lib/INA219.c ****     reg.data = value;
+ 150              		.loc 1 33 5 view .LVU32
+ 151              		.loc 1 33 14 is_stmt 0 view .LVU33
+ 152 000c ADF81420 		strh	r2, [sp, #20]	@ movhi
+  34:Core/Lib/INA219.c ****     if(HAL_I2C_Mem_Write(ina219->ina219_i2c, ina219->Address << 1, Register, 1, reg.bytes, 2, 1000)
+ 153              		.loc 1 34 5 is_stmt 1 view .LVU34
+ 154              		.loc 1 34 52 is_stmt 0 view .LVU35
+ 155 0010 0079     		ldrb	r0, [r0, #4]	@ zero_extendqisi2
+ 156              	.LVL11:
+ 157              		.loc 1 34 8 view .LVU36
+ 158 0012 4FF47A73 		mov	r3, #1000
+ 159 0016 0293     		str	r3, [sp, #8]
+ 160 0018 0223     		movs	r3, #2
+ 161 001a 0193     		str	r3, [sp, #4]
+ 162 001c 05AB     		add	r3, sp, #20
+ 163 001e 0093     		str	r3, [sp]
+ 164 0020 0123     		movs	r3, #1
+ 165 0022 0A46     		mov	r2, r1
+ 166              	.LVL12:
+ 167              		.loc 1 34 8 view .LVU37
+ 168 0024 00FA03F1 		lsl	r1, r0, r3
+ 169              	.LVL13:
+ 170              		.loc 1 34 8 view .LVU38
+ 171 0028 DCF80000 		ldr	r0, [ip]
+ 172 002c FFF7FEFF 		bl	HAL_I2C_Mem_Write
+ 173              	.LVL14:
+ 174              		.loc 1 34 7 view .LVU39
+ 175 0030 30B9     		cbnz	r0, .L19
+ 176              	.L11:
+  35:Core/Lib/INA219.c ****     {
+  36:Core/Lib/INA219.c ****         return INA219_I2C_ERROR;
+  37:Core/Lib/INA219.c ****     }
+  38:Core/Lib/INA219.c ****     return INA219_OK;
+  39:Core/Lib/INA219.c **** }
+ 177              		.loc 1 39 1 view .LVU40
+ 178 0032 07B0     		add	sp, sp, #28
+ 179              	.LCFI7:
+ 180              		.cfi_def_cfa_offset 4
+ 181              		@ sp needed
+ 182 0034 5DF804FB 		ldr	pc, [sp], #4
+ 183              	.LVL15:
+ 184              	.L12:
+ 185              	.LCFI8:
+ 186              		.cfi_def_cfa_offset 0
+ 187              		.cfi_restore 14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 5
+
+
+  30:Core/Lib/INA219.c ****     if(!ina219->ina219_i2c) return INA219_I2C_ERROR;
+ 188              		.loc 1 30 24 view .LVU41
+ 189 0038 0320     		movs	r0, #3
+ 190              	.LVL16:
+  30:Core/Lib/INA219.c ****     if(!ina219->ina219_i2c) return INA219_I2C_ERROR;
+ 191              		.loc 1 30 24 view .LVU42
+ 192 003a 7047     		bx	lr
+ 193              	.LVL17:
+ 194              	.L13:
+  31:Core/Lib/INA219.c ****     reg16_t reg;
+ 195              		.loc 1 31 36 view .LVU43
+ 196 003c 0220     		movs	r0, #2
+ 197              	.LVL18:
+ 198              		.loc 1 39 1 view .LVU44
+ 199 003e 7047     		bx	lr
+ 200              	.LVL19:
+ 201              	.L19:
+ 202              	.LCFI9:
+ 203              		.cfi_def_cfa_offset 32
+ 204              		.cfi_offset 14, -4
+  36:Core/Lib/INA219.c ****     }
+ 205              		.loc 1 36 16 view .LVU45
+ 206 0040 0220     		movs	r0, #2
+ 207 0042 F6E7     		b	.L11
+ 208              		.cfi_endproc
+ 209              	.LFE148:
+ 211              		.section	.text.ina219_ReadBusVoltage,"ax",%progbits
+ 212              		.align	1
+ 213              		.global	ina219_ReadBusVoltage
+ 214              		.syntax unified
+ 215              		.thumb
+ 216              		.thumb_func
+ 218              	ina219_ReadBusVoltage:
+ 219              	.LVL20:
+ 220              	.LFB149:
+  40:Core/Lib/INA219.c **** 
+  41:Core/Lib/INA219.c **** INA219_STATUS_t ina219_ReadBusVoltage(ina219_t *ina219) {
+ 221              		.loc 1 41 57 is_stmt 1 view -0
+ 222              		.cfi_startproc
+ 223              		@ args = 0, pretend = 0, frame = 8
+ 224              		@ frame_needed = 0, uses_anonymous_args = 0
+  42:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 225              		.loc 1 42 5 view .LVU47
+ 226              		.loc 1 42 7 is_stmt 0 view .LVU48
+ 227 0000 D0B1     		cbz	r0, .L22
+  41:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 228              		.loc 1 41 57 view .LVU49
+ 229 0002 10B5     		push	{r4, lr}
+ 230              	.LCFI10:
+ 231              		.cfi_def_cfa_offset 8
+ 232              		.cfi_offset 4, -8
+ 233              		.cfi_offset 14, -4
+ 234 0004 82B0     		sub	sp, sp, #8
+ 235              	.LCFI11:
+ 236              		.cfi_def_cfa_offset 16
+ 237 0006 0446     		mov	r4, r0
+  43:Core/Lib/INA219.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 6
+
+
+  44:Core/Lib/INA219.c ****     uint16_t result_raw = 0;
+ 238              		.loc 1 44 5 is_stmt 1 view .LVU50
+ 239              		.loc 1 44 14 is_stmt 0 view .LVU51
+ 240 0008 0023     		movs	r3, #0
+ 241 000a ADF80630 		strh	r3, [sp, #6]	@ movhi
+  45:Core/Lib/INA219.c ****     if(read_16bit(ina219, ina_reg_bus_voltage, &result_raw) != INA219_OK) return INA219_I2C_ERROR;
+ 242              		.loc 1 45 5 is_stmt 1 view .LVU52
+ 243              		.loc 1 45 8 is_stmt 0 view .LVU53
+ 244 000e 0DF10602 		add	r2, sp, #6
+ 245 0012 0221     		movs	r1, #2
+ 246 0014 FFF7FEFF 		bl	read_16bit
+ 247              	.LVL21:
+ 248              		.loc 1 45 7 view .LVU54
+ 249 0018 80B9     		cbnz	r0, .L23
+  46:Core/Lib/INA219.c ****     ina219->BusVoltage = ((result_raw >> 3) * 4);
+ 250              		.loc 1 46 5 is_stmt 1 view .LVU55
+ 251              		.loc 1 46 24 is_stmt 0 view .LVU56
+ 252 001a BDF80630 		ldrh	r3, [sp, #6]
+ 253 001e DB08     		lsrs	r3, r3, #3
+ 254 0020 9B00     		lsls	r3, r3, #2
+ 255 0022 E380     		strh	r3, [r4, #6]	@ movhi
+  47:Core/Lib/INA219.c ****     //Bus Voltage Register contents must be shifted right by three bits
+  48:Core/Lib/INA219.c ****     //result must be multiplied by the Bus Voltage LSB of 4mV
+  49:Core/Lib/INA219.c ****     if (ina219->BusVoltage > BUS_THRESHOLD_OVER) return INA219_BUS_OVER;
+ 256              		.loc 1 49 5 is_stmt 1 view .LVU57
+ 257              		.loc 1 49 8 is_stmt 0 view .LVU58
+ 258 0024 41F29A02 		movw	r2, #4250
+ 259 0028 9342     		cmp	r3, r2
+ 260 002a 09D8     		bhi	.L24
+  50:Core/Lib/INA219.c ****     if (ina219->BusVoltage < BUS_THRESHOLD_UNDER) return INA219_BUS_UNDER;
+ 261              		.loc 1 50 5 is_stmt 1 view .LVU59
+ 262              		.loc 1 50 8 is_stmt 0 view .LVU60
+ 263 002c 40F6B732 		movw	r2, #2999
+ 264 0030 9342     		cmp	r3, r2
+ 265 0032 07D9     		bls	.L30
+ 266              	.L21:
+  51:Core/Lib/INA219.c **** 
+  52:Core/Lib/INA219.c ****     return INA219_OK;
+  53:Core/Lib/INA219.c **** }
+ 267              		.loc 1 53 1 view .LVU61
+ 268 0034 02B0     		add	sp, sp, #8
+ 269              	.LCFI12:
+ 270              		.cfi_def_cfa_offset 8
+ 271              		@ sp needed
+ 272 0036 10BD     		pop	{r4, pc}
+ 273              	.LVL22:
+ 274              	.L22:
+ 275              	.LCFI13:
+ 276              		.cfi_def_cfa_offset 0
+ 277              		.cfi_restore 4
+ 278              		.cfi_restore 14
+  42:Core/Lib/INA219.c **** 
+ 279              		.loc 1 42 24 view .LVU62
+ 280 0038 0320     		movs	r0, #3
+ 281              	.LVL23:
+ 282              		.loc 1 53 1 view .LVU63
+ 283 003a 7047     		bx	lr
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 7
+
+
+ 284              	.LVL24:
+ 285              	.L23:
+ 286              	.LCFI14:
+ 287              		.cfi_def_cfa_offset 16
+ 288              		.cfi_offset 4, -8
+ 289              		.cfi_offset 14, -4
+  45:Core/Lib/INA219.c ****     ina219->BusVoltage = ((result_raw >> 3) * 4);
+ 290              		.loc 1 45 82 view .LVU64
+ 291 003c 0220     		movs	r0, #2
+ 292 003e F9E7     		b	.L21
+ 293              	.L24:
+  49:Core/Lib/INA219.c ****     if (ina219->BusVoltage < BUS_THRESHOLD_UNDER) return INA219_BUS_UNDER;
+ 294              		.loc 1 49 57 view .LVU65
+ 295 0040 0420     		movs	r0, #4
+ 296 0042 F7E7     		b	.L21
+ 297              	.L30:
+  50:Core/Lib/INA219.c **** 
+ 298              		.loc 1 50 58 view .LVU66
+ 299 0044 0520     		movs	r0, #5
+ 300 0046 F5E7     		b	.L21
+ 301              		.cfi_endproc
+ 302              	.LFE149:
+ 304              		.section	.text.ina219_ReadCurrent,"ax",%progbits
+ 305              		.align	1
+ 306              		.global	ina219_ReadCurrent
+ 307              		.syntax unified
+ 308              		.thumb
+ 309              		.thumb_func
+ 311              	ina219_ReadCurrent:
+ 312              	.LVL25:
+ 313              	.LFB150:
+  54:Core/Lib/INA219.c **** 
+  55:Core/Lib/INA219.c **** INA219_STATUS_t ina219_ReadCurrent(ina219_t *ina219) {
+ 314              		.loc 1 55 54 is_stmt 1 view -0
+ 315              		.cfi_startproc
+ 316              		@ args = 0, pretend = 0, frame = 8
+ 317              		@ frame_needed = 0, uses_anonymous_args = 0
+  56:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 318              		.loc 1 56 5 view .LVU68
+ 319              		.loc 1 56 7 is_stmt 0 view .LVU69
+ 320 0000 B8B1     		cbz	r0, .L33
+  55:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 321              		.loc 1 55 54 view .LVU70
+ 322 0002 10B5     		push	{r4, lr}
+ 323              	.LCFI15:
+ 324              		.cfi_def_cfa_offset 8
+ 325              		.cfi_offset 4, -8
+ 326              		.cfi_offset 14, -4
+ 327 0004 82B0     		sub	sp, sp, #8
+ 328              	.LCFI16:
+ 329              		.cfi_def_cfa_offset 16
+ 330 0006 0446     		mov	r4, r0
+  57:Core/Lib/INA219.c **** 
+  58:Core/Lib/INA219.c ****     uint16_t result_raw = 0;
+ 331              		.loc 1 58 5 is_stmt 1 view .LVU71
+ 332              		.loc 1 58 14 is_stmt 0 view .LVU72
+ 333 0008 0023     		movs	r3, #0
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 8
+
+
+ 334 000a ADF80630 		strh	r3, [sp, #6]	@ movhi
+  59:Core/Lib/INA219.c ****     if(read_16bit(ina219, ina_reg_current, &result_raw) != INA219_OK) return INA219_I2C_ERROR;
+ 335              		.loc 1 59 5 is_stmt 1 view .LVU73
+ 336              		.loc 1 59 8 is_stmt 0 view .LVU74
+ 337 000e 0DF10602 		add	r2, sp, #6
+ 338 0012 0421     		movs	r1, #4
+ 339 0014 FFF7FEFF 		bl	read_16bit
+ 340              	.LVL26:
+ 341              		.loc 1 59 7 view .LVU75
+ 342 0018 68B9     		cbnz	r0, .L34
+  60:Core/Lib/INA219.c ****     int16_t result = (int16_t)(result_raw * CURRENT_LSB * MILLI_TO_MICRO);
+ 343              		.loc 1 60 5 is_stmt 1 view .LVU76
+ 344              		.loc 1 60 22 is_stmt 0 view .LVU77
+ 345 001a BDF80630 		ldrh	r3, [sp, #6]
+ 346 001e C3EB4312 		rsb	r2, r3, r3, lsl #5
+ 347 0022 03EB8203 		add	r3, r3, r2, lsl #2
+ 348 0026 03EB8313 		add	r3, r3, r3, lsl #6
+ 349 002a DB00     		lsls	r3, r3, #3
+ 350              	.LVL27:
+  61:Core/Lib/INA219.c ****     ina219->Current = result;
+ 351              		.loc 1 61 5 is_stmt 1 view .LVU78
+ 352              		.loc 1 61 21 is_stmt 0 view .LVU79
+ 353 002c 6381     		strh	r3, [r4, #10]	@ movhi
+  62:Core/Lib/INA219.c ****     return INA219_OK;
+ 354              		.loc 1 62 5 is_stmt 1 view .LVU80
+ 355              	.LVL28:
+ 356              	.L32:
+  63:Core/Lib/INA219.c **** }
+ 357              		.loc 1 63 1 is_stmt 0 view .LVU81
+ 358 002e 02B0     		add	sp, sp, #8
+ 359              	.LCFI17:
+ 360              		.cfi_def_cfa_offset 8
+ 361              		@ sp needed
+ 362 0030 10BD     		pop	{r4, pc}
+ 363              	.LVL29:
+ 364              	.L33:
+ 365              	.LCFI18:
+ 366              		.cfi_def_cfa_offset 0
+ 367              		.cfi_restore 4
+ 368              		.cfi_restore 14
+  56:Core/Lib/INA219.c **** 
+ 369              		.loc 1 56 24 view .LVU82
+ 370 0032 0320     		movs	r0, #3
+ 371              	.LVL30:
+ 372              		.loc 1 63 1 view .LVU83
+ 373 0034 7047     		bx	lr
+ 374              	.LVL31:
+ 375              	.L34:
+ 376              	.LCFI19:
+ 377              		.cfi_def_cfa_offset 16
+ 378              		.cfi_offset 4, -8
+ 379              		.cfi_offset 14, -4
+  59:Core/Lib/INA219.c ****     int16_t result = (int16_t)(result_raw * CURRENT_LSB * MILLI_TO_MICRO);
+ 380              		.loc 1 59 78 view .LVU84
+ 381 0036 0220     		movs	r0, #2
+ 382 0038 F9E7     		b	.L32
+ 383              		.cfi_endproc
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 9
+
+
+ 384              	.LFE150:
+ 386              		.section	.text.ina219_ReadShuntVoltage,"ax",%progbits
+ 387              		.align	1
+ 388              		.global	ina219_ReadShuntVoltage
+ 389              		.syntax unified
+ 390              		.thumb
+ 391              		.thumb_func
+ 393              	ina219_ReadShuntVoltage:
+ 394              	.LVL32:
+ 395              	.LFB151:
+  64:Core/Lib/INA219.c **** 
+  65:Core/Lib/INA219.c **** INA219_STATUS_t ina219_ReadShuntVoltage(ina219_t *ina219) {
+ 396              		.loc 1 65 59 is_stmt 1 view -0
+ 397              		.cfi_startproc
+ 398              		@ args = 0, pretend = 0, frame = 8
+ 399              		@ frame_needed = 0, uses_anonymous_args = 0
+  66:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 400              		.loc 1 66 5 view .LVU86
+ 401              		.loc 1 66 7 is_stmt 0 view .LVU87
+ 402 0000 B8B1     		cbz	r0, .L41
+  65:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 403              		.loc 1 65 59 view .LVU88
+ 404 0002 10B5     		push	{r4, lr}
+ 405              	.LCFI20:
+ 406              		.cfi_def_cfa_offset 8
+ 407              		.cfi_offset 4, -8
+ 408              		.cfi_offset 14, -4
+ 409 0004 82B0     		sub	sp, sp, #8
+ 410              	.LCFI21:
+ 411              		.cfi_def_cfa_offset 16
+ 412 0006 0446     		mov	r4, r0
+  67:Core/Lib/INA219.c **** 
+  68:Core/Lib/INA219.c ****     uint16_t result_raw = 0;
+ 413              		.loc 1 68 5 is_stmt 1 view .LVU89
+ 414              		.loc 1 68 14 is_stmt 0 view .LVU90
+ 415 0008 0023     		movs	r3, #0
+ 416 000a ADF80630 		strh	r3, [sp, #6]	@ movhi
+  69:Core/Lib/INA219.c ****     if(read_16bit(ina219, ina_reg_shuntvoltage, &result_raw) != INA219_OK) return INA219_I2C_ERROR;
+ 417              		.loc 1 69 5 is_stmt 1 view .LVU91
+ 418              		.loc 1 69 8 is_stmt 0 view .LVU92
+ 419 000e 0DF10602 		add	r2, sp, #6
+ 420 0012 0121     		movs	r1, #1
+ 421 0014 FFF7FEFF 		bl	read_16bit
+ 422              	.LVL33:
+ 423              		.loc 1 69 7 view .LVU93
+ 424 0018 68B9     		cbnz	r0, .L42
+  70:Core/Lib/INA219.c ****     int16_t result = (int16_t)(result_raw * SHUNTVOLTAGE_LSB / MILLI_TO_MICRO);
+ 425              		.loc 1 70 5 is_stmt 1 view .LVU94
+ 426              		.loc 1 70 62 is_stmt 0 view .LVU95
+ 427 001a BDF80630 		ldrh	r3, [sp, #6]
+ 428 001e 084A     		ldr	r2, .L49
+ 429 0020 82FB0323 		smull	r2, r3, r2, r3
+ 430              		.loc 1 70 13 view .LVU96
+ 431 0024 5B09     		lsrs	r3, r3, #5
+ 432              	.LVL34:
+  71:Core/Lib/INA219.c ****     ina219->ShuntVoltage = result;
+ 433              		.loc 1 71 5 is_stmt 1 view .LVU97
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 10
+
+
+ 434              		.loc 1 71 26 is_stmt 0 view .LVU98
+ 435 0026 2381     		strh	r3, [r4, #8]	@ movhi
+  72:Core/Lib/INA219.c ****     if(ina219->ShuntVoltage > MAX_EXPERT_CURRENT * MILLI_TO_MICRO) return INA219_SHUNT_OVER;
+ 436              		.loc 1 72 5 is_stmt 1 view .LVU99
+ 437              		.loc 1 72 7 is_stmt 0 view .LVU100
+ 438 0028 B3F5FA6F 		cmp	r3, #2000
+ 439 002c 05DC     		bgt	.L48
+ 440              	.LVL35:
+ 441              	.L40:
+  73:Core/Lib/INA219.c ****     
+  74:Core/Lib/INA219.c ****     return INA219_OK;
+  75:Core/Lib/INA219.c **** }
+ 442              		.loc 1 75 1 view .LVU101
+ 443 002e 02B0     		add	sp, sp, #8
+ 444              	.LCFI22:
+ 445              		.cfi_def_cfa_offset 8
+ 446              		@ sp needed
+ 447 0030 10BD     		pop	{r4, pc}
+ 448              	.LVL36:
+ 449              	.L41:
+ 450              	.LCFI23:
+ 451              		.cfi_def_cfa_offset 0
+ 452              		.cfi_restore 4
+ 453              		.cfi_restore 14
+  66:Core/Lib/INA219.c **** 
+ 454              		.loc 1 66 24 view .LVU102
+ 455 0032 0320     		movs	r0, #3
+ 456              	.LVL37:
+ 457              		.loc 1 75 1 view .LVU103
+ 458 0034 7047     		bx	lr
+ 459              	.LVL38:
+ 460              	.L42:
+ 461              	.LCFI24:
+ 462              		.cfi_def_cfa_offset 16
+ 463              		.cfi_offset 4, -8
+ 464              		.cfi_offset 14, -4
+  69:Core/Lib/INA219.c ****     int16_t result = (int16_t)(result_raw * SHUNTVOLTAGE_LSB / MILLI_TO_MICRO);
+ 465              		.loc 1 69 83 view .LVU104
+ 466 0036 0220     		movs	r0, #2
+ 467 0038 F9E7     		b	.L40
+ 468              	.LVL39:
+ 469              	.L48:
+  72:Core/Lib/INA219.c ****     
+ 470              		.loc 1 72 75 view .LVU105
+ 471 003a 0620     		movs	r0, #6
+ 472 003c F7E7     		b	.L40
+ 473              	.L50:
+ 474 003e 00BF     		.align	2
+ 475              	.L49:
+ 476 0040 1F85EB51 		.word	1374389535
+ 477              		.cfi_endproc
+ 478              	.LFE151:
+ 480              		.section	.text.ina219_ReadPower,"ax",%progbits
+ 481              		.align	1
+ 482              		.global	ina219_ReadPower
+ 483              		.syntax unified
+ 484              		.thumb
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 11
+
+
+ 485              		.thumb_func
+ 487              	ina219_ReadPower:
+ 488              	.LVL40:
+ 489              	.LFB152:
+  76:Core/Lib/INA219.c **** 
+  77:Core/Lib/INA219.c **** INA219_STATUS_t ina219_ReadPower(ina219_t *ina219) {
+ 490              		.loc 1 77 52 is_stmt 1 view -0
+ 491              		.cfi_startproc
+ 492              		@ args = 0, pretend = 0, frame = 8
+ 493              		@ frame_needed = 0, uses_anonymous_args = 0
+  78:Core/Lib/INA219.c ****     if(!ina219) return INA219_ERROR;
+ 494              		.loc 1 78 5 view .LVU107
+ 495              		.loc 1 78 7 is_stmt 0 view .LVU108
+ 496 0000 A8B1     		cbz	r0, .L53
+  77:Core/Lib/INA219.c ****     if(!ina219) return INA219_ERROR;
+ 497              		.loc 1 77 52 view .LVU109
+ 498 0002 10B5     		push	{r4, lr}
+ 499              	.LCFI25:
+ 500              		.cfi_def_cfa_offset 8
+ 501              		.cfi_offset 4, -8
+ 502              		.cfi_offset 14, -4
+ 503 0004 82B0     		sub	sp, sp, #8
+ 504              	.LCFI26:
+ 505              		.cfi_def_cfa_offset 16
+ 506 0006 0446     		mov	r4, r0
+  79:Core/Lib/INA219.c **** 
+  80:Core/Lib/INA219.c ****     uint16_t result_raw = 0;
+ 507              		.loc 1 80 5 is_stmt 1 view .LVU110
+ 508              		.loc 1 80 14 is_stmt 0 view .LVU111
+ 509 0008 0023     		movs	r3, #0
+ 510 000a ADF80630 		strh	r3, [sp, #6]	@ movhi
+  81:Core/Lib/INA219.c ****     if(read_16bit(ina219, ina_reg_power, &result_raw) != INA219_OK) return INA219_I2C_ERROR;
+ 511              		.loc 1 81 5 is_stmt 1 view .LVU112
+ 512              		.loc 1 81 8 is_stmt 0 view .LVU113
+ 513 000e 0DF10602 		add	r2, sp, #6
+ 514 0012 0321     		movs	r1, #3
+ 515 0014 FFF7FEFF 		bl	read_16bit
+ 516              	.LVL41:
+ 517              		.loc 1 81 7 view .LVU114
+ 518 0018 58B9     		cbnz	r0, .L54
+  82:Core/Lib/INA219.c ****     ina219->Power = result_raw * POWER_LSB;
+ 519              		.loc 1 82 5 is_stmt 1 view .LVU115
+ 520              		.loc 1 82 19 is_stmt 0 view .LVU116
+ 521 001a BDF80630 		ldrh	r3, [sp, #6]
+ 522 001e 03EB8303 		add	r3, r3, r3, lsl #2
+ 523 0022 03EB8313 		add	r3, r3, r3, lsl #6
+ 524 0026 9B00     		lsls	r3, r3, #2
+ 525 0028 A381     		strh	r3, [r4, #12]	@ movhi
+  83:Core/Lib/INA219.c ****     return INA219_OK;
+ 526              		.loc 1 83 5 is_stmt 1 view .LVU117
+ 527              	.L52:
+  84:Core/Lib/INA219.c **** }
+ 528              		.loc 1 84 1 is_stmt 0 view .LVU118
+ 529 002a 02B0     		add	sp, sp, #8
+ 530              	.LCFI27:
+ 531              		.cfi_def_cfa_offset 8
+ 532              		@ sp needed
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 12
+
+
+ 533 002c 10BD     		pop	{r4, pc}
+ 534              	.LVL42:
+ 535              	.L53:
+ 536              	.LCFI28:
+ 537              		.cfi_def_cfa_offset 0
+ 538              		.cfi_restore 4
+ 539              		.cfi_restore 14
+  78:Core/Lib/INA219.c **** 
+ 540              		.loc 1 78 24 view .LVU119
+ 541 002e 0120     		movs	r0, #1
+ 542              	.LVL43:
+ 543              		.loc 1 84 1 view .LVU120
+ 544 0030 7047     		bx	lr
+ 545              	.LVL44:
+ 546              	.L54:
+ 547              	.LCFI29:
+ 548              		.cfi_def_cfa_offset 16
+ 549              		.cfi_offset 4, -8
+ 550              		.cfi_offset 14, -4
+  81:Core/Lib/INA219.c ****     ina219->Power = result_raw * POWER_LSB;
+ 551              		.loc 1 81 76 view .LVU121
+ 552 0032 0220     		movs	r0, #2
+ 553 0034 F9E7     		b	.L52
+ 554              		.cfi_endproc
+ 555              	.LFE152:
+ 557              		.section	.text.ina219_reset,"ax",%progbits
+ 558              		.align	1
+ 559              		.global	ina219_reset
+ 560              		.syntax unified
+ 561              		.thumb
+ 562              		.thumb_func
+ 564              	ina219_reset:
+ 565              	.LVL45:
+ 566              	.LFB153:
+  85:Core/Lib/INA219.c **** 
+  86:Core/Lib/INA219.c **** INA219_STATUS_t ina219_reset(ina219_t *ina219) {
+ 567              		.loc 1 86 48 is_stmt 1 view -0
+ 568              		.cfi_startproc
+ 569              		@ args = 0, pretend = 0, frame = 0
+ 570              		@ frame_needed = 0, uses_anonymous_args = 0
+ 571              		.loc 1 86 48 is_stmt 0 view .LVU123
+ 572 0000 10B5     		push	{r4, lr}
+ 573              	.LCFI30:
+ 574              		.cfi_def_cfa_offset 8
+ 575              		.cfi_offset 4, -8
+ 576              		.cfi_offset 14, -4
+  87:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 577              		.loc 1 87 5 is_stmt 1 view .LVU124
+ 578              		.loc 1 87 7 is_stmt 0 view .LVU125
+ 579 0002 58B1     		cbz	r0, .L61
+  88:Core/Lib/INA219.c **** 
+  89:Core/Lib/INA219.c ****     if(write_16bit(ina219, ina_reg_config, ina_config_reset) != INA219_OK) return INA219_I2C_ERROR;
+ 580              		.loc 1 89 5 is_stmt 1 view .LVU126
+ 581              		.loc 1 89 8 is_stmt 0 view .LVU127
+ 582 0004 4FF40042 		mov	r2, #32768
+ 583 0008 0021     		movs	r1, #0
+ 584 000a FFF7FEFF 		bl	write_16bit
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 13
+
+
+ 585              	.LVL46:
+ 586              		.loc 1 89 7 view .LVU128
+ 587 000e 0446     		mov	r4, r0
+ 588 0010 30B9     		cbnz	r0, .L62
+  90:Core/Lib/INA219.c ****     
+  91:Core/Lib/INA219.c ****     HAL_Delay(1);
+ 589              		.loc 1 91 5 is_stmt 1 view .LVU129
+ 590 0012 0120     		movs	r0, #1
+ 591 0014 FFF7FEFF 		bl	HAL_Delay
+ 592              	.LVL47:
+  92:Core/Lib/INA219.c ****     return INA219_OK;
+ 593              		.loc 1 92 5 view .LVU130
+ 594              	.L60:
+  93:Core/Lib/INA219.c **** }
+ 595              		.loc 1 93 1 is_stmt 0 view .LVU131
+ 596 0018 2046     		mov	r0, r4
+ 597 001a 10BD     		pop	{r4, pc}
+ 598              	.LVL48:
+ 599              	.L61:
+  87:Core/Lib/INA219.c **** 
+ 600              		.loc 1 87 24 view .LVU132
+ 601 001c 0324     		movs	r4, #3
+ 602 001e FBE7     		b	.L60
+ 603              	.LVL49:
+ 604              	.L62:
+  89:Core/Lib/INA219.c ****     
+ 605              		.loc 1 89 83 view .LVU133
+ 606 0020 0224     		movs	r4, #2
+ 607 0022 F9E7     		b	.L60
+ 608              		.cfi_endproc
+ 609              	.LFE153:
+ 611              		.section	.text.ina219_setCalibration,"ax",%progbits
+ 612              		.align	1
+ 613              		.global	ina219_setCalibration
+ 614              		.syntax unified
+ 615              		.thumb
+ 616              		.thumb_func
+ 618              	ina219_setCalibration:
+ 619              	.LVL50:
+ 620              	.LFB154:
+  94:Core/Lib/INA219.c **** 
+  95:Core/Lib/INA219.c **** INA219_STATUS_t ina219_setCalibration(ina219_t *ina219, uint16_t calibration) {
+ 621              		.loc 1 95 79 is_stmt 1 view -0
+ 622              		.cfi_startproc
+ 623              		@ args = 0, pretend = 0, frame = 0
+ 624              		@ frame_needed = 0, uses_anonymous_args = 0
+  96:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 625              		.loc 1 96 5 view .LVU135
+ 626              		.loc 1 96 7 is_stmt 0 view .LVU136
+ 627 0000 30B1     		cbz	r0, .L66
+  95:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 628              		.loc 1 95 79 view .LVU137
+ 629 0002 08B5     		push	{r3, lr}
+ 630              	.LCFI31:
+ 631              		.cfi_def_cfa_offset 8
+ 632              		.cfi_offset 3, -8
+ 633              		.cfi_offset 14, -4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 14
+
+
+ 634 0004 0A46     		mov	r2, r1
+  97:Core/Lib/INA219.c **** 
+  98:Core/Lib/INA219.c ****     if(write_16bit(ina219, ina_reg_calibration, calibration) != INA219_OK) return INA219_I2C_ERROR;
+ 635              		.loc 1 98 5 is_stmt 1 view .LVU138
+ 636              		.loc 1 98 8 is_stmt 0 view .LVU139
+ 637 0006 0521     		movs	r1, #5
+ 638              	.LVL51:
+ 639              		.loc 1 98 8 view .LVU140
+ 640 0008 FFF7FEFF 		bl	write_16bit
+ 641              	.LVL52:
+ 642              		.loc 1 98 7 view .LVU141
+ 643 000c 10B9     		cbnz	r0, .L72
+ 644              	.L65:
+  99:Core/Lib/INA219.c ****     return INA219_OK;
+ 100:Core/Lib/INA219.c **** }
+ 645              		.loc 1 100 1 view .LVU142
+ 646 000e 08BD     		pop	{r3, pc}
+ 647              	.LVL53:
+ 648              	.L66:
+ 649              	.LCFI32:
+ 650              		.cfi_def_cfa_offset 0
+ 651              		.cfi_restore 3
+ 652              		.cfi_restore 14
+  96:Core/Lib/INA219.c **** 
+ 653              		.loc 1 96 24 view .LVU143
+ 654 0010 0320     		movs	r0, #3
+ 655              	.LVL54:
+ 656              		.loc 1 100 1 view .LVU144
+ 657 0012 7047     		bx	lr
+ 658              	.LVL55:
+ 659              	.L72:
+ 660              	.LCFI33:
+ 661              		.cfi_def_cfa_offset 8
+ 662              		.cfi_offset 3, -8
+ 663              		.cfi_offset 14, -4
+  98:Core/Lib/INA219.c ****     return INA219_OK;
+ 664              		.loc 1 98 83 view .LVU145
+ 665 0014 0220     		movs	r0, #2
+ 666 0016 FAE7     		b	.L65
+ 667              		.cfi_endproc
+ 668              	.LFE154:
+ 670              		.section	.text.ina219_getConfig,"ax",%progbits
+ 671              		.align	1
+ 672              		.global	ina219_getConfig
+ 673              		.syntax unified
+ 674              		.thumb
+ 675              		.thumb_func
+ 677              	ina219_getConfig:
+ 678              	.LVL56:
+ 679              	.LFB155:
+ 101:Core/Lib/INA219.c **** 
+ 102:Core/Lib/INA219.c **** INA219_STATUS_t ina219_getConfig(ina219_t *ina219, uint16_t *Config) {
+ 680              		.loc 1 102 70 is_stmt 1 view -0
+ 681              		.cfi_startproc
+ 682              		@ args = 0, pretend = 0, frame = 0
+ 683              		@ frame_needed = 0, uses_anonymous_args = 0
+ 103:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 15
+
+
+ 684              		.loc 1 103 5 view .LVU147
+ 685              		.loc 1 103 7 is_stmt 0 view .LVU148
+ 686 0000 30B1     		cbz	r0, .L75
+ 102:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 687              		.loc 1 102 70 view .LVU149
+ 688 0002 08B5     		push	{r3, lr}
+ 689              	.LCFI34:
+ 690              		.cfi_def_cfa_offset 8
+ 691              		.cfi_offset 3, -8
+ 692              		.cfi_offset 14, -4
+ 693 0004 0A46     		mov	r2, r1
+ 104:Core/Lib/INA219.c **** 
+ 105:Core/Lib/INA219.c ****     if(read_16bit(ina219, ina_reg_config, Config) != INA219_OK) return INA219_I2C_ERROR;
+ 694              		.loc 1 105 5 is_stmt 1 view .LVU150
+ 695              		.loc 1 105 8 is_stmt 0 view .LVU151
+ 696 0006 0021     		movs	r1, #0
+ 697              	.LVL57:
+ 698              		.loc 1 105 8 view .LVU152
+ 699 0008 FFF7FEFF 		bl	read_16bit
+ 700              	.LVL58:
+ 701              		.loc 1 105 7 view .LVU153
+ 702 000c 10B9     		cbnz	r0, .L81
+ 703              	.L74:
+ 106:Core/Lib/INA219.c ****     return INA219_OK;
+ 107:Core/Lib/INA219.c **** }
+ 704              		.loc 1 107 1 view .LVU154
+ 705 000e 08BD     		pop	{r3, pc}
+ 706              	.LVL59:
+ 707              	.L75:
+ 708              	.LCFI35:
+ 709              		.cfi_def_cfa_offset 0
+ 710              		.cfi_restore 3
+ 711              		.cfi_restore 14
+ 103:Core/Lib/INA219.c **** 
+ 712              		.loc 1 103 24 view .LVU155
+ 713 0010 0320     		movs	r0, #3
+ 714              	.LVL60:
+ 715              		.loc 1 107 1 view .LVU156
+ 716 0012 7047     		bx	lr
+ 717              	.LVL61:
+ 718              	.L81:
+ 719              	.LCFI36:
+ 720              		.cfi_def_cfa_offset 8
+ 721              		.cfi_offset 3, -8
+ 722              		.cfi_offset 14, -4
+ 105:Core/Lib/INA219.c ****     return INA219_OK;
+ 723              		.loc 1 105 72 view .LVU157
+ 724 0014 0220     		movs	r0, #2
+ 725 0016 FAE7     		b	.L74
+ 726              		.cfi_endproc
+ 727              	.LFE155:
+ 729              		.section	.text.ina219_setConfig,"ax",%progbits
+ 730              		.align	1
+ 731              		.global	ina219_setConfig
+ 732              		.syntax unified
+ 733              		.thumb
+ 734              		.thumb_func
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 16
+
+
+ 736              	ina219_setConfig:
+ 737              	.LVL62:
+ 738              	.LFB156:
+ 108:Core/Lib/INA219.c **** 
+ 109:Core/Lib/INA219.c **** INA219_STATUS_t ina219_setConfig(ina219_t *ina219, uint16_t Config) {
+ 739              		.loc 1 109 69 is_stmt 1 view -0
+ 740              		.cfi_startproc
+ 741              		@ args = 0, pretend = 0, frame = 0
+ 742              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 743              		.loc 1 110 5 view .LVU159
+ 744              		.loc 1 110 7 is_stmt 0 view .LVU160
+ 745 0000 30B1     		cbz	r0, .L84
+ 109:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 746              		.loc 1 109 69 view .LVU161
+ 747 0002 08B5     		push	{r3, lr}
+ 748              	.LCFI37:
+ 749              		.cfi_def_cfa_offset 8
+ 750              		.cfi_offset 3, -8
+ 751              		.cfi_offset 14, -4
+ 752 0004 0A46     		mov	r2, r1
+ 111:Core/Lib/INA219.c ****     
+ 112:Core/Lib/INA219.c ****     if(write_16bit(ina219, ina_reg_config, Config) != INA219_OK) return INA219_I2C_ERROR;
+ 753              		.loc 1 112 5 is_stmt 1 view .LVU162
+ 754              		.loc 1 112 8 is_stmt 0 view .LVU163
+ 755 0006 0021     		movs	r1, #0
+ 756              	.LVL63:
+ 757              		.loc 1 112 8 view .LVU164
+ 758 0008 FFF7FEFF 		bl	write_16bit
+ 759              	.LVL64:
+ 760              		.loc 1 112 7 view .LVU165
+ 761 000c 10B9     		cbnz	r0, .L90
+ 762              	.L83:
+ 113:Core/Lib/INA219.c ****     
+ 114:Core/Lib/INA219.c ****     return INA219_OK;
+ 115:Core/Lib/INA219.c **** }
+ 763              		.loc 1 115 1 view .LVU166
+ 764 000e 08BD     		pop	{r3, pc}
+ 765              	.LVL65:
+ 766              	.L84:
+ 767              	.LCFI38:
+ 768              		.cfi_def_cfa_offset 0
+ 769              		.cfi_restore 3
+ 770              		.cfi_restore 14
+ 110:Core/Lib/INA219.c ****     
+ 771              		.loc 1 110 24 view .LVU167
+ 772 0010 0320     		movs	r0, #3
+ 773              	.LVL66:
+ 774              		.loc 1 115 1 view .LVU168
+ 775 0012 7047     		bx	lr
+ 776              	.LVL67:
+ 777              	.L90:
+ 778              	.LCFI39:
+ 779              		.cfi_def_cfa_offset 8
+ 780              		.cfi_offset 3, -8
+ 781              		.cfi_offset 14, -4
+ 112:Core/Lib/INA219.c ****     
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 17
+
+
+ 782              		.loc 1 112 73 view .LVU169
+ 783 0014 0220     		movs	r0, #2
+ 784 0016 FAE7     		b	.L83
+ 785              		.cfi_endproc
+ 786              	.LFE156:
+ 788              		.section	.text.ina219_Config,"ax",%progbits
+ 789              		.align	1
+ 790              		.global	ina219_Config
+ 791              		.syntax unified
+ 792              		.thumb
+ 793              		.thumb_func
+ 795              	ina219_Config:
+ 796              	.LVL68:
+ 797              	.LFB157:
+ 116:Core/Lib/INA219.c **** 
+ 117:Core/Lib/INA219.c **** // Example: Set Config
+ 118:Core/Lib/INA219.c **** INA219_STATUS_t ina219_Config(ina219_t *ina219) {
+ 798              		.loc 1 118 49 is_stmt 1 view -0
+ 799              		.cfi_startproc
+ 800              		@ args = 0, pretend = 0, frame = 0
+ 801              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 802              		.loc 1 119 5 view .LVU171
+ 803              		.loc 1 119 7 is_stmt 0 view .LVU172
+ 804 0000 88B1     		cbz	r0, .L93
+ 118:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 805              		.loc 1 118 49 view .LVU173
+ 806 0002 10B5     		push	{r4, lr}
+ 807              	.LCFI40:
+ 808              		.cfi_def_cfa_offset 8
+ 809              		.cfi_offset 4, -8
+ 810              		.cfi_offset 14, -4
+ 811 0004 0446     		mov	r4, r0
+ 120:Core/Lib/INA219.c **** 
+ 121:Core/Lib/INA219.c ****     uint16_t Config = BRNG_32V | ina_pga_8_320
+ 812              		.loc 1 121 5 is_stmt 1 view .LVU174
+ 813              	.LVL69:
+ 122:Core/Lib/INA219.c ****                                  | ina_config_badc_12bit 
+ 123:Core/Lib/INA219.c ****                                  | ina_config_shuntadc_12bit_532us 
+ 124:Core/Lib/INA219.c ****                                  | ina_config_shuntandbus_continous;
+ 125:Core/Lib/INA219.c ****     // BRND_32V, ina_pga_8_320, adc 12bit and shunt and bus continous mode is default
+ 126:Core/Lib/INA219.c ****     // modify the real value
+ 127:Core/Lib/INA219.c ****     if(ina219_setCalibration(ina219, CALIBRATION) != INA219_OK) return INA219_ERROR;
+ 814              		.loc 1 127 5 view .LVU175
+ 815              		.loc 1 127 8 is_stmt 0 view .LVU176
+ 816 0006 41F69D01 		movw	r1, #6301
+ 817 000a FFF7FEFF 		bl	ina219_setCalibration
+ 818              	.LVL70:
+ 819              		.loc 1 127 7 view .LVU177
+ 820 000e 08B1     		cbz	r0, .L100
+ 821              		.loc 1 127 72 view .LVU178
+ 822 0010 0120     		movs	r0, #1
+ 823              	.L92:
+ 128:Core/Lib/INA219.c ****     if(ina219_setConfig(ina219, Config) != INA219_OK) return INA219_ERROR;
+ 129:Core/Lib/INA219.c ****     
+ 130:Core/Lib/INA219.c ****     return INA219_OK;
+ 131:Core/Lib/INA219.c **** }
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 18
+
+
+ 824              		.loc 1 131 1 view .LVU179
+ 825 0012 10BD     		pop	{r4, pc}
+ 826              	.LVL71:
+ 827              	.L100:
+ 128:Core/Lib/INA219.c ****     if(ina219_setConfig(ina219, Config) != INA219_OK) return INA219_ERROR;
+ 828              		.loc 1 128 5 is_stmt 1 view .LVU180
+ 128:Core/Lib/INA219.c ****     if(ina219_setConfig(ina219, Config) != INA219_OK) return INA219_ERROR;
+ 829              		.loc 1 128 8 is_stmt 0 view .LVU181
+ 830 0014 43F69F11 		movw	r1, #14751
+ 831 0018 2046     		mov	r0, r4
+ 832 001a FFF7FEFF 		bl	ina219_setConfig
+ 833              	.LVL72:
+ 128:Core/Lib/INA219.c ****     if(ina219_setConfig(ina219, Config) != INA219_OK) return INA219_ERROR;
+ 834              		.loc 1 128 7 view .LVU182
+ 835 001e 0028     		cmp	r0, #0
+ 836 0020 F7D0     		beq	.L92
+ 128:Core/Lib/INA219.c ****     if(ina219_setConfig(ina219, Config) != INA219_OK) return INA219_ERROR;
+ 837              		.loc 1 128 62 view .LVU183
+ 838 0022 0120     		movs	r0, #1
+ 839 0024 F5E7     		b	.L92
+ 840              	.LVL73:
+ 841              	.L93:
+ 842              	.LCFI41:
+ 843              		.cfi_def_cfa_offset 0
+ 844              		.cfi_restore 4
+ 845              		.cfi_restore 14
+ 119:Core/Lib/INA219.c **** 
+ 846              		.loc 1 119 24 view .LVU184
+ 847 0026 0320     		movs	r0, #3
+ 848              	.LVL74:
+ 849              		.loc 1 131 1 view .LVU185
+ 850 0028 7047     		bx	lr
+ 851              		.cfi_endproc
+ 852              	.LFE157:
+ 854              		.section	.text.set_PowerMode,"ax",%progbits
+ 855              		.align	1
+ 856              		.global	set_PowerMode
+ 857              		.syntax unified
+ 858              		.thumb
+ 859              		.thumb_func
+ 861              	set_PowerMode:
+ 862              	.LVL75:
+ 863              	.LFB158:
+ 132:Core/Lib/INA219.c **** 
+ 133:Core/Lib/INA219.c **** INA219_STATUS_t set_PowerMode(ina219_t *ina219, ina_config_operatingmode mode) {
+ 864              		.loc 1 133 80 is_stmt 1 view -0
+ 865              		.cfi_startproc
+ 866              		@ args = 0, pretend = 0, frame = 8
+ 867              		@ frame_needed = 0, uses_anonymous_args = 0
+ 134:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 868              		.loc 1 134 5 view .LVU187
+ 869              		.loc 1 134 7 is_stmt 0 view .LVU188
+ 870 0000 D8B1     		cbz	r0, .L103
+ 133:Core/Lib/INA219.c ****     if(!ina219) return INA219_INVALID_PARAM;
+ 871              		.loc 1 133 80 view .LVU189
+ 872 0002 30B5     		push	{r4, r5, lr}
+ 873              	.LCFI42:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 19
+
+
+ 874              		.cfi_def_cfa_offset 12
+ 875              		.cfi_offset 4, -12
+ 876              		.cfi_offset 5, -8
+ 877              		.cfi_offset 14, -4
+ 878 0004 83B0     		sub	sp, sp, #12
+ 879              	.LCFI43:
+ 880              		.cfi_def_cfa_offset 24
+ 881 0006 0C46     		mov	r4, r1
+ 882 0008 0546     		mov	r5, r0
+ 135:Core/Lib/INA219.c **** 
+ 136:Core/Lib/INA219.c ****     if(mode > ina_config_shuntandbus_continous) return INA219_INVALID_PARAM;
+ 883              		.loc 1 136 5 is_stmt 1 view .LVU190
+ 884              		.loc 1 136 7 is_stmt 0 view .LVU191
+ 885 000a 0729     		cmp	r1, #7
+ 886 000c 17D8     		bhi	.L104
+ 137:Core/Lib/INA219.c **** 
+ 138:Core/Lib/INA219.c ****     uint16_t config;
+ 887              		.loc 1 138 5 is_stmt 1 view .LVU192
+ 139:Core/Lib/INA219.c ****     if(ina219_getConfig(ina219, &config) != INA219_OK) return INA219_ERROR;
+ 888              		.loc 1 139 5 view .LVU193
+ 889              		.loc 1 139 8 is_stmt 0 view .LVU194
+ 890 000e 0DF10601 		add	r1, sp, #6
+ 891              	.LVL76:
+ 892              		.loc 1 139 8 view .LVU195
+ 893 0012 FFF7FEFF 		bl	ina219_getConfig
+ 894              	.LVL77:
+ 895              		.loc 1 139 7 view .LVU196
+ 896 0016 08B1     		cbz	r0, .L110
+ 897              		.loc 1 139 63 view .LVU197
+ 898 0018 0120     		movs	r0, #1
+ 899 001a 11E0     		b	.L102
+ 900              	.L110:
+ 140:Core/Lib/INA219.c ****     
+ 141:Core/Lib/INA219.c ****     config = (config & ~ina_config_mode_mask) | (mode & ina_config_mode_mask);
+ 901              		.loc 1 141 5 is_stmt 1 view .LVU198
+ 902              		.loc 1 141 22 is_stmt 0 view .LVU199
+ 903 001c BDF80610 		ldrh	r1, [sp, #6]
+ 904 0020 21F00701 		bic	r1, r1, #7
+ 905 0024 09B2     		sxth	r1, r1
+ 906              		.loc 1 141 55 view .LVU200
+ 907 0026 04F00704 		and	r4, r4, #7
+ 908              		.loc 1 141 47 view .LVU201
+ 909 002a 0C43     		orrs	r4, r4, r1
+ 910 002c A1B2     		uxth	r1, r4
+ 911              		.loc 1 141 12 view .LVU202
+ 912 002e ADF80610 		strh	r1, [sp, #6]	@ movhi
+ 142:Core/Lib/INA219.c **** 
+ 143:Core/Lib/INA219.c ****     return ina219_setConfig(ina219, config);
+ 913              		.loc 1 143 5 is_stmt 1 view .LVU203
+ 914              		.loc 1 143 12 is_stmt 0 view .LVU204
+ 915 0032 2846     		mov	r0, r5
+ 916 0034 FFF7FEFF 		bl	ina219_setConfig
+ 917              	.LVL78:
+ 918 0038 02E0     		b	.L102
+ 919              	.LVL79:
+ 920              	.L103:
+ 921              	.LCFI44:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 20
+
+
+ 922              		.cfi_def_cfa_offset 0
+ 923              		.cfi_restore 4
+ 924              		.cfi_restore 5
+ 925              		.cfi_restore 14
+ 134:Core/Lib/INA219.c **** 
+ 926              		.loc 1 134 24 view .LVU205
+ 927 003a 0320     		movs	r0, #3
+ 928              	.LVL80:
+ 144:Core/Lib/INA219.c **** }
+ 929              		.loc 1 144 1 view .LVU206
+ 930 003c 7047     		bx	lr
+ 931              	.LVL81:
+ 932              	.L104:
+ 933              	.LCFI45:
+ 934              		.cfi_def_cfa_offset 24
+ 935              		.cfi_offset 4, -12
+ 936              		.cfi_offset 5, -8
+ 937              		.cfi_offset 14, -4
+ 136:Core/Lib/INA219.c **** 
+ 938              		.loc 1 136 56 view .LVU207
+ 939 003e 0320     		movs	r0, #3
+ 940              	.LVL82:
+ 941              	.L102:
+ 942              		.loc 1 144 1 view .LVU208
+ 943 0040 03B0     		add	sp, sp, #12
+ 944              	.LCFI46:
+ 945              		.cfi_def_cfa_offset 12
+ 946              		@ sp needed
+ 947 0042 30BD     		pop	{r4, r5, pc}
+ 948              		.loc 1 144 1 view .LVU209
+ 949              		.cfi_endproc
+ 950              	.LFE158:
+ 952              		.section	.text.ina219_init,"ax",%progbits
+ 953              		.align	1
+ 954              		.global	ina219_init
+ 955              		.syntax unified
+ 956              		.thumb
+ 957              		.thumb_func
+ 959              	ina219_init:
+ 960              	.LVL83:
+ 961              	.LFB159:
+ 145:Core/Lib/INA219.c **** 
+ 146:Core/Lib/INA219.c **** INA219_STATUS_t ina219_init(ina219_t *ina219, I2C_HandleTypeDef *hi2c, uint8_t address) {
+ 962              		.loc 1 146 89 is_stmt 1 view -0
+ 963              		.cfi_startproc
+ 964              		@ args = 0, pretend = 0, frame = 0
+ 965              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147:Core/Lib/INA219.c ****     if(!ina219 || !hi2c || !address) return INA219_INVALID_PARAM;
+ 966              		.loc 1 147 5 view .LVU211
+ 967              		.loc 1 147 7 is_stmt 0 view .LVU212
+ 968 0000 0029     		cmp	r1, #0
+ 969 0002 18BF     		it	ne
+ 970 0004 0028     		cmpne	r0, #0
+ 971 0006 1BD0     		beq	.L113
+ 146:Core/Lib/INA219.c ****     if(!ina219 || !hi2c || !address) return INA219_INVALID_PARAM;
+ 972              		.loc 1 146 89 discriminator 2 view .LVU213
+ 973 0008 70B5     		push	{r4, r5, r6, lr}
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 21
+
+
+ 974              	.LCFI47:
+ 975              		.cfi_def_cfa_offset 16
+ 976              		.cfi_offset 4, -16
+ 977              		.cfi_offset 5, -12
+ 978              		.cfi_offset 6, -8
+ 979              		.cfi_offset 14, -4
+ 980 000a 1446     		mov	r4, r2
+ 981 000c 0546     		mov	r5, r0
+ 982 000e 0E46     		mov	r6, r1
+ 983              		.loc 1 147 25 discriminator 2 view .LVU214
+ 984 0010 C2B1     		cbz	r2, .L114
+ 148:Core/Lib/INA219.c ****     
+ 149:Core/Lib/INA219.c ****     ina219->ina219_i2c = hi2c;
+ 985              		.loc 1 149 5 is_stmt 1 view .LVU215
+ 986              		.loc 1 149 24 is_stmt 0 view .LVU216
+ 987 0012 0160     		str	r1, [r0]
+ 150:Core/Lib/INA219.c ****     ina219->Address = address;
+ 988              		.loc 1 150 5 is_stmt 1 view .LVU217
+ 989              		.loc 1 150 21 is_stmt 0 view .LVU218
+ 990 0014 0271     		strb	r2, [r0, #4]
+ 151:Core/Lib/INA219.c **** 
+ 152:Core/Lib/INA219.c ****     // CHECK I2C DEVICE 
+ 153:Core/Lib/INA219.c ****     HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(hi2c, address << 1, 3, 2);
+ 991              		.loc 1 153 5 is_stmt 1 view .LVU219
+ 992              		.loc 1 153 32 is_stmt 0 view .LVU220
+ 993 0016 0223     		movs	r3, #2
+ 994 0018 0322     		movs	r2, #3
+ 995              	.LVL84:
+ 996              		.loc 1 153 32 view .LVU221
+ 997 001a 6100     		lsls	r1, r4, #1
+ 998              	.LVL85:
+ 999              		.loc 1 153 32 view .LVU222
+ 1000 001c 3046     		mov	r0, r6
+ 1001              	.LVL86:
+ 1002              		.loc 1 153 32 view .LVU223
+ 1003 001e FFF7FEFF 		bl	HAL_I2C_IsDeviceReady
+ 1004              	.LVL87:
+ 154:Core/Lib/INA219.c ****     if(status != HAL_OK) return INA219_I2C_ERROR;
+ 1005              		.loc 1 154 5 is_stmt 1 view .LVU224
+ 1006              		.loc 1 154 7 is_stmt 0 view .LVU225
+ 1007 0022 88B9     		cbnz	r0, .L115
+ 155:Core/Lib/INA219.c **** 
+ 156:Core/Lib/INA219.c ****     ina219->check = battery_START;
+ 1008              		.loc 1 156 5 is_stmt 1 view .LVU226
+ 1009              		.loc 1 156 19 is_stmt 0 view .LVU227
+ 1010 0024 0023     		movs	r3, #0
+ 1011 0026 AB73     		strb	r3, [r5, #14]
+ 157:Core/Lib/INA219.c **** 
+ 158:Core/Lib/INA219.c ****     // Reset INA219
+ 159:Core/Lib/INA219.c ****     if(ina219_reset(ina219) != INA219_OK) return INA219_ERROR;
+ 1012              		.loc 1 159 5 is_stmt 1 view .LVU228
+ 1013              		.loc 1 159 8 is_stmt 0 view .LVU229
+ 1014 0028 2846     		mov	r0, r5
+ 1015              	.LVL88:
+ 1016              		.loc 1 159 8 view .LVU230
+ 1017 002a FFF7FEFF 		bl	ina219_reset
+ 1018              	.LVL89:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 22
+
+
+ 1019              		.loc 1 159 7 view .LVU231
+ 1020 002e 08B1     		cbz	r0, .L122
+ 1021              		.loc 1 159 50 view .LVU232
+ 1022 0030 0120     		movs	r0, #1
+ 1023 0032 08E0     		b	.L112
+ 1024              	.L122:
+ 160:Core/Lib/INA219.c **** 
+ 161:Core/Lib/INA219.c ****     // Config INA219
+ 162:Core/Lib/INA219.c ****     if(ina219_Config(ina219) != INA219_OK) return INA219_ERROR;
+ 1025              		.loc 1 162 5 is_stmt 1 view .LVU233
+ 1026              		.loc 1 162 8 is_stmt 0 view .LVU234
+ 1027 0034 2846     		mov	r0, r5
+ 1028 0036 FFF7FEFF 		bl	ina219_Config
+ 1029              	.LVL90:
+ 1030              		.loc 1 162 7 view .LVU235
+ 1031 003a 20B1     		cbz	r0, .L112
+ 1032              		.loc 1 162 51 view .LVU236
+ 1033 003c 0120     		movs	r0, #1
+ 1034 003e 02E0     		b	.L112
+ 1035              	.LVL91:
+ 1036              	.L113:
+ 1037              	.LCFI48:
+ 1038              		.cfi_def_cfa_offset 0
+ 1039              		.cfi_restore 4
+ 1040              		.cfi_restore 5
+ 1041              		.cfi_restore 6
+ 1042              		.cfi_restore 14
+ 147:Core/Lib/INA219.c ****     
+ 1043              		.loc 1 147 45 view .LVU237
+ 1044 0040 0320     		movs	r0, #3
+ 1045              	.LVL92:
+ 163:Core/Lib/INA219.c **** 
+ 164:Core/Lib/INA219.c ****     return INA219_OK;
+ 165:Core/Lib/INA219.c **** }
+ 1046              		.loc 1 165 1 view .LVU238
+ 1047 0042 7047     		bx	lr
+ 1048              	.LVL93:
+ 1049              	.L114:
+ 1050              	.LCFI49:
+ 1051              		.cfi_def_cfa_offset 16
+ 1052              		.cfi_offset 4, -16
+ 1053              		.cfi_offset 5, -12
+ 1054              		.cfi_offset 6, -8
+ 1055              		.cfi_offset 14, -4
+ 147:Core/Lib/INA219.c ****     
+ 1056              		.loc 1 147 45 view .LVU239
+ 1057 0044 0320     		movs	r0, #3
+ 1058              	.LVL94:
+ 1059              	.L112:
+ 1060              		.loc 1 165 1 view .LVU240
+ 1061 0046 70BD     		pop	{r4, r5, r6, pc}
+ 1062              	.LVL95:
+ 1063              	.L115:
+ 154:Core/Lib/INA219.c **** 
+ 1064              		.loc 1 154 33 view .LVU241
+ 1065 0048 0220     		movs	r0, #2
+ 1066              	.LVL96:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 23
+
+
+ 154:Core/Lib/INA219.c **** 
+ 1067              		.loc 1 154 33 view .LVU242
+ 1068 004a FCE7     		b	.L112
+ 1069              		.cfi_endproc
+ 1070              	.LFE159:
+ 1072              		.section	.text.ina219_BatteryLife,"ax",%progbits
+ 1073              		.align	1
+ 1074              		.global	ina219_BatteryLife
+ 1075              		.syntax unified
+ 1076              		.thumb
+ 1077              		.thumb_func
+ 1079              	ina219_BatteryLife:
+ 1080              	.LVL97:
+ 1081              	.LFB160:
+ 166:Core/Lib/INA219.c **** 
+ 167:Core/Lib/INA219.c **** float ina219_BatteryLife(ina219_t *ina219) {
+ 1082              		.loc 1 167 44 is_stmt 1 view -0
+ 1083              		.cfi_startproc
+ 1084              		@ args = 0, pretend = 0, frame = 0
+ 1085              		@ frame_needed = 0, uses_anonymous_args = 0
+ 168:Core/Lib/INA219.c ****     if(!ina219) return 0;
+ 1086              		.loc 1 168 5 view .LVU244
+ 1087              		.loc 1 168 7 is_stmt 0 view .LVU245
+ 1088 0000 28B3     		cbz	r0, .L126
+ 167:Core/Lib/INA219.c ****     if(!ina219) return 0;
+ 1089              		.loc 1 167 44 view .LVU246
+ 1090 0002 10B5     		push	{r4, lr}
+ 1091              	.LCFI50:
+ 1092              		.cfi_def_cfa_offset 8
+ 1093              		.cfi_offset 4, -8
+ 1094              		.cfi_offset 14, -4
+ 1095 0004 0446     		mov	r4, r0
+ 169:Core/Lib/INA219.c **** 
+ 170:Core/Lib/INA219.c ****     if(ina219_ReadBusVoltage(ina219) != INA219_OK) return 0;
+ 1096              		.loc 1 170 5 is_stmt 1 view .LVU247
+ 1097              		.loc 1 170 8 is_stmt 0 view .LVU248
+ 1098 0006 FFF7FEFF 		bl	ina219_ReadBusVoltage
+ 1099              	.LVL98:
+ 1100              		.loc 1 170 7 view .LVU249
+ 1101 000a 18BB     		cbnz	r0, .L127
+ 171:Core/Lib/INA219.c **** 
+ 172:Core/Lib/INA219.c ****     uint16_t Vbus = ina219->BusVoltage;
+ 1102              		.loc 1 172 5 is_stmt 1 view .LVU250
+ 1103              		.loc 1 172 14 is_stmt 0 view .LVU251
+ 1104 000c E388     		ldrh	r3, [r4, #6]
+ 1105              	.LVL99:
+ 173:Core/Lib/INA219.c ****     float percentLife = (float)(Vbus - BATTERY_MIN) / (float)(BATTERY_MAX - BATTERY_MIN) * PERCENT;
+ 1106              		.loc 1 173 5 is_stmt 1 view .LVU252
+ 1107              		.loc 1 173 38 is_stmt 0 view .LVU253
+ 1108 000e A3F6B833 		subw	r3, r3, #3000
+ 1109              	.LVL100:
+ 1110              		.loc 1 173 25 view .LVU254
+ 1111 0012 07EE903A 		vmov	s15, r3	@ int
+ 1112 0016 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1113              		.loc 1 173 53 view .LVU255
+ 1114 001a 9FED107A 		vldr.32	s14, .L135
+ 1115 001e 87EE870A 		vdiv.f32	s0, s15, s14
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 24
+
+
+ 1116              		.loc 1 173 11 view .LVU256
+ 1117 0022 DFED0F7A 		vldr.32	s15, .L135+4
+ 1118 0026 20EE270A 		vmul.f32	s0, s0, s15
+ 1119              	.LVL101:
+ 174:Core/Lib/INA219.c ****     if (percentLife < BATTERY_EMPTY) {
+ 1120              		.loc 1 174 5 is_stmt 1 view .LVU257
+ 1121              		.loc 1 174 8 is_stmt 0 view .LVU258
+ 1122 002a B5EEC00A 		vcmpe.f32	s0, #0
+ 1123 002e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1124 0032 09D4     		bmi	.L134
+ 1125              	.LVL102:
+ 1126              	.L125:
+ 175:Core/Lib/INA219.c ****         percentLife = BATTERY_EMPTY;
+ 176:Core/Lib/INA219.c ****     }
+ 177:Core/Lib/INA219.c ****     if(percentLife > BATTERY_FULL) {
+ 1127              		.loc 1 177 5 is_stmt 1 view .LVU259
+ 1128              		.loc 1 177 7 is_stmt 0 view .LVU260
+ 1129 0034 DFED0A7A 		vldr.32	s15, .L135+4
+ 1130 0038 B4EEE70A 		vcmpe.f32	s0, s15
+ 1131 003c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1132 0040 0ADD     		ble	.L123
+ 178:Core/Lib/INA219.c ****         percentLife = BATTERY_FULL;
+ 1133              		.loc 1 178 21 view .LVU261
+ 1134 0042 9FED070A 		vldr.32	s0, .L135+4
+ 1135              	.LVL103:
+ 1136              		.loc 1 178 21 view .LVU262
+ 1137 0046 07E0     		b	.L123
+ 1138              	.LVL104:
+ 1139              	.L134:
+ 175:Core/Lib/INA219.c ****         percentLife = BATTERY_EMPTY;
+ 1140              		.loc 1 175 21 view .LVU263
+ 1141 0048 9FED060A 		vldr.32	s0, .L135+8
+ 1142              	.LVL105:
+ 175:Core/Lib/INA219.c ****         percentLife = BATTERY_EMPTY;
+ 1143              		.loc 1 175 21 view .LVU264
+ 1144 004c F2E7     		b	.L125
+ 1145              	.LVL106:
+ 1146              	.L126:
+ 1147              	.LCFI51:
+ 1148              		.cfi_def_cfa_offset 0
+ 1149              		.cfi_restore 4
+ 1150              		.cfi_restore 14
+ 168:Core/Lib/INA219.c **** 
+ 1151              		.loc 1 168 24 view .LVU265
+ 1152 004e 9FED050A 		vldr.32	s0, .L135+8
+ 179:Core/Lib/INA219.c ****     }
+ 180:Core/Lib/INA219.c ****     return percentLife;
+ 181:Core/Lib/INA219.c **** }
+ 1153              		.loc 1 181 1 view .LVU266
+ 1154 0052 7047     		bx	lr
+ 1155              	.LVL107:
+ 1156              	.L127:
+ 1157              	.LCFI52:
+ 1158              		.cfi_def_cfa_offset 8
+ 1159              		.cfi_offset 4, -8
+ 1160              		.cfi_offset 14, -4
+ 170:Core/Lib/INA219.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 25
+
+
+ 1161              		.loc 1 170 59 view .LVU267
+ 1162 0054 9FED030A 		vldr.32	s0, .L135+8
+ 1163              	.L123:
+ 1164              		.loc 1 181 1 view .LVU268
+ 1165 0058 10BD     		pop	{r4, pc}
+ 1166              	.LVL108:
+ 1167              	.L136:
+ 1168              		.loc 1 181 1 view .LVU269
+ 1169 005a 00BF     		.align	2
+ 1170              	.L135:
+ 1171 005c 00009644 		.word	1150681088
+ 1172 0060 0000C842 		.word	1120403456
+ 1173 0064 00000000 		.word	0
+ 1174              		.cfi_endproc
+ 1175              	.LFE160:
+ 1177              		.section	.text.Checkbattery,"ax",%progbits
+ 1178              		.align	1
+ 1179              		.global	Checkbattery
+ 1180              		.syntax unified
+ 1181              		.thumb
+ 1182              		.thumb_func
+ 1184              	Checkbattery:
+ 1185              	.LVL109:
+ 1186              	.LFB161:
+ 182:Core/Lib/INA219.c **** 
+ 183:Core/Lib/INA219.c **** //check battery
+ 184:Core/Lib/INA219.c **** battery_state Checkbattery(ina219_t *ina219) {
+ 1187              		.loc 1 184 46 is_stmt 1 view -0
+ 1188              		.cfi_startproc
+ 1189              		@ args = 0, pretend = 0, frame = 0
+ 1190              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185:Core/Lib/INA219.c ****     if(!ina219) return battery_START;
+ 1191              		.loc 1 185 5 view .LVU271
+ 1192              		.loc 1 185 7 is_stmt 0 view .LVU272
+ 1193 0000 28B3     		cbz	r0, .L146
+ 184:Core/Lib/INA219.c ****     if(!ina219) return battery_START;
+ 1194              		.loc 1 184 46 view .LVU273
+ 1195 0002 10B5     		push	{r4, lr}
+ 1196              	.LCFI53:
+ 1197              		.cfi_def_cfa_offset 8
+ 1198              		.cfi_offset 4, -8
+ 1199              		.cfi_offset 14, -4
+ 1200 0004 0446     		mov	r4, r0
+ 186:Core/Lib/INA219.c **** 
+ 187:Core/Lib/INA219.c ****     float percentBattery = ina219_BatteryLife(ina219);
+ 1201              		.loc 1 187 5 is_stmt 1 view .LVU274
+ 1202              		.loc 1 187 28 is_stmt 0 view .LVU275
+ 1203 0006 FFF7FEFF 		bl	ina219_BatteryLife
+ 1204              	.LVL110:
+ 188:Core/Lib/INA219.c ****     
+ 189:Core/Lib/INA219.c ****     if(percentBattery >= BATTERY_OK_THRESHOLD) {
+ 1205              		.loc 1 189 5 is_stmt 1 view .LVU276
+ 1206              		.loc 1 189 7 is_stmt 0 view .LVU277
+ 1207 000a DFED127A 		vldr.32	s15, .L157
+ 1208 000e B4EEE70A 		vcmpe.f32	s0, s15
+ 1209 0012 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1210 0016 03DB     		blt	.L150
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 26
+
+
+ 190:Core/Lib/INA219.c ****         ina219->check = battery_OK;
+ 1211              		.loc 1 190 9 is_stmt 1 view .LVU278
+ 1212              		.loc 1 190 23 is_stmt 0 view .LVU279
+ 1213 0018 0123     		movs	r3, #1
+ 1214 001a A373     		strb	r3, [r4, #14]
+ 1215              	.L141:
+ 191:Core/Lib/INA219.c ****     }
+ 192:Core/Lib/INA219.c ****     else if(percentBattery >= BATTERY_LOW_THRESHOLD) {
+ 193:Core/Lib/INA219.c ****         ina219->check = battery_LOW;
+ 194:Core/Lib/INA219.c ****     }
+ 195:Core/Lib/INA219.c ****     else if(percentBattery >= BATTERY_CRITICAL_THRESHOLD) {
+ 196:Core/Lib/INA219.c ****         ina219->check = battery_CRITICAL;
+ 197:Core/Lib/INA219.c ****     }
+ 198:Core/Lib/INA219.c ****     else {
+ 199:Core/Lib/INA219.c ****         ina219->check = battery_EMERGENCY;
+ 200:Core/Lib/INA219.c ****     }
+ 201:Core/Lib/INA219.c ****     
+ 202:Core/Lib/INA219.c ****     return ina219->check;
+ 1216              		.loc 1 202 5 is_stmt 1 view .LVU280
+ 1217              		.loc 1 202 18 is_stmt 0 view .LVU281
+ 1218 001c A07B     		ldrb	r0, [r4, #14]	@ zero_extendqisi2
+ 203:Core/Lib/INA219.c **** }
+ 1219              		.loc 1 203 1 view .LVU282
+ 1220 001e 10BD     		pop	{r4, pc}
+ 1221              	.LVL111:
+ 1222              	.L150:
+ 192:Core/Lib/INA219.c ****         ina219->check = battery_LOW;
+ 1223              		.loc 1 192 10 is_stmt 1 view .LVU283
+ 192:Core/Lib/INA219.c ****         ina219->check = battery_LOW;
+ 1224              		.loc 1 192 12 is_stmt 0 view .LVU284
+ 1225 0020 F3EE0E7A 		vmov.f32	s15, #3.0e+1
+ 1226 0024 B4EEE70A 		vcmpe.f32	s0, s15
+ 1227 0028 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1228 002c 02DB     		blt	.L151
+ 193:Core/Lib/INA219.c ****     }
+ 1229              		.loc 1 193 9 is_stmt 1 view .LVU285
+ 193:Core/Lib/INA219.c ****     }
+ 1230              		.loc 1 193 23 is_stmt 0 view .LVU286
+ 1231 002e 0223     		movs	r3, #2
+ 1232 0030 A373     		strb	r3, [r4, #14]
+ 1233 0032 F3E7     		b	.L141
+ 1234              	.L151:
+ 195:Core/Lib/INA219.c ****         ina219->check = battery_CRITICAL;
+ 1235              		.loc 1 195 10 is_stmt 1 view .LVU287
+ 195:Core/Lib/INA219.c ****         ina219->check = battery_CRITICAL;
+ 1236              		.loc 1 195 12 is_stmt 0 view .LVU288
+ 1237 0034 F2EE047A 		vmov.f32	s15, #1.0e+1
+ 1238 0038 B4EEE70A 		vcmpe.f32	s0, s15
+ 1239 003c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1240 0040 02DB     		blt	.L152
+ 196:Core/Lib/INA219.c ****     }
+ 1241              		.loc 1 196 9 is_stmt 1 view .LVU289
+ 196:Core/Lib/INA219.c ****     }
+ 1242              		.loc 1 196 23 is_stmt 0 view .LVU290
+ 1243 0042 0323     		movs	r3, #3
+ 1244 0044 A373     		strb	r3, [r4, #14]
+ 1245 0046 E9E7     		b	.L141
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 27
+
+
+ 1246              	.L152:
+ 199:Core/Lib/INA219.c ****     }
+ 1247              		.loc 1 199 9 is_stmt 1 view .LVU291
+ 199:Core/Lib/INA219.c ****     }
+ 1248              		.loc 1 199 23 is_stmt 0 view .LVU292
+ 1249 0048 0423     		movs	r3, #4
+ 1250 004a A373     		strb	r3, [r4, #14]
+ 1251 004c E6E7     		b	.L141
+ 1252              	.LVL112:
+ 1253              	.L146:
+ 1254              	.LCFI54:
+ 1255              		.cfi_def_cfa_offset 0
+ 1256              		.cfi_restore 4
+ 1257              		.cfi_restore 14
+ 185:Core/Lib/INA219.c **** 
+ 1258              		.loc 1 185 24 view .LVU293
+ 1259 004e 0020     		movs	r0, #0
+ 1260              	.LVL113:
+ 1261              		.loc 1 203 1 view .LVU294
+ 1262 0050 7047     		bx	lr
+ 1263              	.L158:
+ 1264 0052 00BF     		.align	2
+ 1265              	.L157:
+ 1266 0054 00008C42 		.word	1116471296
+ 1267              		.cfi_endproc
+ 1268              	.LFE161:
+ 1270              		.global	ina_config_reset
+ 1271              		.global	ina_reg_calibration
+ 1272              		.global	ina_reg_current
+ 1273              		.global	ina_reg_power
+ 1274              		.global	ina_reg_bus_voltage
+ 1275              		.global	ina_reg_shuntvoltage
+ 1276              		.global	ina_reg_config
+ 1277              		.section	.rodata.ina_config_reset,"a"
+ 1278              		.align	1
+ 1281              	ina_config_reset:
+ 1282 0000 0080     		.short	-32768
+ 1283              		.section	.rodata.ina_reg_bus_voltage,"a"
+ 1286              	ina_reg_bus_voltage:
+ 1287 0000 02       		.byte	2
+ 1288              		.section	.rodata.ina_reg_calibration,"a"
+ 1291              	ina_reg_calibration:
+ 1292 0000 05       		.byte	5
+ 1293              		.section	.rodata.ina_reg_config,"a"
+ 1296              	ina_reg_config:
+ 1297 0000 00       		.space	1
+ 1298              		.section	.rodata.ina_reg_current,"a"
+ 1301              	ina_reg_current:
+ 1302 0000 04       		.byte	4
+ 1303              		.section	.rodata.ina_reg_power,"a"
+ 1306              	ina_reg_power:
+ 1307 0000 03       		.byte	3
+ 1308              		.section	.rodata.ina_reg_shuntvoltage,"a"
+ 1311              	ina_reg_shuntvoltage:
+ 1312 0000 01       		.byte	1
+ 1313              		.text
+ 1314              	.Letext0:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 28
+
+
+ 1315              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1316              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1317              		.file 4 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 1318              		.file 5 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1319              		.file 6 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1320              		.file 7 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 1321              		.file 8 "Core/Lib/INA219.h"
+ 1322              		.file 9 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cciV4X2X.s 			page 29
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 INA219.c
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:19     .text.read_16bit:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:25     .text.read_16bit:00000000 read_16bit
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:119    .text.write_16bit:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:125    .text.write_16bit:00000000 write_16bit
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:212    .text.ina219_ReadBusVoltage:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:218    .text.ina219_ReadBusVoltage:00000000 ina219_ReadBusVoltage
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:305    .text.ina219_ReadCurrent:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:311    .text.ina219_ReadCurrent:00000000 ina219_ReadCurrent
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:387    .text.ina219_ReadShuntVoltage:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:393    .text.ina219_ReadShuntVoltage:00000000 ina219_ReadShuntVoltage
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:476    .text.ina219_ReadShuntVoltage:00000040 $d
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:481    .text.ina219_ReadPower:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:487    .text.ina219_ReadPower:00000000 ina219_ReadPower
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:558    .text.ina219_reset:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:564    .text.ina219_reset:00000000 ina219_reset
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:612    .text.ina219_setCalibration:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:618    .text.ina219_setCalibration:00000000 ina219_setCalibration
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:671    .text.ina219_getConfig:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:677    .text.ina219_getConfig:00000000 ina219_getConfig
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:730    .text.ina219_setConfig:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:736    .text.ina219_setConfig:00000000 ina219_setConfig
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:789    .text.ina219_Config:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:795    .text.ina219_Config:00000000 ina219_Config
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:855    .text.set_PowerMode:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:861    .text.set_PowerMode:00000000 set_PowerMode
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:953    .text.ina219_init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:959    .text.ina219_init:00000000 ina219_init
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1073   .text.ina219_BatteryLife:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1079   .text.ina219_BatteryLife:00000000 ina219_BatteryLife
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1171   .text.ina219_BatteryLife:0000005c $d
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1178   .text.Checkbattery:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1184   .text.Checkbattery:00000000 Checkbattery
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1266   .text.Checkbattery:00000054 $d
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1281   .rodata.ina_config_reset:00000000 ina_config_reset
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1291   .rodata.ina_reg_calibration:00000000 ina_reg_calibration
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1301   .rodata.ina_reg_current:00000000 ina_reg_current
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1306   .rodata.ina_reg_power:00000000 ina_reg_power
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1286   .rodata.ina_reg_bus_voltage:00000000 ina_reg_bus_voltage
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1311   .rodata.ina_reg_shuntvoltage:00000000 ina_reg_shuntvoltage
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1296   .rodata.ina_reg_config:00000000 ina_reg_config
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1278   .rodata.ina_config_reset:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cciV4X2X.s:1297   .rodata.ina_reg_config:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_I2C_Mem_Read
+HAL_I2C_Mem_Write
+HAL_Delay
+HAL_I2C_IsDeviceReady

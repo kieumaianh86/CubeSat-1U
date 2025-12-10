@@ -6,6 +6,7 @@
 #include "string.h"
 #include "stdlib.h"
 #include "stdbool.h"
+#include <time.h>
 
 typedef enum {
   NEO8M_OK = 0,
@@ -138,4 +139,6 @@ float neo8m_calculate_distance(double lat1, double lon1, double lat2, double lon
  * 
  */
 float neo8m_calculate_bearing(double lat1, double lon1, double lat2, double lon2);
+
+void neo8m_get_unix_timestamp(neo8m_handle_t *h, uint32_t *unix_ts);
 #endif

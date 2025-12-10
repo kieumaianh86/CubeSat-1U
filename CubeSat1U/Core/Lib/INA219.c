@@ -1,5 +1,15 @@
 #include "INA219.h"
 
+const uint8_t ina_reg_config       = 0x00;
+const uint8_t ina_reg_shuntvoltage = 0x01;
+const uint8_t ina_reg_bus_voltage  = 0x02;
+const uint8_t ina_reg_power        = 0x03;
+const uint8_t ina_reg_current      = 0x04;
+const uint8_t ina_reg_calibration  = 0x05;
+
+const uint16_t ina_config_reset    = 0x8000;
+
+
 INA219_STATUS_t read_16bit(ina219_t *ina219, uint8_t Register, uint16_t *value) {
     if(!ina219) return INA219_INVALID_PARAM;
     if(!ina219->ina219_i2c) return INA219_I2C_ERROR;

@@ -227,3 +227,4 @@ const ov2640_regval_t OV2640_QVGA_RGB565[] = {
  *
  *  để CPU thấy dữ liệu mới do DMA ghi.
  */
+ 

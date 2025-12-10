@@ -88,7 +88,7 @@ typedef struct
 } end_t;
 
 comm_error_t Logic_Comm_Init(void);
-comm_error_t Logic_Comm_Process(uint32_t ms);
+comm_error_t Logic_Comm_Process(void);
 comm_error_t Logic_Comm_Abort(void);
 comm_phase_t Logic_Comm_GetPhase(void);
 uint32_t Logic_Comm_GetPhaseTimer(void);

@@ -1,0 +1,1593 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"sdcard.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.rodata.SD_Mount.str1.4,"aMS",%progbits,1
+  19              		.align	2
+  20              	.LC0:
+  21 0000 303A00   		.ascii	"0:\000"
+  22              		.section	.text.SD_Mount,"ax",%progbits
+  23              		.align	1
+  24              		.global	SD_Mount
+  25              		.syntax unified
+  26              		.thumb
+  27              		.thumb_func
+  29              	SD_Mount:
+  30              	.LFB152:
+  31              		.file 1 "Core/Lib/sdcard.c"
+   1:Core/Lib/sdcard.c **** #include "sdcard.h"
+   2:Core/Lib/sdcard.c **** #include "string.h"
+   3:Core/Lib/sdcard.c **** #include "stdio.h"
+   4:Core/Lib/sdcard.c **** 
+   5:Core/Lib/sdcard.c **** static FATFS fs;
+   6:Core/Lib/sdcard.c **** static uint8_t sd_ready = 0;
+   7:Core/Lib/sdcard.c **** static char latest_filename[40] = {0};  // Tăng size cho drive prefix
+   8:Core/Lib/sdcard.c **** 
+   9:Core/Lib/sdcard.c **** sd_status_t SD_Init(void) {
+  10:Core/Lib/sdcard.c ****     return SD_Mount();
+  11:Core/Lib/sdcard.c **** }
+  12:Core/Lib/sdcard.c **** 
+  13:Core/Lib/sdcard.c **** sd_status_t SD_Mount(void) {
+  32              		.loc 1 13 28 view -0
+  33              		.cfi_startproc
+  34              		@ args = 0, pretend = 0, frame = 0
+  35              		@ frame_needed = 0, uses_anonymous_args = 0
+  36 0000 08B5     		push	{r3, lr}
+  37              	.LCFI0:
+  38              		.cfi_def_cfa_offset 8
+  39              		.cfi_offset 3, -8
+  40              		.cfi_offset 14, -4
+  14:Core/Lib/sdcard.c ****     // FIX: Dùng "0:" cho STM32H7
+  15:Core/Lib/sdcard.c ****     FRESULT res = f_mount(&fs, "0:", 1);
+  41              		.loc 1 15 5 view .LVU1
+  42              		.loc 1 15 19 is_stmt 0 view .LVU2
+  43 0002 0122     		movs	r2, #1
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 2
+
+
+  44 0004 0649     		ldr	r1, .L6
+  45 0006 0748     		ldr	r0, .L6+4
+  46 0008 FFF7FEFF 		bl	f_mount
+  47              	.LVL0:
+  16:Core/Lib/sdcard.c ****     if (res == FR_OK) {
+  48              		.loc 1 16 5 is_stmt 1 view .LVU3
+  49              		.loc 1 16 8 is_stmt 0 view .LVU4
+  50 000c 20B1     		cbz	r0, .L5
+  17:Core/Lib/sdcard.c ****         sd_ready = 1;
+  18:Core/Lib/sdcard.c ****         return SD_OK;
+  19:Core/Lib/sdcard.c ****     }
+  20:Core/Lib/sdcard.c ****     sd_ready = 0;
+  51              		.loc 1 20 5 is_stmt 1 view .LVU5
+  52              		.loc 1 20 14 is_stmt 0 view .LVU6
+  53 000e 064B     		ldr	r3, .L6+8
+  54 0010 0022     		movs	r2, #0
+  55 0012 1A70     		strb	r2, [r3]
+  21:Core/Lib/sdcard.c ****     return SD_MOUNT_ERROR;
+  56              		.loc 1 21 5 is_stmt 1 view .LVU7
+  57              		.loc 1 21 12 is_stmt 0 view .LVU8
+  58 0014 0520     		movs	r0, #5
+  59              	.L3:
+  22:Core/Lib/sdcard.c **** }
+  60              		.loc 1 22 1 view .LVU9
+  61 0016 08BD     		pop	{r3, pc}
+  62              	.L5:
+  17:Core/Lib/sdcard.c ****         sd_ready = 1;
+  63              		.loc 1 17 9 is_stmt 1 view .LVU10
+  17:Core/Lib/sdcard.c ****         sd_ready = 1;
+  64              		.loc 1 17 18 is_stmt 0 view .LVU11
+  65 0018 034B     		ldr	r3, .L6+8
+  66 001a 0122     		movs	r2, #1
+  67 001c 1A70     		strb	r2, [r3]
+  18:Core/Lib/sdcard.c ****     }
+  68              		.loc 1 18 9 is_stmt 1 view .LVU12
+  18:Core/Lib/sdcard.c ****     }
+  69              		.loc 1 18 16 is_stmt 0 view .LVU13
+  70 001e FAE7     		b	.L3
+  71              	.L7:
+  72              		.align	2
+  73              	.L6:
+  74 0020 00000000 		.word	.LC0
+  75 0024 00000000 		.word	.LANCHOR0
+  76 0028 00000000 		.word	.LANCHOR1
+  77              		.cfi_endproc
+  78              	.LFE152:
+  80              		.section	.text.SD_Init,"ax",%progbits
+  81              		.align	1
+  82              		.global	SD_Init
+  83              		.syntax unified
+  84              		.thumb
+  85              		.thumb_func
+  87              	SD_Init:
+  88              	.LFB151:
+   9:Core/Lib/sdcard.c ****     return SD_Mount();
+  89              		.loc 1 9 27 is_stmt 1 view -0
+  90              		.cfi_startproc
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 3
+
+
+  91              		@ args = 0, pretend = 0, frame = 0
+  92              		@ frame_needed = 0, uses_anonymous_args = 0
+  93 0000 08B5     		push	{r3, lr}
+  94              	.LCFI1:
+  95              		.cfi_def_cfa_offset 8
+  96              		.cfi_offset 3, -8
+  97              		.cfi_offset 14, -4
+  10:Core/Lib/sdcard.c **** }
+  98              		.loc 1 10 5 view .LVU15
+  10:Core/Lib/sdcard.c **** }
+  99              		.loc 1 10 12 is_stmt 0 view .LVU16
+ 100 0002 FFF7FEFF 		bl	SD_Mount
+ 101              	.LVL1:
+  11:Core/Lib/sdcard.c **** 
+ 102              		.loc 1 11 1 view .LVU17
+ 103 0006 08BD     		pop	{r3, pc}
+ 104              		.cfi_endproc
+ 105              	.LFE151:
+ 107              		.section	.text.SD_Unmount,"ax",%progbits
+ 108              		.align	1
+ 109              		.global	SD_Unmount
+ 110              		.syntax unified
+ 111              		.thumb
+ 112              		.thumb_func
+ 114              	SD_Unmount:
+ 115              	.LFB153:
+  23:Core/Lib/sdcard.c **** 
+  24:Core/Lib/sdcard.c **** sd_status_t SD_Unmount(void) {
+ 116              		.loc 1 24 30 is_stmt 1 view -0
+ 117              		.cfi_startproc
+ 118              		@ args = 0, pretend = 0, frame = 0
+ 119              		@ frame_needed = 0, uses_anonymous_args = 0
+ 120 0000 08B5     		push	{r3, lr}
+ 121              	.LCFI2:
+ 122              		.cfi_def_cfa_offset 8
+ 123              		.cfi_offset 3, -8
+ 124              		.cfi_offset 14, -4
+  25:Core/Lib/sdcard.c ****     f_mount(NULL, "0:", 0);
+ 125              		.loc 1 25 5 view .LVU19
+ 126 0002 0022     		movs	r2, #0
+ 127 0004 0349     		ldr	r1, .L12
+ 128 0006 1046     		mov	r0, r2
+ 129 0008 FFF7FEFF 		bl	f_mount
+ 130              	.LVL2:
+  26:Core/Lib/sdcard.c ****     sd_ready = 0;
+ 131              		.loc 1 26 5 view .LVU20
+ 132              		.loc 1 26 14 is_stmt 0 view .LVU21
+ 133 000c 0020     		movs	r0, #0
+ 134 000e 024B     		ldr	r3, .L12+4
+ 135 0010 1870     		strb	r0, [r3]
+  27:Core/Lib/sdcard.c ****     return SD_OK;
+ 136              		.loc 1 27 5 is_stmt 1 view .LVU22
+  28:Core/Lib/sdcard.c **** }
+ 137              		.loc 1 28 1 is_stmt 0 view .LVU23
+ 138 0012 08BD     		pop	{r3, pc}
+ 139              	.L13:
+ 140              		.align	2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 4
+
+
+ 141              	.L12:
+ 142 0014 00000000 		.word	.LC0
+ 143 0018 00000000 		.word	.LANCHOR1
+ 144              		.cfi_endproc
+ 145              	.LFE153:
+ 147              		.section	.text.SD_IsReady,"ax",%progbits
+ 148              		.align	1
+ 149              		.global	SD_IsReady
+ 150              		.syntax unified
+ 151              		.thumb
+ 152              		.thumb_func
+ 154              	SD_IsReady:
+ 155              	.LFB154:
+  29:Core/Lib/sdcard.c **** 
+  30:Core/Lib/sdcard.c **** uint8_t SD_IsReady(void) {
+ 156              		.loc 1 30 26 is_stmt 1 view -0
+ 157              		.cfi_startproc
+ 158              		@ args = 0, pretend = 0, frame = 0
+ 159              		@ frame_needed = 0, uses_anonymous_args = 0
+ 160              		@ link register save eliminated.
+  31:Core/Lib/sdcard.c ****     return sd_ready;
+ 161              		.loc 1 31 5 view .LVU25
+  32:Core/Lib/sdcard.c **** }
+ 162              		.loc 1 32 1 is_stmt 0 view .LVU26
+ 163 0000 014B     		ldr	r3, .L15
+ 164 0002 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 165 0004 7047     		bx	lr
+ 166              	.L16:
+ 167 0006 00BF     		.align	2
+ 168              	.L15:
+ 169 0008 00000000 		.word	.LANCHOR1
+ 170              		.cfi_endproc
+ 171              	.LFE154:
+ 173              		.section	.rodata.SD_WriteScience.str1.4,"aMS",%progbits,1
+ 174              		.align	2
+ 175              	.LC1:
+ 176 0000 303A7363 		.ascii	"0:sci_%lu.dat\000"
+ 176      695F256C 
+ 176      752E6461 
+ 176      7400
+ 177              		.section	.text.SD_WriteScience,"ax",%progbits
+ 178              		.align	1
+ 179              		.global	SD_WriteScience
+ 180              		.syntax unified
+ 181              		.thumb
+ 182              		.thumb_func
+ 184              	SD_WriteScience:
+ 185              	.LVL3:
+ 186              	.LFB155:
+  33:Core/Lib/sdcard.c **** 
+  34:Core/Lib/sdcard.c **** sd_status_t SD_WriteScience(const uint8_t *data, uint32_t len) {
+ 187              		.loc 1 34 64 is_stmt 1 view -0
+ 188              		.cfi_startproc
+ 189              		@ args = 0, pretend = 0, frame = 568
+ 190              		@ frame_needed = 0, uses_anonymous_args = 0
+ 191              		.loc 1 34 64 is_stmt 0 view .LVU28
+ 192 0000 70B5     		push	{r4, r5, r6, lr}
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 5
+
+
+ 193              	.LCFI3:
+ 194              		.cfi_def_cfa_offset 16
+ 195              		.cfi_offset 4, -16
+ 196              		.cfi_offset 5, -12
+ 197              		.cfi_offset 6, -8
+ 198              		.cfi_offset 14, -4
+ 199 0002 ADF50E7D 		sub	sp, sp, #568
+ 200              	.LCFI4:
+ 201              		.cfi_def_cfa_offset 584
+  35:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 202              		.loc 1 35 5 is_stmt 1 view .LVU29
+ 203              		.loc 1 35 9 is_stmt 0 view .LVU30
+ 204 0006 194B     		ldr	r3, .L25
+ 205 0008 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 206              		.loc 1 35 8 view .LVU31
+ 207 000a 2BB3     		cbz	r3, .L20
+ 208 000c 0446     		mov	r4, r0
+ 209 000e 0D46     		mov	r5, r1
+  36:Core/Lib/sdcard.c ****     
+  37:Core/Lib/sdcard.c ****     FIL file;
+ 210              		.loc 1 37 5 is_stmt 1 view .LVU32
+  38:Core/Lib/sdcard.c ****     UINT bw;
+ 211              		.loc 1 38 5 view .LVU33
+  39:Core/Lib/sdcard.c ****     
+  40:Core/Lib/sdcard.c ****     // FIX: Thêm drive prefix "0:"
+  41:Core/Lib/sdcard.c ****     snprintf(latest_filename, sizeof(latest_filename), "0:sci_%lu.dat", HAL_GetTick());
+ 212              		.loc 1 41 5 view .LVU34
+ 213 0010 FFF7FEFF 		bl	HAL_GetTick
+ 214              	.LVL4:
+ 215              		.loc 1 41 5 is_stmt 0 view .LVU35
+ 216 0014 0346     		mov	r3, r0
+ 217 0016 164E     		ldr	r6, .L25+4
+ 218 0018 164A     		ldr	r2, .L25+8
+ 219 001a 2821     		movs	r1, #40
+ 220 001c 3046     		mov	r0, r6
+ 221 001e FFF7FEFF 		bl	snprintf
+ 222              	.LVL5:
+  42:Core/Lib/sdcard.c ****     
+  43:Core/Lib/sdcard.c ****     FRESULT res = f_open(&file, latest_filename, FA_CREATE_ALWAYS | FA_WRITE);
+ 223              		.loc 1 43 5 is_stmt 1 view .LVU36
+ 224              		.loc 1 43 19 is_stmt 0 view .LVU37
+ 225 0022 0A22     		movs	r2, #10
+ 226 0024 3146     		mov	r1, r6
+ 227 0026 02A8     		add	r0, sp, #8
+ 228 0028 FFF7FEFF 		bl	f_open
+ 229              	.LVL6:
+  44:Core/Lib/sdcard.c ****     if (res != FR_OK) return SD_WRITE_ERROR;
+ 230              		.loc 1 44 5 is_stmt 1 view .LVU38
+ 231              		.loc 1 44 8 is_stmt 0 view .LVU39
+ 232 002c C8B9     		cbnz	r0, .L21
+  45:Core/Lib/sdcard.c ****     
+  46:Core/Lib/sdcard.c ****     res = f_write(&file, data, len, &bw);
+ 233              		.loc 1 46 5 is_stmt 1 view .LVU40
+ 234              		.loc 1 46 11 is_stmt 0 view .LVU41
+ 235 002e 01AB     		add	r3, sp, #4
+ 236 0030 2A46     		mov	r2, r5
+ 237 0032 2146     		mov	r1, r4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 6
+
+
+ 238 0034 02A8     		add	r0, sp, #8
+ 239              	.LVL7:
+ 240              		.loc 1 46 11 view .LVU42
+ 241 0036 FFF7FEFF 		bl	f_write
+ 242              	.LVL8:
+  47:Core/Lib/sdcard.c ****     
+  48:Core/Lib/sdcard.c ****     // FIX: Thêm f_sync() để đảm bảo data được ghi xuống SD
+  49:Core/Lib/sdcard.c ****     if (res == FR_OK) {
+ 243              		.loc 1 49 5 is_stmt 1 view .LVU43
+ 244              		.loc 1 49 8 is_stmt 0 view .LVU44
+ 245 003a 0446     		mov	r4, r0
+ 246              	.LVL9:
+ 247              		.loc 1 49 8 view .LVU45
+ 248 003c 40B1     		cbz	r0, .L24
+ 249              	.LVL10:
+ 250              	.L19:
+  50:Core/Lib/sdcard.c ****         f_sync(&file);
+  51:Core/Lib/sdcard.c ****     }
+  52:Core/Lib/sdcard.c ****     
+  53:Core/Lib/sdcard.c ****     f_close(&file);
+ 251              		.loc 1 53 5 is_stmt 1 view .LVU46
+ 252 003e 02A8     		add	r0, sp, #8
+ 253 0040 FFF7FEFF 		bl	f_close
+ 254              	.LVL11:
+  54:Core/Lib/sdcard.c ****     
+  55:Core/Lib/sdcard.c ****     return (res == FR_OK && bw == len) ? SD_OK : SD_WRITE_ERROR;
+ 255              		.loc 1 55 5 view .LVU47
+ 256              		.loc 1 55 48 is_stmt 0 view .LVU48
+ 257 0044 7CB9     		cbnz	r4, .L22
+ 258              		.loc 1 55 32 discriminator 1 view .LVU49
+ 259 0046 019B     		ldr	r3, [sp, #4]
+ 260              		.loc 1 55 26 discriminator 1 view .LVU50
+ 261 0048 AB42     		cmp	r3, r5
+ 262 004a 06D0     		beq	.L18
+ 263              		.loc 1 55 48 view .LVU51
+ 264 004c 0324     		movs	r4, #3
+ 265 004e 04E0     		b	.L18
+ 266              	.LVL12:
+ 267              	.L24:
+  50:Core/Lib/sdcard.c ****         f_sync(&file);
+ 268              		.loc 1 50 9 is_stmt 1 view .LVU52
+ 269 0050 02A8     		add	r0, sp, #8
+ 270              	.LVL13:
+  50:Core/Lib/sdcard.c ****         f_sync(&file);
+ 271              		.loc 1 50 9 is_stmt 0 view .LVU53
+ 272 0052 FFF7FEFF 		bl	f_sync
+ 273              	.LVL14:
+ 274 0056 F2E7     		b	.L19
+ 275              	.LVL15:
+ 276              	.L20:
+  35:Core/Lib/sdcard.c ****     
+ 277              		.loc 1 35 27 view .LVU54
+ 278 0058 0224     		movs	r4, #2
+ 279              	.LVL16:
+ 280              	.L18:
+  56:Core/Lib/sdcard.c **** }
+ 281              		.loc 1 56 1 view .LVU55
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 7
+
+
+ 282 005a 2046     		mov	r0, r4
+ 283 005c 0DF50E7D 		add	sp, sp, #568
+ 284              	.LCFI5:
+ 285              		.cfi_remember_state
+ 286              		.cfi_def_cfa_offset 16
+ 287              		@ sp needed
+ 288 0060 70BD     		pop	{r4, r5, r6, pc}
+ 289              	.LVL17:
+ 290              	.L21:
+ 291              	.LCFI6:
+ 292              		.cfi_restore_state
+  44:Core/Lib/sdcard.c ****     
+ 293              		.loc 1 44 30 view .LVU56
+ 294 0062 0324     		movs	r4, #3
+ 295              	.LVL18:
+  44:Core/Lib/sdcard.c ****     
+ 296              		.loc 1 44 30 view .LVU57
+ 297 0064 F9E7     		b	.L18
+ 298              	.LVL19:
+ 299              	.L22:
+  55:Core/Lib/sdcard.c **** }
+ 300              		.loc 1 55 48 view .LVU58
+ 301 0066 0324     		movs	r4, #3
+ 302 0068 F7E7     		b	.L18
+ 303              	.L26:
+ 304 006a 00BF     		.align	2
+ 305              	.L25:
+ 306 006c 00000000 		.word	.LANCHOR1
+ 307 0070 00000000 		.word	.LANCHOR2
+ 308 0074 00000000 		.word	.LC1
+ 309              		.cfi_endproc
+ 310              	.LFE155:
+ 312              		.section	.text.SD_ReadScience,"ax",%progbits
+ 313              		.align	1
+ 314              		.global	SD_ReadScience
+ 315              		.syntax unified
+ 316              		.thumb
+ 317              		.thumb_func
+ 319              	SD_ReadScience:
+ 320              	.LVL20:
+ 321              	.LFB156:
+  57:Core/Lib/sdcard.c **** 
+  58:Core/Lib/sdcard.c **** sd_status_t SD_ReadScience(uint8_t *data, uint32_t *len) {
+ 322              		.loc 1 58 58 is_stmt 1 view -0
+ 323              		.cfi_startproc
+ 324              		@ args = 0, pretend = 0, frame = 568
+ 325              		@ frame_needed = 0, uses_anonymous_args = 0
+ 326              		.loc 1 58 58 is_stmt 0 view .LVU60
+ 327 0000 30B5     		push	{r4, r5, lr}
+ 328              	.LCFI7:
+ 329              		.cfi_def_cfa_offset 12
+ 330              		.cfi_offset 4, -12
+ 331              		.cfi_offset 5, -8
+ 332              		.cfi_offset 14, -4
+ 333 0002 ADF50F7D 		sub	sp, sp, #572
+ 334              	.LCFI8:
+ 335              		.cfi_def_cfa_offset 584
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 8
+
+
+  59:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 336              		.loc 1 59 5 is_stmt 1 view .LVU61
+ 337              		.loc 1 59 9 is_stmt 0 view .LVU62
+ 338 0006 134B     		ldr	r3, .L35
+ 339 0008 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 340              		.loc 1 59 8 view .LVU63
+ 341 000a D3B1     		cbz	r3, .L29
+ 342 000c 0446     		mov	r4, r0
+ 343 000e 0D46     		mov	r5, r1
+  60:Core/Lib/sdcard.c ****     if (latest_filename[0] == 0) return SD_READ_ERROR;  // No file written yet
+ 344              		.loc 1 60 5 is_stmt 1 view .LVU64
+ 345              		.loc 1 60 24 is_stmt 0 view .LVU65
+ 346 0010 114B     		ldr	r3, .L35+4
+ 347 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 348              		.loc 1 60 8 view .LVU66
+ 349 0014 BBB1     		cbz	r3, .L30
+  61:Core/Lib/sdcard.c ****     
+  62:Core/Lib/sdcard.c ****     FIL file;
+ 350              		.loc 1 62 5 is_stmt 1 view .LVU67
+  63:Core/Lib/sdcard.c ****     UINT br;
+ 351              		.loc 1 63 5 view .LVU68
+  64:Core/Lib/sdcard.c ****     
+  65:Core/Lib/sdcard.c ****     FRESULT res = f_open(&file, latest_filename, FA_READ);
+ 352              		.loc 1 65 5 view .LVU69
+ 353              		.loc 1 65 19 is_stmt 0 view .LVU70
+ 354 0016 0122     		movs	r2, #1
+ 355 0018 0F49     		ldr	r1, .L35+4
+ 356              	.LVL21:
+ 357              		.loc 1 65 19 view .LVU71
+ 358 001a 02A8     		add	r0, sp, #8
+ 359              	.LVL22:
+ 360              		.loc 1 65 19 view .LVU72
+ 361 001c FFF7FEFF 		bl	f_open
+ 362              	.LVL23:
+  66:Core/Lib/sdcard.c ****     if (res != FR_OK) return SD_READ_ERROR;
+ 363              		.loc 1 66 5 is_stmt 1 view .LVU73
+ 364              		.loc 1 66 8 is_stmt 0 view .LVU74
+ 365 0020 B0B9     		cbnz	r0, .L31
+  67:Core/Lib/sdcard.c ****     
+  68:Core/Lib/sdcard.c ****     res = f_read(&file, data, *len, &br);
+ 366              		.loc 1 68 5 is_stmt 1 view .LVU75
+ 367              		.loc 1 68 11 is_stmt 0 view .LVU76
+ 368 0022 01AB     		add	r3, sp, #4
+ 369 0024 2A68     		ldr	r2, [r5]
+ 370 0026 2146     		mov	r1, r4
+ 371 0028 02A8     		add	r0, sp, #8
+ 372              	.LVL24:
+ 373              		.loc 1 68 11 view .LVU77
+ 374 002a FFF7FEFF 		bl	f_read
+ 375              	.LVL25:
+ 376 002e 0446     		mov	r4, r0
+ 377              	.LVL26:
+  69:Core/Lib/sdcard.c ****     f_close(&file);
+ 378              		.loc 1 69 5 is_stmt 1 view .LVU78
+ 379 0030 02A8     		add	r0, sp, #8
+ 380 0032 FFF7FEFF 		bl	f_close
+ 381              	.LVL27:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 9
+
+
+  70:Core/Lib/sdcard.c ****     
+  71:Core/Lib/sdcard.c ****     if (res == FR_OK) {
+ 382              		.loc 1 71 5 view .LVU79
+ 383              		.loc 1 71 8 is_stmt 0 view .LVU80
+ 384 0036 0CB1     		cbz	r4, .L34
+  72:Core/Lib/sdcard.c ****         *len = br;
+  73:Core/Lib/sdcard.c ****         return SD_OK;
+  74:Core/Lib/sdcard.c ****     }
+  75:Core/Lib/sdcard.c ****     
+  76:Core/Lib/sdcard.c ****     return SD_READ_ERROR;
+ 385              		.loc 1 76 12 view .LVU81
+ 386 0038 0424     		movs	r4, #4
+ 387              	.LVL28:
+ 388              		.loc 1 76 12 view .LVU82
+ 389 003a 05E0     		b	.L28
+ 390              	.LVL29:
+ 391              	.L34:
+  72:Core/Lib/sdcard.c ****         *len = br;
+ 392              		.loc 1 72 9 is_stmt 1 view .LVU83
+  72:Core/Lib/sdcard.c ****         *len = br;
+ 393              		.loc 1 72 14 is_stmt 0 view .LVU84
+ 394 003c 019B     		ldr	r3, [sp, #4]
+ 395 003e 2B60     		str	r3, [r5]
+  73:Core/Lib/sdcard.c ****     }
+ 396              		.loc 1 73 9 is_stmt 1 view .LVU85
+  73:Core/Lib/sdcard.c ****     }
+ 397              		.loc 1 73 16 is_stmt 0 view .LVU86
+ 398 0040 02E0     		b	.L28
+ 399              	.LVL30:
+ 400              	.L29:
+  59:Core/Lib/sdcard.c ****     if (latest_filename[0] == 0) return SD_READ_ERROR;  // No file written yet
+ 401              		.loc 1 59 27 view .LVU87
+ 402 0042 0224     		movs	r4, #2
+ 403 0044 00E0     		b	.L28
+ 404              	.L30:
+  60:Core/Lib/sdcard.c ****     
+ 405              		.loc 1 60 41 view .LVU88
+ 406 0046 0424     		movs	r4, #4
+ 407              	.LVL31:
+ 408              	.L28:
+  77:Core/Lib/sdcard.c **** }
+ 409              		.loc 1 77 1 view .LVU89
+ 410 0048 2046     		mov	r0, r4
+ 411 004a 0DF50F7D 		add	sp, sp, #572
+ 412              	.LCFI9:
+ 413              		.cfi_remember_state
+ 414              		.cfi_def_cfa_offset 12
+ 415              		@ sp needed
+ 416 004e 30BD     		pop	{r4, r5, pc}
+ 417              	.LVL32:
+ 418              	.L31:
+ 419              	.LCFI10:
+ 420              		.cfi_restore_state
+  66:Core/Lib/sdcard.c ****     
+ 421              		.loc 1 66 30 view .LVU90
+ 422 0050 0424     		movs	r4, #4
+ 423              	.LVL33:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 10
+
+
+  66:Core/Lib/sdcard.c ****     
+ 424              		.loc 1 66 30 view .LVU91
+ 425 0052 F9E7     		b	.L28
+ 426              	.L36:
+ 427              		.align	2
+ 428              	.L35:
+ 429 0054 00000000 		.word	.LANCHOR1
+ 430 0058 00000000 		.word	.LANCHOR2
+ 431              		.cfi_endproc
+ 432              	.LFE156:
+ 434              		.section	.rodata.SD_DeleteOldest.str1.4,"aMS",%progbits,1
+ 435              		.align	2
+ 436              	.LC2:
+ 437 0000 303A2F00 		.ascii	"0:/\000"
+ 438              		.align	2
+ 439              	.LC3:
+ 440 0004 7363695F 		.ascii	"sci_\000"
+ 440      00
+ 441 0009 000000   		.align	2
+ 442              	.LC4:
+ 443 000c 7363695F 		.ascii	"sci_%lu.dat\000"
+ 443      256C752E 
+ 443      64617400 
+ 444              		.align	2
+ 445              	.LC5:
+ 446 0018 303A2573 		.ascii	"0:%s\000"
+ 446      00
+ 447              		.section	.text.SD_DeleteOldest,"ax",%progbits
+ 448              		.align	1
+ 449              		.global	SD_DeleteOldest
+ 450              		.syntax unified
+ 451              		.thumb
+ 452              		.thumb_func
+ 454              	SD_DeleteOldest:
+ 455              	.LFB157:
+  78:Core/Lib/sdcard.c **** 
+  79:Core/Lib/sdcard.c **** sd_status_t SD_DeleteOldest(void) {
+ 456              		.loc 1 79 35 is_stmt 1 view -0
+ 457              		.cfi_startproc
+ 458              		@ args = 0, pretend = 0, frame = 120
+ 459              		@ frame_needed = 0, uses_anonymous_args = 0
+  80:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 460              		.loc 1 80 5 view .LVU93
+ 461              		.loc 1 80 9 is_stmt 0 view .LVU94
+ 462 0000 254B     		ldr	r3, .L52
+ 463 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 464              		.loc 1 80 8 view .LVU95
+ 465 0004 002B     		cmp	r3, #0
+ 466 0006 43D0     		beq	.L44
+  79:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 467              		.loc 1 79 35 view .LVU96
+ 468 0008 30B5     		push	{r4, r5, lr}
+ 469              	.LCFI11:
+ 470              		.cfi_def_cfa_offset 12
+ 471              		.cfi_offset 4, -12
+ 472              		.cfi_offset 5, -8
+ 473              		.cfi_offset 14, -4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 11
+
+
+ 474 000a 9FB0     		sub	sp, sp, #124
+ 475              	.LCFI12:
+ 476              		.cfi_def_cfa_offset 136
+  81:Core/Lib/sdcard.c ****     
+  82:Core/Lib/sdcard.c ****     DIR dir;
+ 477              		.loc 1 82 5 is_stmt 1 view .LVU97
+  83:Core/Lib/sdcard.c ****     FILINFO fno;
+ 478              		.loc 1 83 5 view .LVU98
+  84:Core/Lib/sdcard.c ****     char oldest_name[40] = {0};  // Tăng size cho drive prefix
+ 479              		.loc 1 84 5 view .LVU99
+ 480              		.loc 1 84 10 is_stmt 0 view .LVU100
+ 481 000c 0021     		movs	r1, #0
+ 482 000e 0291     		str	r1, [sp, #8]
+ 483 0010 2422     		movs	r2, #36
+ 484 0012 03A8     		add	r0, sp, #12
+ 485 0014 FFF7FEFF 		bl	memset
+ 486              	.LVL34:
+  85:Core/Lib/sdcard.c ****     DWORD oldest_time = 0xFFFFFFFF;
+ 487              		.loc 1 85 5 is_stmt 1 view .LVU101
+  86:Core/Lib/sdcard.c ****     
+  87:Core/Lib/sdcard.c ****     // FIX: Dùng "0:/" cho STM32H7
+  88:Core/Lib/sdcard.c ****     if (f_opendir(&dir, "0:/") != FR_OK) return SD_ERROR;
+ 488              		.loc 1 88 5 view .LVU102
+ 489              		.loc 1 88 9 is_stmt 0 view .LVU103
+ 490 0018 2049     		ldr	r1, .L52+4
+ 491 001a 12A8     		add	r0, sp, #72
+ 492 001c FFF7FEFF 		bl	f_opendir
+ 493              	.LVL35:
+ 494              		.loc 1 88 8 view .LVU104
+ 495 0020 0028     		cmp	r0, #0
+ 496 0022 37D1     		bne	.L45
+  85:Core/Lib/sdcard.c ****     DWORD oldest_time = 0xFFFFFFFF;
+ 497              		.loc 1 85 11 view .LVU105
+ 498 0024 4FF0FF34 		mov	r4, #-1
+ 499              	.LVL36:
+ 500              	.L40:
+  89:Core/Lib/sdcard.c ****     
+  90:Core/Lib/sdcard.c ****     // Find oldest sci_*.dat file
+  91:Core/Lib/sdcard.c ****     while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
+ 501              		.loc 1 91 11 is_stmt 1 view .LVU106
+ 502              		.loc 1 91 12 is_stmt 0 view .LVU107
+ 503 0028 0CA9     		add	r1, sp, #48
+ 504 002a 12A8     		add	r0, sp, #72
+ 505 002c FFF7FEFF 		bl	f_readdir
+ 506              	.LVL37:
+ 507              		.loc 1 91 11 view .LVU108
+ 508 0030 F0B9     		cbnz	r0, .L42
+ 509              		.loc 1 91 55 discriminator 1 view .LVU109
+ 510 0032 9DF83930 		ldrb	r3, [sp, #57]	@ zero_extendqisi2
+ 511              		.loc 1 91 43 discriminator 1 view .LVU110
+ 512 0036 DBB1     		cbz	r3, .L42
+  92:Core/Lib/sdcard.c ****         if (strncmp(fno.fname, "sci_", 4) == 0) {
+ 513              		.loc 1 92 9 is_stmt 1 view .LVU111
+ 514              		.loc 1 92 13 is_stmt 0 view .LVU112
+ 515 0038 0422     		movs	r2, #4
+ 516 003a 1949     		ldr	r1, .L52+8
+ 517 003c 0DF13900 		add	r0, sp, #57
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 12
+
+
+ 518 0040 FFF7FEFF 		bl	strncmp
+ 519              	.LVL38:
+ 520              		.loc 1 92 12 view .LVU113
+ 521 0044 0028     		cmp	r0, #0
+ 522 0046 EFD1     		bne	.L40
+ 523              	.LBB2:
+  93:Core/Lib/sdcard.c ****             // Extract timestamp from filename
+  94:Core/Lib/sdcard.c ****             DWORD file_time = 0;
+ 524              		.loc 1 94 13 is_stmt 1 view .LVU114
+ 525              		.loc 1 94 19 is_stmt 0 view .LVU115
+ 526 0048 0023     		movs	r3, #0
+ 527 004a 0193     		str	r3, [sp, #4]
+  95:Core/Lib/sdcard.c ****             sscanf(fno.fname, "sci_%lu.dat", &file_time);
+ 528              		.loc 1 95 13 is_stmt 1 view .LVU116
+ 529 004c 01AA     		add	r2, sp, #4
+ 530 004e 1549     		ldr	r1, .L52+12
+ 531 0050 0DF13900 		add	r0, sp, #57
+ 532 0054 FFF7FEFF 		bl	sscanf
+ 533              	.LVL39:
+  96:Core/Lib/sdcard.c ****             
+  97:Core/Lib/sdcard.c ****             if (file_time < oldest_time) {
+ 534              		.loc 1 97 13 view .LVU117
+ 535              		.loc 1 97 27 is_stmt 0 view .LVU118
+ 536 0058 019D     		ldr	r5, [sp, #4]
+ 537              		.loc 1 97 16 view .LVU119
+ 538 005a A542     		cmp	r5, r4
+ 539 005c E4D2     		bcs	.L40
+  98:Core/Lib/sdcard.c ****                 oldest_time = file_time;
+ 540              		.loc 1 98 17 is_stmt 1 view .LVU120
+ 541              	.LVL40:
+  99:Core/Lib/sdcard.c ****                 // FIX: Thêm drive prefix
+ 100:Core/Lib/sdcard.c ****                 snprintf(oldest_name, sizeof(oldest_name), "0:%s", fno.fname);
+ 542              		.loc 1 100 17 view .LVU121
+ 543 005e 0DF13903 		add	r3, sp, #57
+ 544 0062 114A     		ldr	r2, .L52+16
+ 545 0064 2821     		movs	r1, #40
+ 546 0066 02A8     		add	r0, sp, #8
+ 547 0068 FFF7FEFF 		bl	snprintf
+ 548              	.LVL41:
+  98:Core/Lib/sdcard.c ****                 oldest_time = file_time;
+ 549              		.loc 1 98 29 is_stmt 0 view .LVU122
+ 550 006c 2C46     		mov	r4, r5
+  98:Core/Lib/sdcard.c ****                 oldest_time = file_time;
+ 551              		.loc 1 98 29 view .LVU123
+ 552 006e DBE7     		b	.L40
+ 553              	.LVL42:
+ 554              	.L42:
+  98:Core/Lib/sdcard.c ****                 oldest_time = file_time;
+ 555              		.loc 1 98 29 view .LVU124
+ 556              	.LBE2:
+ 101:Core/Lib/sdcard.c ****             }
+ 102:Core/Lib/sdcard.c ****         }
+ 103:Core/Lib/sdcard.c ****     }
+ 104:Core/Lib/sdcard.c ****     
+ 105:Core/Lib/sdcard.c ****     f_closedir(&dir);
+ 557              		.loc 1 105 5 is_stmt 1 view .LVU125
+ 558 0070 12A8     		add	r0, sp, #72
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 13
+
+
+ 559 0072 FFF7FEFF 		bl	f_closedir
+ 560              	.LVL43:
+ 106:Core/Lib/sdcard.c ****     
+ 107:Core/Lib/sdcard.c ****     // Delete oldest file if found
+ 108:Core/Lib/sdcard.c ****     if (oldest_name[0]) {
+ 561              		.loc 1 108 5 view .LVU126
+ 562              		.loc 1 108 20 is_stmt 0 view .LVU127
+ 563 0076 9DF80830 		ldrb	r3, [sp, #8]	@ zero_extendqisi2
+ 564              		.loc 1 108 8 view .LVU128
+ 565 007a 13B9     		cbnz	r3, .L51
+ 109:Core/Lib/sdcard.c ****         if (f_unlink(oldest_name) == FR_OK) {
+ 110:Core/Lib/sdcard.c ****             return SD_OK;
+ 111:Core/Lib/sdcard.c ****         }
+ 112:Core/Lib/sdcard.c ****     }
+ 113:Core/Lib/sdcard.c ****     
+ 114:Core/Lib/sdcard.c ****     return SD_ERROR;
+ 566              		.loc 1 114 12 view .LVU129
+ 567 007c 0120     		movs	r0, #1
+ 568              	.LVL44:
+ 569              	.L38:
+ 115:Core/Lib/sdcard.c **** }
+ 570              		.loc 1 115 1 view .LVU130
+ 571 007e 1FB0     		add	sp, sp, #124
+ 572              	.LCFI13:
+ 573              		.cfi_remember_state
+ 574              		.cfi_def_cfa_offset 12
+ 575              		@ sp needed
+ 576 0080 30BD     		pop	{r4, r5, pc}
+ 577              	.LVL45:
+ 578              	.L51:
+ 579              	.LCFI14:
+ 580              		.cfi_restore_state
+ 109:Core/Lib/sdcard.c ****         if (f_unlink(oldest_name) == FR_OK) {
+ 581              		.loc 1 109 9 is_stmt 1 view .LVU131
+ 109:Core/Lib/sdcard.c ****         if (f_unlink(oldest_name) == FR_OK) {
+ 582              		.loc 1 109 13 is_stmt 0 view .LVU132
+ 583 0082 02A8     		add	r0, sp, #8
+ 584 0084 FFF7FEFF 		bl	f_unlink
+ 585              	.LVL46:
+ 109:Core/Lib/sdcard.c ****         if (f_unlink(oldest_name) == FR_OK) {
+ 586              		.loc 1 109 12 view .LVU133
+ 587 0088 0028     		cmp	r0, #0
+ 588 008a F8D0     		beq	.L38
+ 114:Core/Lib/sdcard.c **** }
+ 589              		.loc 1 114 12 view .LVU134
+ 590 008c 0120     		movs	r0, #1
+ 591 008e F6E7     		b	.L38
+ 592              	.LVL47:
+ 593              	.L44:
+ 594              	.LCFI15:
+ 595              		.cfi_def_cfa_offset 0
+ 596              		.cfi_restore 4
+ 597              		.cfi_restore 5
+ 598              		.cfi_restore 14
+  80:Core/Lib/sdcard.c ****     
+ 599              		.loc 1 80 27 view .LVU135
+ 600 0090 0220     		movs	r0, #2
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 14
+
+
+ 601              		.loc 1 115 1 view .LVU136
+ 602 0092 7047     		bx	lr
+ 603              	.LVL48:
+ 604              	.L45:
+ 605              	.LCFI16:
+ 606              		.cfi_def_cfa_offset 136
+ 607              		.cfi_offset 4, -12
+ 608              		.cfi_offset 5, -8
+ 609              		.cfi_offset 14, -4
+  88:Core/Lib/sdcard.c ****     
+ 610              		.loc 1 88 49 view .LVU137
+ 611 0094 0120     		movs	r0, #1
+ 612 0096 F2E7     		b	.L38
+ 613              	.L53:
+ 614              		.align	2
+ 615              	.L52:
+ 616 0098 00000000 		.word	.LANCHOR1
+ 617 009c 00000000 		.word	.LC2
+ 618 00a0 04000000 		.word	.LC3
+ 619 00a4 0C000000 		.word	.LC4
+ 620 00a8 18000000 		.word	.LC5
+ 621              		.cfi_endproc
+ 622              	.LFE157:
+ 624              		.section	.text.SD_GetFreeKB,"ax",%progbits
+ 625              		.align	1
+ 626              		.global	SD_GetFreeKB
+ 627              		.syntax unified
+ 628              		.thumb
+ 629              		.thumb_func
+ 631              	SD_GetFreeKB:
+ 632              	.LFB158:
+ 116:Core/Lib/sdcard.c **** 
+ 117:Core/Lib/sdcard.c **** uint32_t SD_GetFreeKB(void) {
+ 633              		.loc 1 117 29 is_stmt 1 view -0
+ 634              		.cfi_startproc
+ 635              		@ args = 0, pretend = 0, frame = 8
+ 636              		@ frame_needed = 0, uses_anonymous_args = 0
+ 118:Core/Lib/sdcard.c ****     if (!sd_ready) return 0;
+ 637              		.loc 1 118 5 view .LVU139
+ 638              		.loc 1 118 9 is_stmt 0 view .LVU140
+ 639 0000 0C4B     		ldr	r3, .L64
+ 640 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 641              		.loc 1 118 8 view .LVU141
+ 642 0004 0BB9     		cbnz	r3, .L62
+ 643              		.loc 1 118 27 view .LVU142
+ 644 0006 0020     		movs	r0, #0
+ 119:Core/Lib/sdcard.c ****     
+ 120:Core/Lib/sdcard.c ****     FATFS *fs_ptr;
+ 121:Core/Lib/sdcard.c ****     DWORD fre_clust;
+ 122:Core/Lib/sdcard.c ****     
+ 123:Core/Lib/sdcard.c ****     // FIX: Dùng "0:" và tính toán chính xác
+ 124:Core/Lib/sdcard.c ****     if (f_getfree("0:", &fre_clust, &fs_ptr) == FR_OK) {
+ 125:Core/Lib/sdcard.c ****         // Tính chính xác: free_clusters * sectors_per_cluster * bytes_per_sector / 1024
+ 126:Core/Lib/sdcard.c ****         uint32_t free_sectors = fre_clust * fs_ptr->csize;
+ 127:Core/Lib/sdcard.c ****         
+ 128:Core/Lib/sdcard.c ****         #if _MAX_SS != _MIN_SS
+ 129:Core/Lib/sdcard.c ****         uint32_t sector_size = fs_ptr->ssize;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 15
+
+
+ 130:Core/Lib/sdcard.c ****         #else
+ 131:Core/Lib/sdcard.c ****         uint32_t sector_size = _MIN_SS;  // Thường là 512
+ 132:Core/Lib/sdcard.c ****         #endif
+ 133:Core/Lib/sdcard.c ****         
+ 134:Core/Lib/sdcard.c ****         return (free_sectors * sector_size) / 1024;
+ 135:Core/Lib/sdcard.c ****     }
+ 136:Core/Lib/sdcard.c ****     return 0;
+ 137:Core/Lib/sdcard.c **** }
+ 645              		.loc 1 137 1 view .LVU143
+ 646 0008 7047     		bx	lr
+ 647              	.L62:
+ 117:Core/Lib/sdcard.c ****     if (!sd_ready) return 0;
+ 648              		.loc 1 117 29 view .LVU144
+ 649 000a 00B5     		push	{lr}
+ 650              	.LCFI17:
+ 651              		.cfi_def_cfa_offset 4
+ 652              		.cfi_offset 14, -4
+ 653 000c 83B0     		sub	sp, sp, #12
+ 654              	.LCFI18:
+ 655              		.cfi_def_cfa_offset 16
+ 120:Core/Lib/sdcard.c ****     DWORD fre_clust;
+ 656              		.loc 1 120 5 is_stmt 1 view .LVU145
+ 121:Core/Lib/sdcard.c ****     
+ 657              		.loc 1 121 5 view .LVU146
+ 124:Core/Lib/sdcard.c ****         // Tính chính xác: free_clusters * sectors_per_cluster * bytes_per_sector / 1024
+ 658              		.loc 1 124 5 view .LVU147
+ 124:Core/Lib/sdcard.c ****         // Tính chính xác: free_clusters * sectors_per_cluster * bytes_per_sector / 1024
+ 659              		.loc 1 124 9 is_stmt 0 view .LVU148
+ 660 000e 01AA     		add	r2, sp, #4
+ 661 0010 6946     		mov	r1, sp
+ 662 0012 0948     		ldr	r0, .L64+4
+ 663 0014 FFF7FEFF 		bl	f_getfree
+ 664              	.LVL49:
+ 124:Core/Lib/sdcard.c ****         // Tính chính xác: free_clusters * sectors_per_cluster * bytes_per_sector / 1024
+ 665              		.loc 1 124 8 view .LVU149
+ 666 0018 18B1     		cbz	r0, .L63
+ 136:Core/Lib/sdcard.c **** }
+ 667              		.loc 1 136 12 view .LVU150
+ 668 001a 0020     		movs	r0, #0
+ 669              	.L54:
+ 670              		.loc 1 137 1 view .LVU151
+ 671 001c 03B0     		add	sp, sp, #12
+ 672              	.LCFI19:
+ 673              		.cfi_remember_state
+ 674              		.cfi_def_cfa_offset 4
+ 675              		@ sp needed
+ 676 001e 5DF804FB 		ldr	pc, [sp], #4
+ 677              	.L63:
+ 678              	.LCFI20:
+ 679              		.cfi_restore_state
+ 680              	.LBB3:
+ 126:Core/Lib/sdcard.c ****         
+ 681              		.loc 1 126 9 is_stmt 1 view .LVU152
+ 126:Core/Lib/sdcard.c ****         
+ 682              		.loc 1 126 51 is_stmt 0 view .LVU153
+ 683 0022 019B     		ldr	r3, [sp, #4]
+ 684 0024 5889     		ldrh	r0, [r3, #10]
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 16
+
+
+ 126:Core/Lib/sdcard.c ****         
+ 685              		.loc 1 126 43 view .LVU154
+ 686 0026 009B     		ldr	r3, [sp]
+ 126:Core/Lib/sdcard.c ****         
+ 687              		.loc 1 126 18 view .LVU155
+ 688 0028 03FB00F0 		mul	r0, r3, r0
+ 689              	.LVL50:
+ 131:Core/Lib/sdcard.c ****         #endif
+ 690              		.loc 1 131 9 is_stmt 1 view .LVU156
+ 134:Core/Lib/sdcard.c ****     }
+ 691              		.loc 1 134 9 view .LVU157
+ 134:Core/Lib/sdcard.c ****     }
+ 692              		.loc 1 134 45 is_stmt 0 view .LVU158
+ 693 002c C0F35500 		ubfx	r0, r0, #1, #22
+ 694              	.LVL51:
+ 134:Core/Lib/sdcard.c ****     }
+ 695              		.loc 1 134 45 view .LVU159
+ 696 0030 F4E7     		b	.L54
+ 697              	.L65:
+ 698 0032 00BF     		.align	2
+ 699              	.L64:
+ 700 0034 00000000 		.word	.LANCHOR1
+ 701 0038 00000000 		.word	.LC0
+ 702              	.LBE3:
+ 703              		.cfi_endproc
+ 704              	.LFE158:
+ 706              		.section	.text.SD_GetUsedKB,"ax",%progbits
+ 707              		.align	1
+ 708              		.global	SD_GetUsedKB
+ 709              		.syntax unified
+ 710              		.thumb
+ 711              		.thumb_func
+ 713              	SD_GetUsedKB:
+ 714              	.LFB159:
+ 138:Core/Lib/sdcard.c **** 
+ 139:Core/Lib/sdcard.c **** uint32_t SD_GetUsedKB(void) {
+ 715              		.loc 1 139 29 is_stmt 1 view -0
+ 716              		.cfi_startproc
+ 717              		@ args = 0, pretend = 0, frame = 8
+ 718              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140:Core/Lib/sdcard.c ****     if (!sd_ready) return 0;
+ 719              		.loc 1 140 5 view .LVU161
+ 720              		.loc 1 140 9 is_stmt 0 view .LVU162
+ 721 0000 0D4B     		ldr	r3, .L76
+ 722 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 723              		.loc 1 140 8 view .LVU163
+ 724 0004 0BB9     		cbnz	r3, .L74
+ 725              		.loc 1 140 27 view .LVU164
+ 726 0006 0020     		movs	r0, #0
+ 141:Core/Lib/sdcard.c ****     
+ 142:Core/Lib/sdcard.c ****     FATFS *fs_ptr;
+ 143:Core/Lib/sdcard.c ****     DWORD fre_clust, tot_clust;
+ 144:Core/Lib/sdcard.c ****     
+ 145:Core/Lib/sdcard.c ****     // FIX: Tính used = total - free (chính xác hơn)
+ 146:Core/Lib/sdcard.c ****     if (f_getfree("0:", &fre_clust, &fs_ptr) == FR_OK) {
+ 147:Core/Lib/sdcard.c ****         tot_clust = fs_ptr->n_fatent - 2;  // Total clusters
+ 148:Core/Lib/sdcard.c ****         DWORD used_clust = tot_clust - fre_clust;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 17
+
+
+ 149:Core/Lib/sdcard.c ****         
+ 150:Core/Lib/sdcard.c ****         uint32_t used_sectors = used_clust * fs_ptr->csize;
+ 151:Core/Lib/sdcard.c ****         
+ 152:Core/Lib/sdcard.c ****         #if _MAX_SS != _MIN_SS
+ 153:Core/Lib/sdcard.c ****         uint32_t sector_size = fs_ptr->ssize;
+ 154:Core/Lib/sdcard.c ****         #else
+ 155:Core/Lib/sdcard.c ****         uint32_t sector_size = _MIN_SS;
+ 156:Core/Lib/sdcard.c ****         #endif
+ 157:Core/Lib/sdcard.c ****         
+ 158:Core/Lib/sdcard.c ****         return (used_sectors * sector_size) / 1024;
+ 159:Core/Lib/sdcard.c ****     }
+ 160:Core/Lib/sdcard.c ****     return 0;
+ 161:Core/Lib/sdcard.c **** }
+ 727              		.loc 1 161 1 view .LVU165
+ 728 0008 7047     		bx	lr
+ 729              	.L74:
+ 139:Core/Lib/sdcard.c ****     if (!sd_ready) return 0;
+ 730              		.loc 1 139 29 view .LVU166
+ 731 000a 00B5     		push	{lr}
+ 732              	.LCFI21:
+ 733              		.cfi_def_cfa_offset 4
+ 734              		.cfi_offset 14, -4
+ 735 000c 83B0     		sub	sp, sp, #12
+ 736              	.LCFI22:
+ 737              		.cfi_def_cfa_offset 16
+ 142:Core/Lib/sdcard.c ****     DWORD fre_clust, tot_clust;
+ 738              		.loc 1 142 5 is_stmt 1 view .LVU167
+ 143:Core/Lib/sdcard.c ****     
+ 739              		.loc 1 143 5 view .LVU168
+ 146:Core/Lib/sdcard.c ****         tot_clust = fs_ptr->n_fatent - 2;  // Total clusters
+ 740              		.loc 1 146 5 view .LVU169
+ 146:Core/Lib/sdcard.c ****         tot_clust = fs_ptr->n_fatent - 2;  // Total clusters
+ 741              		.loc 1 146 9 is_stmt 0 view .LVU170
+ 742 000e 01AA     		add	r2, sp, #4
+ 743 0010 6946     		mov	r1, sp
+ 744 0012 0A48     		ldr	r0, .L76+4
+ 745 0014 FFF7FEFF 		bl	f_getfree
+ 746              	.LVL52:
+ 146:Core/Lib/sdcard.c ****         tot_clust = fs_ptr->n_fatent - 2;  // Total clusters
+ 747              		.loc 1 146 8 view .LVU171
+ 748 0018 18B1     		cbz	r0, .L75
+ 160:Core/Lib/sdcard.c **** }
+ 749              		.loc 1 160 12 view .LVU172
+ 750 001a 0020     		movs	r0, #0
+ 751              	.L66:
+ 752              		.loc 1 161 1 view .LVU173
+ 753 001c 03B0     		add	sp, sp, #12
+ 754              	.LCFI23:
+ 755              		.cfi_remember_state
+ 756              		.cfi_def_cfa_offset 4
+ 757              		@ sp needed
+ 758 001e 5DF804FB 		ldr	pc, [sp], #4
+ 759              	.L75:
+ 760              	.LCFI24:
+ 761              		.cfi_restore_state
+ 762              	.LBB4:
+ 147:Core/Lib/sdcard.c ****         DWORD used_clust = tot_clust - fre_clust;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 18
+
+
+ 763              		.loc 1 147 9 is_stmt 1 view .LVU174
+ 147:Core/Lib/sdcard.c ****         DWORD used_clust = tot_clust - fre_clust;
+ 764              		.loc 1 147 27 is_stmt 0 view .LVU175
+ 765 0022 019A     		ldr	r2, [sp, #4]
+ 766 0024 9069     		ldr	r0, [r2, #24]
+ 147:Core/Lib/sdcard.c ****         DWORD used_clust = tot_clust - fre_clust;
+ 767              		.loc 1 147 19 view .LVU176
+ 768 0026 0238     		subs	r0, r0, #2
+ 769              	.LVL53:
+ 148:Core/Lib/sdcard.c ****         
+ 770              		.loc 1 148 9 is_stmt 1 view .LVU177
+ 148:Core/Lib/sdcard.c ****         
+ 771              		.loc 1 148 38 is_stmt 0 view .LVU178
+ 772 0028 009B     		ldr	r3, [sp]
+ 148:Core/Lib/sdcard.c ****         
+ 773              		.loc 1 148 15 view .LVU179
+ 774 002a C31A     		subs	r3, r0, r3
+ 775              	.LVL54:
+ 150:Core/Lib/sdcard.c ****         
+ 776              		.loc 1 150 9 is_stmt 1 view .LVU180
+ 150:Core/Lib/sdcard.c ****         
+ 777              		.loc 1 150 52 is_stmt 0 view .LVU181
+ 778 002c 5089     		ldrh	r0, [r2, #10]
+ 779              	.LVL55:
+ 150:Core/Lib/sdcard.c ****         
+ 780              		.loc 1 150 18 view .LVU182
+ 781 002e 03FB00F0 		mul	r0, r3, r0
+ 782              	.LVL56:
+ 155:Core/Lib/sdcard.c ****         #endif
+ 783              		.loc 1 155 9 is_stmt 1 view .LVU183
+ 158:Core/Lib/sdcard.c ****     }
+ 784              		.loc 1 158 9 view .LVU184
+ 158:Core/Lib/sdcard.c ****     }
+ 785              		.loc 1 158 45 is_stmt 0 view .LVU185
+ 786 0032 C0F35500 		ubfx	r0, r0, #1, #22
+ 787              	.LVL57:
+ 158:Core/Lib/sdcard.c ****     }
+ 788              		.loc 1 158 45 view .LVU186
+ 789 0036 F1E7     		b	.L66
+ 790              	.L77:
+ 791              		.align	2
+ 792              	.L76:
+ 793 0038 00000000 		.word	.LANCHOR1
+ 794 003c 00000000 		.word	.LC0
+ 795              	.LBE4:
+ 796              		.cfi_endproc
+ 797              	.LFE159:
+ 799              		.section	.text.SD_WriteFile,"ax",%progbits
+ 800              		.align	1
+ 801              		.global	SD_WriteFile
+ 802              		.syntax unified
+ 803              		.thumb
+ 804              		.thumb_func
+ 806              	SD_WriteFile:
+ 807              	.LVL58:
+ 808              	.LFB160:
+ 162:Core/Lib/sdcard.c **** 
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 19
+
+
+ 163:Core/Lib/sdcard.c **** sd_status_t SD_WriteFile(const char* filename, const uint8_t *data, uint32_t len) {
+ 809              		.loc 1 163 83 is_stmt 1 view -0
+ 810              		.cfi_startproc
+ 811              		@ args = 0, pretend = 0, frame = 616
+ 812              		@ frame_needed = 0, uses_anonymous_args = 0
+ 813              		.loc 1 163 83 is_stmt 0 view .LVU188
+ 814 0000 30B5     		push	{r4, r5, lr}
+ 815              	.LCFI25:
+ 816              		.cfi_def_cfa_offset 12
+ 817              		.cfi_offset 4, -12
+ 818              		.cfi_offset 5, -8
+ 819              		.cfi_offset 14, -4
+ 820 0002 ADF51B7D 		sub	sp, sp, #620
+ 821              	.LCFI26:
+ 822              		.cfi_def_cfa_offset 632
+ 823 0006 0C46     		mov	r4, r1
+ 164:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 824              		.loc 1 164 5 is_stmt 1 view .LVU189
+ 825              		.loc 1 164 9 is_stmt 0 view .LVU190
+ 826 0008 1649     		ldr	r1, .L86
+ 827              	.LVL59:
+ 828              		.loc 1 164 9 view .LVU191
+ 829 000a 0978     		ldrb	r1, [r1]	@ zero_extendqisi2
+ 830              		.loc 1 164 8 view .LVU192
+ 831 000c 09B3     		cbz	r1, .L81
+ 832 000e 0346     		mov	r3, r0
+ 833 0010 1546     		mov	r5, r2
+ 165:Core/Lib/sdcard.c ****     
+ 166:Core/Lib/sdcard.c ****     FIL file;
+ 834              		.loc 1 166 5 is_stmt 1 view .LVU193
+ 167:Core/Lib/sdcard.c ****     UINT bw;
+ 835              		.loc 1 167 5 view .LVU194
+ 168:Core/Lib/sdcard.c ****     char fullpath[50];
+ 836              		.loc 1 168 5 view .LVU195
+ 169:Core/Lib/sdcard.c ****     
+ 170:Core/Lib/sdcard.c ****     // Thêm drive prefix
+ 171:Core/Lib/sdcard.c ****     snprintf(fullpath, sizeof(fullpath), "0:%s", filename);
+ 837              		.loc 1 171 5 view .LVU196
+ 838 0012 154A     		ldr	r2, .L86+4
+ 839              	.LVL60:
+ 840              		.loc 1 171 5 is_stmt 0 view .LVU197
+ 841 0014 3221     		movs	r1, #50
+ 842 0016 6846     		mov	r0, sp
+ 843              	.LVL61:
+ 844              		.loc 1 171 5 view .LVU198
+ 845 0018 FFF7FEFF 		bl	snprintf
+ 846              	.LVL62:
+ 172:Core/Lib/sdcard.c ****     
+ 173:Core/Lib/sdcard.c ****     FRESULT res = f_open(&file, fullpath, FA_CREATE_ALWAYS | FA_WRITE);
+ 847              		.loc 1 173 5 is_stmt 1 view .LVU199
+ 848              		.loc 1 173 19 is_stmt 0 view .LVU200
+ 849 001c 0A22     		movs	r2, #10
+ 850 001e 6946     		mov	r1, sp
+ 851 0020 0EA8     		add	r0, sp, #56
+ 852 0022 FFF7FEFF 		bl	f_open
+ 853              	.LVL63:
+ 174:Core/Lib/sdcard.c ****     if (res != FR_OK) return SD_WRITE_ERROR;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 20
+
+
+ 854              		.loc 1 174 5 is_stmt 1 view .LVU201
+ 855              		.loc 1 174 8 is_stmt 0 view .LVU202
+ 856 0026 C8B9     		cbnz	r0, .L82
+ 175:Core/Lib/sdcard.c ****     
+ 176:Core/Lib/sdcard.c ****     res = f_write(&file, data, len, &bw);
+ 857              		.loc 1 176 5 is_stmt 1 view .LVU203
+ 858              		.loc 1 176 11 is_stmt 0 view .LVU204
+ 859 0028 0DAB     		add	r3, sp, #52
+ 860 002a 2A46     		mov	r2, r5
+ 861 002c 2146     		mov	r1, r4
+ 862 002e 0EA8     		add	r0, sp, #56
+ 863              	.LVL64:
+ 864              		.loc 1 176 11 view .LVU205
+ 865 0030 FFF7FEFF 		bl	f_write
+ 866              	.LVL65:
+ 177:Core/Lib/sdcard.c ****     if (res == FR_OK) {
+ 867              		.loc 1 177 5 is_stmt 1 view .LVU206
+ 868              		.loc 1 177 8 is_stmt 0 view .LVU207
+ 869 0034 0446     		mov	r4, r0
+ 870              	.LVL66:
+ 871              		.loc 1 177 8 view .LVU208
+ 872 0036 40B1     		cbz	r0, .L85
+ 873              	.LVL67:
+ 874              	.L80:
+ 178:Core/Lib/sdcard.c ****         f_sync(&file);
+ 179:Core/Lib/sdcard.c ****     }
+ 180:Core/Lib/sdcard.c ****     f_close(&file);
+ 875              		.loc 1 180 5 is_stmt 1 view .LVU209
+ 876 0038 0EA8     		add	r0, sp, #56
+ 877 003a FFF7FEFF 		bl	f_close
+ 878              	.LVL68:
+ 181:Core/Lib/sdcard.c ****     
+ 182:Core/Lib/sdcard.c ****     return (res == FR_OK && bw == len) ? SD_OK : SD_WRITE_ERROR;
+ 879              		.loc 1 182 5 view .LVU210
+ 880              		.loc 1 182 48 is_stmt 0 view .LVU211
+ 881 003e 7CB9     		cbnz	r4, .L83
+ 882              		.loc 1 182 32 discriminator 1 view .LVU212
+ 883 0040 0D9B     		ldr	r3, [sp, #52]
+ 884              		.loc 1 182 26 discriminator 1 view .LVU213
+ 885 0042 AB42     		cmp	r3, r5
+ 886 0044 06D0     		beq	.L79
+ 887              		.loc 1 182 48 view .LVU214
+ 888 0046 0324     		movs	r4, #3
+ 889 0048 04E0     		b	.L79
+ 890              	.LVL69:
+ 891              	.L85:
+ 178:Core/Lib/sdcard.c ****         f_sync(&file);
+ 892              		.loc 1 178 9 is_stmt 1 view .LVU215
+ 893 004a 0EA8     		add	r0, sp, #56
+ 894              	.LVL70:
+ 178:Core/Lib/sdcard.c ****         f_sync(&file);
+ 895              		.loc 1 178 9 is_stmt 0 view .LVU216
+ 896 004c FFF7FEFF 		bl	f_sync
+ 897              	.LVL71:
+ 898 0050 F2E7     		b	.L80
+ 899              	.LVL72:
+ 900              	.L81:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 21
+
+
+ 164:Core/Lib/sdcard.c ****     
+ 901              		.loc 1 164 27 view .LVU217
+ 902 0052 0224     		movs	r4, #2
+ 903              	.LVL73:
+ 904              	.L79:
+ 183:Core/Lib/sdcard.c **** }
+ 905              		.loc 1 183 1 view .LVU218
+ 906 0054 2046     		mov	r0, r4
+ 907 0056 0DF51B7D 		add	sp, sp, #620
+ 908              	.LCFI27:
+ 909              		.cfi_remember_state
+ 910              		.cfi_def_cfa_offset 12
+ 911              		@ sp needed
+ 912 005a 30BD     		pop	{r4, r5, pc}
+ 913              	.LVL74:
+ 914              	.L82:
+ 915              	.LCFI28:
+ 916              		.cfi_restore_state
+ 174:Core/Lib/sdcard.c ****     
+ 917              		.loc 1 174 30 view .LVU219
+ 918 005c 0324     		movs	r4, #3
+ 919              	.LVL75:
+ 174:Core/Lib/sdcard.c ****     
+ 920              		.loc 1 174 30 view .LVU220
+ 921 005e F9E7     		b	.L79
+ 922              	.LVL76:
+ 923              	.L83:
+ 182:Core/Lib/sdcard.c **** }
+ 924              		.loc 1 182 48 view .LVU221
+ 925 0060 0324     		movs	r4, #3
+ 926 0062 F7E7     		b	.L79
+ 927              	.L87:
+ 928              		.align	2
+ 929              	.L86:
+ 930 0064 00000000 		.word	.LANCHOR1
+ 931 0068 18000000 		.word	.LC5
+ 932              		.cfi_endproc
+ 933              	.LFE160:
+ 935              		.section	.text.SD_ReadFile,"ax",%progbits
+ 936              		.align	1
+ 937              		.global	SD_ReadFile
+ 938              		.syntax unified
+ 939              		.thumb
+ 940              		.thumb_func
+ 942              	SD_ReadFile:
+ 943              	.LVL77:
+ 944              	.LFB161:
+ 184:Core/Lib/sdcard.c **** 
+ 185:Core/Lib/sdcard.c **** sd_status_t SD_ReadFile(const char* filename, uint8_t *data, uint32_t *len) {
+ 945              		.loc 1 185 77 is_stmt 1 view -0
+ 946              		.cfi_startproc
+ 947              		@ args = 0, pretend = 0, frame = 616
+ 948              		@ frame_needed = 0, uses_anonymous_args = 0
+ 949              		.loc 1 185 77 is_stmt 0 view .LVU223
+ 950 0000 30B5     		push	{r4, r5, lr}
+ 951              	.LCFI29:
+ 952              		.cfi_def_cfa_offset 12
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 22
+
+
+ 953              		.cfi_offset 4, -12
+ 954              		.cfi_offset 5, -8
+ 955              		.cfi_offset 14, -4
+ 956 0002 ADF51B7D 		sub	sp, sp, #620
+ 957              	.LCFI30:
+ 958              		.cfi_def_cfa_offset 632
+ 959 0006 0C46     		mov	r4, r1
+ 186:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 960              		.loc 1 186 5 is_stmt 1 view .LVU224
+ 961              		.loc 1 186 9 is_stmt 0 view .LVU225
+ 962 0008 1349     		ldr	r1, .L95
+ 963              	.LVL78:
+ 964              		.loc 1 186 9 view .LVU226
+ 965 000a 0978     		ldrb	r1, [r1]	@ zero_extendqisi2
+ 966              		.loc 1 186 8 view .LVU227
+ 967 000c E1B1     		cbz	r1, .L90
+ 968 000e 0346     		mov	r3, r0
+ 969 0010 1546     		mov	r5, r2
+ 187:Core/Lib/sdcard.c ****     
+ 188:Core/Lib/sdcard.c ****     FIL file;
+ 970              		.loc 1 188 5 is_stmt 1 view .LVU228
+ 189:Core/Lib/sdcard.c ****     UINT br;
+ 971              		.loc 1 189 5 view .LVU229
+ 190:Core/Lib/sdcard.c ****     char fullpath[50];
+ 972              		.loc 1 190 5 view .LVU230
+ 191:Core/Lib/sdcard.c ****     
+ 192:Core/Lib/sdcard.c ****     snprintf(fullpath, sizeof(fullpath), "0:%s", filename);
+ 973              		.loc 1 192 5 view .LVU231
+ 974 0012 124A     		ldr	r2, .L95+4
+ 975              	.LVL79:
+ 976              		.loc 1 192 5 is_stmt 0 view .LVU232
+ 977 0014 3221     		movs	r1, #50
+ 978 0016 6846     		mov	r0, sp
+ 979              	.LVL80:
+ 980              		.loc 1 192 5 view .LVU233
+ 981 0018 FFF7FEFF 		bl	snprintf
+ 982              	.LVL81:
+ 193:Core/Lib/sdcard.c ****     
+ 194:Core/Lib/sdcard.c ****     FRESULT res = f_open(&file, fullpath, FA_READ);
+ 983              		.loc 1 194 5 is_stmt 1 view .LVU234
+ 984              		.loc 1 194 19 is_stmt 0 view .LVU235
+ 985 001c 0122     		movs	r2, #1
+ 986 001e 6946     		mov	r1, sp
+ 987 0020 0EA8     		add	r0, sp, #56
+ 988 0022 FFF7FEFF 		bl	f_open
+ 989              	.LVL82:
+ 195:Core/Lib/sdcard.c ****     if (res != FR_OK) return SD_READ_ERROR;
+ 990              		.loc 1 195 5 is_stmt 1 view .LVU236
+ 991              		.loc 1 195 8 is_stmt 0 view .LVU237
+ 992 0026 A0B9     		cbnz	r0, .L91
+ 196:Core/Lib/sdcard.c ****     
+ 197:Core/Lib/sdcard.c ****     res = f_read(&file, data, *len, &br);
+ 993              		.loc 1 197 5 is_stmt 1 view .LVU238
+ 994              		.loc 1 197 11 is_stmt 0 view .LVU239
+ 995 0028 0DAB     		add	r3, sp, #52
+ 996 002a 2A68     		ldr	r2, [r5]
+ 997 002c 2146     		mov	r1, r4
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 23
+
+
+ 998 002e 0EA8     		add	r0, sp, #56
+ 999              	.LVL83:
+ 1000              		.loc 1 197 11 view .LVU240
+ 1001 0030 FFF7FEFF 		bl	f_read
+ 1002              	.LVL84:
+ 1003 0034 0446     		mov	r4, r0
+ 1004              	.LVL85:
+ 198:Core/Lib/sdcard.c ****     f_close(&file);
+ 1005              		.loc 1 198 5 is_stmt 1 view .LVU241
+ 1006 0036 0EA8     		add	r0, sp, #56
+ 1007 0038 FFF7FEFF 		bl	f_close
+ 1008              	.LVL86:
+ 199:Core/Lib/sdcard.c ****     
+ 200:Core/Lib/sdcard.c ****     if (res == FR_OK) {
+ 1009              		.loc 1 200 5 view .LVU242
+ 1010              		.loc 1 200 8 is_stmt 0 view .LVU243
+ 1011 003c 0CB1     		cbz	r4, .L94
+ 201:Core/Lib/sdcard.c ****         *len = br;
+ 202:Core/Lib/sdcard.c ****         return SD_OK;
+ 203:Core/Lib/sdcard.c ****     }
+ 204:Core/Lib/sdcard.c ****     return SD_READ_ERROR;
+ 1012              		.loc 1 204 12 view .LVU244
+ 1013 003e 0424     		movs	r4, #4
+ 1014              	.LVL87:
+ 1015              		.loc 1 204 12 view .LVU245
+ 1016 0040 03E0     		b	.L89
+ 1017              	.LVL88:
+ 1018              	.L94:
+ 201:Core/Lib/sdcard.c ****         *len = br;
+ 1019              		.loc 1 201 9 is_stmt 1 view .LVU246
+ 201:Core/Lib/sdcard.c ****         *len = br;
+ 1020              		.loc 1 201 14 is_stmt 0 view .LVU247
+ 1021 0042 0D9B     		ldr	r3, [sp, #52]
+ 1022 0044 2B60     		str	r3, [r5]
+ 202:Core/Lib/sdcard.c ****     }
+ 1023              		.loc 1 202 9 is_stmt 1 view .LVU248
+ 202:Core/Lib/sdcard.c ****     }
+ 1024              		.loc 1 202 16 is_stmt 0 view .LVU249
+ 1025 0046 00E0     		b	.L89
+ 1026              	.LVL89:
+ 1027              	.L90:
+ 186:Core/Lib/sdcard.c ****     
+ 1028              		.loc 1 186 27 view .LVU250
+ 1029 0048 0224     		movs	r4, #2
+ 1030              	.LVL90:
+ 1031              	.L89:
+ 205:Core/Lib/sdcard.c **** }
+ 1032              		.loc 1 205 1 view .LVU251
+ 1033 004a 2046     		mov	r0, r4
+ 1034 004c 0DF51B7D 		add	sp, sp, #620
+ 1035              	.LCFI31:
+ 1036              		.cfi_remember_state
+ 1037              		.cfi_def_cfa_offset 12
+ 1038              		@ sp needed
+ 1039 0050 30BD     		pop	{r4, r5, pc}
+ 1040              	.LVL91:
+ 1041              	.L91:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 24
+
+
+ 1042              	.LCFI32:
+ 1043              		.cfi_restore_state
+ 195:Core/Lib/sdcard.c ****     
+ 1044              		.loc 1 195 30 view .LVU252
+ 1045 0052 0424     		movs	r4, #4
+ 1046              	.LVL92:
+ 195:Core/Lib/sdcard.c ****     
+ 1047              		.loc 1 195 30 view .LVU253
+ 1048 0054 F9E7     		b	.L89
+ 1049              	.L96:
+ 1050 0056 00BF     		.align	2
+ 1051              	.L95:
+ 1052 0058 00000000 		.word	.LANCHOR1
+ 1053 005c 18000000 		.word	.LC5
+ 1054              		.cfi_endproc
+ 1055              	.LFE161:
+ 1057              		.section	.text.SD_DeleteFile,"ax",%progbits
+ 1058              		.align	1
+ 1059              		.global	SD_DeleteFile
+ 1060              		.syntax unified
+ 1061              		.thumb
+ 1062              		.thumb_func
+ 1064              	SD_DeleteFile:
+ 1065              	.LVL93:
+ 1066              	.LFB162:
+ 206:Core/Lib/sdcard.c **** 
+ 207:Core/Lib/sdcard.c **** sd_status_t SD_DeleteFile(const char* filename) {
+ 1067              		.loc 1 207 49 is_stmt 1 view -0
+ 1068              		.cfi_startproc
+ 1069              		@ args = 0, pretend = 0, frame = 56
+ 1070              		@ frame_needed = 0, uses_anonymous_args = 0
+ 208:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 1071              		.loc 1 208 5 view .LVU255
+ 1072              		.loc 1 208 9 is_stmt 0 view .LVU256
+ 1073 0000 0A4A     		ldr	r2, .L104
+ 1074 0002 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 1075              		.loc 1 208 8 view .LVU257
+ 1076 0004 82B1     		cbz	r2, .L99
+ 207:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 1077              		.loc 1 207 49 view .LVU258
+ 1078 0006 00B5     		push	{lr}
+ 1079              	.LCFI33:
+ 1080              		.cfi_def_cfa_offset 4
+ 1081              		.cfi_offset 14, -4
+ 1082 0008 8FB0     		sub	sp, sp, #60
+ 1083              	.LCFI34:
+ 1084              		.cfi_def_cfa_offset 64
+ 1085 000a 0346     		mov	r3, r0
+ 209:Core/Lib/sdcard.c ****     
+ 210:Core/Lib/sdcard.c ****     char fullpath[50];
+ 1086              		.loc 1 210 5 is_stmt 1 view .LVU259
+ 211:Core/Lib/sdcard.c ****     snprintf(fullpath, sizeof(fullpath), "0:%s", filename);
+ 1087              		.loc 1 211 5 view .LVU260
+ 1088 000c 084A     		ldr	r2, .L104+4
+ 1089 000e 3221     		movs	r1, #50
+ 1090 0010 01A8     		add	r0, sp, #4
+ 1091              	.LVL94:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 25
+
+
+ 1092              		.loc 1 211 5 is_stmt 0 view .LVU261
+ 1093 0012 FFF7FEFF 		bl	snprintf
+ 1094              	.LVL95:
+ 212:Core/Lib/sdcard.c ****     
+ 213:Core/Lib/sdcard.c ****     FRESULT res = f_unlink(fullpath);
+ 1095              		.loc 1 213 5 is_stmt 1 view .LVU262
+ 1096              		.loc 1 213 19 is_stmt 0 view .LVU263
+ 1097 0016 01A8     		add	r0, sp, #4
+ 1098 0018 FFF7FEFF 		bl	f_unlink
+ 1099              	.LVL96:
+ 214:Core/Lib/sdcard.c ****     return (res == FR_OK) ? SD_OK : SD_ERROR;
+ 1100              		.loc 1 214 5 is_stmt 1 view .LVU264
+ 1101              		.loc 1 214 35 is_stmt 0 view .LVU265
+ 1102 001c 0038     		subs	r0, r0, #0
+ 1103              	.LVL97:
+ 1104              		.loc 1 214 35 view .LVU266
+ 1105 001e 18BF     		it	ne
+ 1106 0020 0120     		movne	r0, #1
+ 215:Core/Lib/sdcard.c **** }...
+ 1107              		.loc 1 215 1 view .LVU267
+ 1108 0022 0FB0     		add	sp, sp, #60
+ 1109              	.LCFI35:
+ 1110              		.cfi_def_cfa_offset 4
+ 1111              		@ sp needed
+ 1112 0024 5DF804FB 		ldr	pc, [sp], #4
+ 1113              	.LVL98:
+ 1114              	.L99:
+ 1115              	.LCFI36:
+ 1116              		.cfi_def_cfa_offset 0
+ 1117              		.cfi_restore 14
+ 208:Core/Lib/sdcard.c ****     if (!sd_ready) return SD_NOT_READY;
+ 1118              		.loc 1 208 27 view .LVU268
+ 1119 0028 0220     		movs	r0, #2
+ 1120              	.LVL99:
+ 1121              		.loc 1 215 1 view .LVU269
+ 1122 002a 7047     		bx	lr
+ 1123              	.L105:
+ 1124              		.align	2
+ 1125              	.L104:
+ 1126 002c 00000000 		.word	.LANCHOR1
+ 1127 0030 18000000 		.word	.LC5
+ 1128              		.cfi_endproc
+ 1129              	.LFE162:
+ 1131              		.section	.bss.fs,"aw",%nobits
+ 1132              		.align	2
+ 1133              		.set	.LANCHOR0,. + 0
+ 1136              	fs:
+ 1137 0000 00000000 		.space	564
+ 1137      00000000 
+ 1137      00000000 
+ 1137      00000000 
+ 1137      00000000 
+ 1138              		.section	.bss.latest_filename,"aw",%nobits
+ 1139              		.align	2
+ 1140              		.set	.LANCHOR2,. + 0
+ 1143              	latest_filename:
+ 1144 0000 00000000 		.space	40
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 26
+
+
+ 1144      00000000 
+ 1144      00000000 
+ 1144      00000000 
+ 1144      00000000 
+ 1145              		.section	.bss.sd_ready,"aw",%nobits
+ 1146              		.set	.LANCHOR1,. + 0
+ 1149              	sd_ready:
+ 1150 0000 00       		.space	1
+ 1151              		.text
+ 1152              	.Letext0:
+ 1153              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1154              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1155              		.file 4 "Middlewares/Third_Party/FatFs/src/integer.h"
+ 1156              		.file 5 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h"
+ 1157              		.file 6 "Middlewares/Third_Party/FatFs/src/ff.h"
+ 1158              		.file 7 "Core/Lib/sdcard.h"
+ 1159              		.file 8 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1160              		.file 9 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1161              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ 1162              		.file 11 "<built-in>"
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 27
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 sdcard.c
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:19     .rodata.SD_Mount.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:23     .text.SD_Mount:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:29     .text.SD_Mount:00000000 SD_Mount
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:74     .text.SD_Mount:00000020 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:81     .text.SD_Init:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:87     .text.SD_Init:00000000 SD_Init
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:108    .text.SD_Unmount:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:114    .text.SD_Unmount:00000000 SD_Unmount
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:142    .text.SD_Unmount:00000014 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:148    .text.SD_IsReady:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:154    .text.SD_IsReady:00000000 SD_IsReady
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:169    .text.SD_IsReady:00000008 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:174    .rodata.SD_WriteScience.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:178    .text.SD_WriteScience:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:184    .text.SD_WriteScience:00000000 SD_WriteScience
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:306    .text.SD_WriteScience:0000006c $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:313    .text.SD_ReadScience:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:319    .text.SD_ReadScience:00000000 SD_ReadScience
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:429    .text.SD_ReadScience:00000054 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:435    .rodata.SD_DeleteOldest.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:448    .text.SD_DeleteOldest:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:454    .text.SD_DeleteOldest:00000000 SD_DeleteOldest
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:616    .text.SD_DeleteOldest:00000098 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:625    .text.SD_GetFreeKB:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:631    .text.SD_GetFreeKB:00000000 SD_GetFreeKB
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:700    .text.SD_GetFreeKB:00000034 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:707    .text.SD_GetUsedKB:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:713    .text.SD_GetUsedKB:00000000 SD_GetUsedKB
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:793    .text.SD_GetUsedKB:00000038 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:800    .text.SD_WriteFile:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:806    .text.SD_WriteFile:00000000 SD_WriteFile
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:930    .text.SD_WriteFile:00000064 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:936    .text.SD_ReadFile:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:942    .text.SD_ReadFile:00000000 SD_ReadFile
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1052   .text.SD_ReadFile:00000058 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1058   .text.SD_DeleteFile:00000000 $t
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1064   .text.SD_DeleteFile:00000000 SD_DeleteFile
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1126   .text.SD_DeleteFile:0000002c $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1132   .bss.fs:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1136   .bss.fs:00000000 fs
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1139   .bss.latest_filename:00000000 $d
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1143   .bss.latest_filename:00000000 latest_filename
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1149   .bss.sd_ready:00000000 sd_ready
+C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s:1150   .bss.sd_ready:00000000 $d
+
+UNDEFINED SYMBOLS
+f_mount
+HAL_GetTick
+snprintf
+f_open
+f_write
+f_close
+f_sync
+f_read
+memset
+ARM GAS  C:\Users\admin\AppData\Local\Temp\ccFkpsMc.s 			page 28
+
+
+f_opendir
+f_readdir
+strncmp
+sscanf
+f_closedir
+f_unlink
+f_getfree

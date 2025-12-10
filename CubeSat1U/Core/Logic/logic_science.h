@@ -60,7 +60,7 @@ science_error_t Logic_Science_Phase_Process(uint32_t ms);
 science_error_t Logic_Science_Phase_Clean(uint32_t ms); */
 
 science_error_t Logic_Science_Init(void);
-science_error_t Logic_Science_Process(uint32_t dt_ms);
+science_error_t Logic_Science_Process(void);
 science_error_t Logic_Science_Abort(void);
 science_phase_t Logic_Science_GetPhase(void);
 uint32_t Logic_Science_GetPhaseTimer(void);

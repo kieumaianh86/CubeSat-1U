@@ -1,0 +1,623 @@
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"task_output_manager.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.ProcessLog,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	ProcessLog:
+  25              	.LVL0:
+  26              	.LFB160:
+  27              		.file 1 "Core/RTOS/task_output_manager.c"
+   1:Core/RTOS/task_output_manager.c **** #include "task_config.h"
+   2:Core/RTOS/task_output_manager.c **** #include "hardware.h"
+   3:Core/RTOS/task_output_manager.c **** #include "sdcard.h"
+   4:Core/RTOS/task_output_manager.c **** #include <string.h>
+   5:Core/RTOS/task_output_manager.c **** 
+   6:Core/RTOS/task_output_manager.c **** extern UART_HandleTypeDef huart3;
+   7:Core/RTOS/task_output_manager.c **** extern lora_e32_handle_t lora_handle;
+   8:Core/RTOS/task_output_manager.c **** 
+   9:Core/RTOS/task_output_manager.c **** static void ProcessLog(const output_request_t *req);
+  10:Core/RTOS/task_output_manager.c **** static void ProcessTelemetry(const output_request_t *req);
+  11:Core/RTOS/task_output_manager.c **** static void ProcessFlashWrite(const output_request_t *req);
+  12:Core/RTOS/task_output_manager.c **** static void ProcessLED(const output_request_t *req);
+  13:Core/RTOS/task_output_manager.c **** 
+  14:Core/RTOS/task_output_manager.c **** void Task_OutputManager(void *pvParameters)
+  15:Core/RTOS/task_output_manager.c **** {
+  16:Core/RTOS/task_output_manager.c ****     output_request_t req;
+  17:Core/RTOS/task_output_manager.c ****     
+  18:Core/RTOS/task_output_manager.c ****     for (;;)
+  19:Core/RTOS/task_output_manager.c ****     {
+  20:Core/RTOS/task_output_manager.c ****         if (ReceiveOutput(&req, portMAX_DELAY) == pdPASS)
+  21:Core/RTOS/task_output_manager.c ****         {
+  22:Core/RTOS/task_output_manager.c ****             switch (req.type)
+  23:Core/RTOS/task_output_manager.c ****             {
+  24:Core/RTOS/task_output_manager.c ****             case OUT_LOG:
+  25:Core/RTOS/task_output_manager.c ****                 ProcessLog(&req);
+  26:Core/RTOS/task_output_manager.c ****                 break;
+  27:Core/RTOS/task_output_manager.c ****             case OUT_TELEMETRY:
+  28:Core/RTOS/task_output_manager.c ****                 ProcessTelemetry(&req);
+  29:Core/RTOS/task_output_manager.c ****                 break;
+  30:Core/RTOS/task_output_manager.c ****             case OUT_FLASH_WRITE:
+  31:Core/RTOS/task_output_manager.c ****                 ProcessFlashWrite(&req);
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 2
+
+
+  32:Core/RTOS/task_output_manager.c ****                 break;
+  33:Core/RTOS/task_output_manager.c ****             case OUT_LED:
+  34:Core/RTOS/task_output_manager.c ****                 ProcessLED(&req);
+  35:Core/RTOS/task_output_manager.c ****                 break;
+  36:Core/RTOS/task_output_manager.c ****             default:
+  37:Core/RTOS/task_output_manager.c ****                 break;
+  38:Core/RTOS/task_output_manager.c ****             }
+  39:Core/RTOS/task_output_manager.c ****         }
+  40:Core/RTOS/task_output_manager.c ****         taskYIELD();
+  41:Core/RTOS/task_output_manager.c ****     }
+  42:Core/RTOS/task_output_manager.c **** }
+  43:Core/RTOS/task_output_manager.c **** 
+  44:Core/RTOS/task_output_manager.c **** static void ProcessLog(const output_request_t *req)
+  45:Core/RTOS/task_output_manager.c **** {
+  28              		.loc 1 45 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 45 1 is_stmt 0 view .LVU1
+  33 0000 10B5     		push	{r4, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 4, -8
+  37              		.cfi_offset 14, -4
+  46:Core/RTOS/task_output_manager.c ****     HAL_UART_Transmit(&huart3, (uint8_t*)req->data.log.msg,
+  38              		.loc 1 46 5 is_stmt 1 view .LVU2
+  39              		.loc 1 46 42 is_stmt 0 view .LVU3
+  40 0002 041D     		adds	r4, r0, #4
+  47:Core/RTOS/task_output_manager.c ****                      strlen(req->data.log.msg), 100);
+  41              		.loc 1 47 22 view .LVU4
+  42 0004 2046     		mov	r0, r4
+  43              	.LVL1:
+  44              		.loc 1 47 22 view .LVU5
+  45 0006 FFF7FEFF 		bl	strlen
+  46              	.LVL2:
+  46:Core/RTOS/task_output_manager.c ****     HAL_UART_Transmit(&huart3, (uint8_t*)req->data.log.msg,
+  47              		.loc 1 46 5 view .LVU6
+  48 000a 6423     		movs	r3, #100
+  49 000c 82B2     		uxth	r2, r0
+  50 000e 2146     		mov	r1, r4
+  51 0010 0148     		ldr	r0, .L3
+  52 0012 FFF7FEFF 		bl	HAL_UART_Transmit
+  53              	.LVL3:
+  48:Core/RTOS/task_output_manager.c **** }
+  54              		.loc 1 48 1 view .LVU7
+  55 0016 10BD     		pop	{r4, pc}
+  56              	.LVL4:
+  57              	.L4:
+  58              		.loc 1 48 1 view .LVU8
+  59              		.align	2
+  60              	.L3:
+  61 0018 00000000 		.word	huart3
+  62              		.cfi_endproc
+  63              	.LFE160:
+  65              		.section	.text.ProcessTelemetry,"ax",%progbits
+  66              		.align	1
+  67              		.syntax unified
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 3
+
+
+  68              		.thumb
+  69              		.thumb_func
+  71              	ProcessTelemetry:
+  72              	.LVL5:
+  73              	.LFB161:
+  49:Core/RTOS/task_output_manager.c **** 
+  50:Core/RTOS/task_output_manager.c **** static void ProcessTelemetry(const output_request_t *req)
+  51:Core/RTOS/task_output_manager.c **** {
+  74              		.loc 1 51 1 is_stmt 1 view -0
+  75              		.cfi_startproc
+  76              		@ args = 0, pretend = 0, frame = 0
+  77              		@ frame_needed = 0, uses_anonymous_args = 0
+  78              		.loc 1 51 1 is_stmt 0 view .LVU10
+  79 0000 08B5     		push	{r3, lr}
+  80              	.LCFI1:
+  81              		.cfi_def_cfa_offset 8
+  82              		.cfi_offset 3, -8
+  83              		.cfi_offset 14, -4
+  52:Core/RTOS/task_output_manager.c ****     LoRa_E32_Send(&lora_handle, req->data.telemetry.data,
+  84              		.loc 1 52 5 is_stmt 1 view .LVU11
+  85 0002 4FF47A73 		mov	r3, #1000
+  86 0006 B0F80421 		ldrh	r2, [r0, #260]
+  87 000a 011D     		adds	r1, r0, #4
+  88 000c 0148     		ldr	r0, .L7
+  89              	.LVL6:
+  90              		.loc 1 52 5 is_stmt 0 view .LVU12
+  91 000e FFF7FEFF 		bl	LoRa_E32_Send
+  92              	.LVL7:
+  53:Core/RTOS/task_output_manager.c ****                  req->data.telemetry.len, 1000);
+  54:Core/RTOS/task_output_manager.c **** }
+  93              		.loc 1 54 1 view .LVU13
+  94 0012 08BD     		pop	{r3, pc}
+  95              	.L8:
+  96              		.align	2
+  97              	.L7:
+  98 0014 00000000 		.word	lora_handle
+  99              		.cfi_endproc
+ 100              	.LFE161:
+ 102              		.section	.rodata.ProcessFlashWrite.str1.4,"aMS",%progbits,1
+ 103              		.align	2
+ 104              	.LC0:
+ 105 0000 53442077 		.ascii	"SD write failed: %d\015\012\000"
+ 105      72697465 
+ 105      20666169 
+ 105      6C65643A 
+ 105      2025640D 
+ 106              		.section	.text.ProcessFlashWrite,"ax",%progbits
+ 107              		.align	1
+ 108              		.syntax unified
+ 109              		.thumb
+ 110              		.thumb_func
+ 112              	ProcessFlashWrite:
+ 113              	.LVL8:
+ 114              	.LFB162:
+  55:Core/RTOS/task_output_manager.c **** 
+  56:Core/RTOS/task_output_manager.c **** static void ProcessFlashWrite(const output_request_t *req)
+  57:Core/RTOS/task_output_manager.c **** {
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 4
+
+
+ 115              		.loc 1 57 1 is_stmt 1 view -0
+ 116              		.cfi_startproc
+ 117              		@ args = 0, pretend = 0, frame = 64
+ 118              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119              		.loc 1 57 1 is_stmt 0 view .LVU15
+ 120 0000 10B5     		push	{r4, lr}
+ 121              	.LCFI2:
+ 122              		.cfi_def_cfa_offset 8
+ 123              		.cfi_offset 4, -8
+ 124              		.cfi_offset 14, -4
+ 125 0002 90B0     		sub	sp, sp, #64
+ 126              	.LCFI3:
+ 127              		.cfi_def_cfa_offset 72
+ 128 0004 0446     		mov	r4, r0
+  58:Core/RTOS/task_output_manager.c ****     // FIXED: Actual SD card write implementation
+  59:Core/RTOS/task_output_manager.c ****     if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(5000)) == pdPASS)
+ 129              		.loc 1 59 5 is_stmt 1 view .LVU16
+ 130              		.loc 1 59 9 is_stmt 0 view .LVU17
+ 131 0006 41F28831 		movw	r1, #5000
+ 132 000a 134B     		ldr	r3, .L15
+ 133 000c 1868     		ldr	r0, [r3]
+ 134              	.LVL9:
+ 135              		.loc 1 59 9 view .LVU18
+ 136 000e FFF7FEFF 		bl	xQueueSemaphoreTake
+ 137              	.LVL10:
+ 138              		.loc 1 59 8 view .LVU19
+ 139 0012 0128     		cmp	r0, #1
+ 140 0014 01D0     		beq	.L13
+ 141              	.L9:
+  60:Core/RTOS/task_output_manager.c ****     {
+  61:Core/RTOS/task_output_manager.c ****         sd_status_t result = SD_WriteScience(req->data.flash.data, 
+  62:Core/RTOS/task_output_manager.c ****                                             req->data.flash.len);
+  63:Core/RTOS/task_output_manager.c ****         if (result != SD_OK) {
+  64:Core/RTOS/task_output_manager.c ****             // Log write failure
+  65:Core/RTOS/task_output_manager.c ****             char err[64];
+  66:Core/RTOS/task_output_manager.c ****             snprintf(err, sizeof(err), "SD write failed: %d\r\n", result);
+  67:Core/RTOS/task_output_manager.c ****             HAL_UART_Transmit(&huart3, (uint8_t*)err, strlen(err), 100);
+  68:Core/RTOS/task_output_manager.c ****         }
+  69:Core/RTOS/task_output_manager.c ****         xSemaphoreGive(sdMutex);
+  70:Core/RTOS/task_output_manager.c ****     }
+  71:Core/RTOS/task_output_manager.c **** }
+ 142              		.loc 1 71 1 view .LVU20
+ 143 0016 10B0     		add	sp, sp, #64
+ 144              	.LCFI4:
+ 145              		.cfi_remember_state
+ 146              		.cfi_def_cfa_offset 8
+ 147              		@ sp needed
+ 148 0018 10BD     		pop	{r4, pc}
+ 149              	.LVL11:
+ 150              	.L13:
+ 151              	.LCFI5:
+ 152              		.cfi_restore_state
+ 153              	.LBB4:
+  61:Core/RTOS/task_output_manager.c ****                                             req->data.flash.len);
+ 154              		.loc 1 61 9 is_stmt 1 view .LVU21
+  61:Core/RTOS/task_output_manager.c ****                                             req->data.flash.len);
+ 155              		.loc 1 61 30 is_stmt 0 view .LVU22
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 5
+
+
+ 156 001a B4F80812 		ldrh	r1, [r4, #520]
+ 157 001e 04F10800 		add	r0, r4, #8
+ 158 0022 FFF7FEFF 		bl	SD_WriteScience
+ 159              	.LVL12:
+  63:Core/RTOS/task_output_manager.c ****             // Log write failure
+ 160              		.loc 1 63 9 is_stmt 1 view .LVU23
+  63:Core/RTOS/task_output_manager.c ****             // Log write failure
+ 161              		.loc 1 63 12 is_stmt 0 view .LVU24
+ 162 0026 0346     		mov	r3, r0
+ 163 0028 38B9     		cbnz	r0, .L14
+ 164              	.LVL13:
+ 165              	.L11:
+  69:Core/RTOS/task_output_manager.c ****     }
+ 166              		.loc 1 69 9 is_stmt 1 view .LVU25
+ 167 002a 0023     		movs	r3, #0
+ 168 002c 1A46     		mov	r2, r3
+ 169 002e 1946     		mov	r1, r3
+ 170 0030 0948     		ldr	r0, .L15
+ 171 0032 0068     		ldr	r0, [r0]
+ 172 0034 FFF7FEFF 		bl	xQueueGenericSend
+ 173              	.LVL14:
+ 174              	.LBE4:
+ 175              		.loc 1 71 1 is_stmt 0 view .LVU26
+ 176 0038 EDE7     		b	.L9
+ 177              	.LVL15:
+ 178              	.L14:
+ 179              	.LBB6:
+ 180              	.LBB5:
+  65:Core/RTOS/task_output_manager.c ****             snprintf(err, sizeof(err), "SD write failed: %d\r\n", result);
+ 181              		.loc 1 65 13 is_stmt 1 view .LVU27
+  66:Core/RTOS/task_output_manager.c ****             HAL_UART_Transmit(&huart3, (uint8_t*)err, strlen(err), 100);
+ 182              		.loc 1 66 13 view .LVU28
+ 183 003a 084A     		ldr	r2, .L15+4
+ 184 003c 4021     		movs	r1, #64
+ 185 003e 6846     		mov	r0, sp
+ 186              	.LVL16:
+  66:Core/RTOS/task_output_manager.c ****             HAL_UART_Transmit(&huart3, (uint8_t*)err, strlen(err), 100);
+ 187              		.loc 1 66 13 is_stmt 0 view .LVU29
+ 188 0040 FFF7FEFF 		bl	snprintf
+ 189              	.LVL17:
+  67:Core/RTOS/task_output_manager.c ****         }
+ 190              		.loc 1 67 13 is_stmt 1 view .LVU30
+  67:Core/RTOS/task_output_manager.c ****         }
+ 191              		.loc 1 67 55 is_stmt 0 view .LVU31
+ 192 0044 6846     		mov	r0, sp
+ 193 0046 FFF7FEFF 		bl	strlen
+ 194              	.LVL18:
+  67:Core/RTOS/task_output_manager.c ****         }
+ 195              		.loc 1 67 13 view .LVU32
+ 196 004a 6423     		movs	r3, #100
+ 197 004c 82B2     		uxth	r2, r0
+ 198 004e 6946     		mov	r1, sp
+ 199 0050 0348     		ldr	r0, .L15+8
+ 200 0052 FFF7FEFF 		bl	HAL_UART_Transmit
+ 201              	.LVL19:
+ 202 0056 E8E7     		b	.L11
+ 203              	.L16:
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 6
+
+
+ 204              		.align	2
+ 205              	.L15:
+ 206 0058 00000000 		.word	sdMutex
+ 207 005c 00000000 		.word	.LC0
+ 208 0060 00000000 		.word	huart3
+ 209              	.LBE5:
+ 210              	.LBE6:
+ 211              		.cfi_endproc
+ 212              	.LFE162:
+ 214              		.section	.text.Task_OutputManager,"ax",%progbits
+ 215              		.align	1
+ 216              		.global	Task_OutputManager
+ 217              		.syntax unified
+ 218              		.thumb
+ 219              		.thumb_func
+ 221              	Task_OutputManager:
+ 222              	.LFB159:
+  15:Core/RTOS/task_output_manager.c ****     output_request_t req;
+ 223              		.loc 1 15 1 is_stmt 1 view -0
+ 224              		.cfi_startproc
+ 225              		@ Volatile: function does not return.
+ 226              		@ args = 0, pretend = 0, frame = 528
+ 227              		@ frame_needed = 0, uses_anonymous_args = 0
+ 228              	.LVL20:
+  15:Core/RTOS/task_output_manager.c ****     output_request_t req;
+ 229              		.loc 1 15 1 is_stmt 0 view .LVU34
+ 230 0000 00B5     		push	{lr}
+ 231              	.LCFI6:
+ 232              		.cfi_def_cfa_offset 4
+ 233              		.cfi_offset 14, -4
+ 234 0002 ADF5057D 		sub	sp, sp, #532
+ 235              	.LCFI7:
+ 236              		.cfi_def_cfa_offset 536
+ 237 0006 0CE0     		b	.L21
+ 238              	.LVL21:
+ 239              	.L19:
+  28:Core/RTOS/task_output_manager.c ****                 break;
+ 240              		.loc 1 28 17 is_stmt 1 view .LVU35
+ 241 0008 01A8     		add	r0, sp, #4
+ 242 000a FFF7FEFF 		bl	ProcessTelemetry
+ 243              	.LVL22:
+  29:Core/RTOS/task_output_manager.c ****             case OUT_FLASH_WRITE:
+ 244              		.loc 1 29 17 view .LVU36
+ 245              	.L18:
+  40:Core/RTOS/task_output_manager.c ****     }
+ 246              		.loc 1 40 9 view .LVU37
+ 247 000e 4FF0E023 		mov	r3, #-536813568
+ 248 0012 4FF08052 		mov	r2, #268435456
+ 249 0016 C3F8042D 		str	r2, [r3, #3332]
+  40:Core/RTOS/task_output_manager.c ****     }
+ 250              		.loc 1 40 9 view .LVU38
+ 251              		.syntax unified
+ 252              	@ 40 "Core/RTOS/task_output_manager.c" 1
+ 253 001a BFF34F8F 		dsb
+ 254              	@ 0 "" 2
+  40:Core/RTOS/task_output_manager.c ****     }
+ 255              		.loc 1 40 9 view .LVU39
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 7
+
+
+ 256              	@ 40 "Core/RTOS/task_output_manager.c" 1
+ 257 001e BFF36F8F 		isb
+ 258              	@ 0 "" 2
+  40:Core/RTOS/task_output_manager.c ****     }
+ 259              		.loc 1 40 20 view .LVU40
+  18:Core/RTOS/task_output_manager.c ****     {
+ 260              		.loc 1 18 11 view .LVU41
+ 261              		.thumb
+ 262              		.syntax unified
+ 263              	.L21:
+  16:Core/RTOS/task_output_manager.c ****     
+ 264              		.loc 1 16 5 view .LVU42
+  18:Core/RTOS/task_output_manager.c ****     {
+ 265              		.loc 1 18 5 view .LVU43
+  20:Core/RTOS/task_output_manager.c ****         {
+ 266              		.loc 1 20 9 view .LVU44
+ 267              	.LVL23:
+ 268              	.LBB7:
+ 269              	.LBI7:
+ 270              		.file 2 "Core/RTOS/task_config.h"
+   1:Core/RTOS/task_config.h **** #ifndef TASKS_CONFIG_H
+   2:Core/RTOS/task_config.h **** #define TASKS_CONFIG_H
+   3:Core/RTOS/task_config.h **** 
+   4:Core/RTOS/task_config.h **** #include "FreeRTOS.h"
+   5:Core/RTOS/task_config.h **** #include "task.h"
+   6:Core/RTOS/task_config.h **** #include "queue.h"
+   7:Core/RTOS/task_config.h **** #include "semphr.h"
+   8:Core/RTOS/task_config.h **** #include "event_groups.h"
+   9:Core/RTOS/task_config.h **** #include "cubesat_data.h"
+  10:Core/RTOS/task_config.h **** 
+  11:Core/RTOS/task_config.h **** //task priority
+  12:Core/RTOS/task_config.h **** #define PRIORITY_CMD_RECEIVER   3
+  13:Core/RTOS/task_config.h **** #define PRIORITY_STATE_MACHINE  2
+  14:Core/RTOS/task_config.h **** #define PRIORITY_OUTPUT_MGR     1
+  15:Core/RTOS/task_config.h **** 
+  16:Core/RTOS/task_config.h **** //stack size
+  17:Core/RTOS/task_config.h **** #define STACK_CMD_RECEIVER    512
+  18:Core/RTOS/task_config.h **** #define STACK_STATE_MACHINE   2048
+  19:Core/RTOS/task_config.h **** #define STACK_OUTPUT_MGR      1024
+  20:Core/RTOS/task_config.h **** 
+  21:Core/RTOS/task_config.h **** //queue definition
+  22:Core/RTOS/task_config.h **** #define CMD_QUEUE_LENGTH      5
+  23:Core/RTOS/task_config.h **** #define OUT_QUEUE_LENGTH      10
+  24:Core/RTOS/task_config.h ****  
+  25:Core/RTOS/task_config.h **** //output request types
+  26:Core/RTOS/task_config.h **** typedef enum {
+  27:Core/RTOS/task_config.h ****   OUT_LOG,
+  28:Core/RTOS/task_config.h ****   OUT_TELEMETRY,
+  29:Core/RTOS/task_config.h ****   OUT_FLASH_WRITE,
+  30:Core/RTOS/task_config.h ****   OUT_LED
+  31:Core/RTOS/task_config.h **** } output_type_t;
+  32:Core/RTOS/task_config.h **** 
+  33:Core/RTOS/task_config.h **** //command message structure
+  34:Core/RTOS/task_config.h **** typedef struct
+  35:Core/RTOS/task_config.h **** {
+  36:Core/RTOS/task_config.h ****   gcs_command_t cmd;
+  37:Core/RTOS/task_config.h ****   uint32_t timestamp;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 8
+
+
+  38:Core/RTOS/task_config.h ****   uint8_t payload[32];
+  39:Core/RTOS/task_config.h ****   uint16_t payload_len;
+  40:Core/RTOS/task_config.h **** } command_msg_t;
+  41:Core/RTOS/task_config.h **** 
+  42:Core/RTOS/task_config.h **** typedef struct 
+  43:Core/RTOS/task_config.h **** {
+  44:Core/RTOS/task_config.h ****   output_type_t type;
+  45:Core/RTOS/task_config.h ****   union  
+  46:Core/RTOS/task_config.h ****   {
+  47:Core/RTOS/task_config.h ****     struct  
+  48:Core/RTOS/task_config.h ****     {
+  49:Core/RTOS/task_config.h ****       char msg[128];
+  50:Core/RTOS/task_config.h ****     }log;
+  51:Core/RTOS/task_config.h **** 
+  52:Core/RTOS/task_config.h ****     struct  
+  53:Core/RTOS/task_config.h ****     {
+  54:Core/RTOS/task_config.h ****       uint8_t data[256];
+  55:Core/RTOS/task_config.h ****       uint16_t len;
+  56:Core/RTOS/task_config.h ****     }telemetry;
+  57:Core/RTOS/task_config.h **** 
+  58:Core/RTOS/task_config.h ****     struct  
+  59:Core/RTOS/task_config.h ****     {
+  60:Core/RTOS/task_config.h ****       uint32_t addr;
+  61:Core/RTOS/task_config.h ****       uint8_t data[512];
+  62:Core/RTOS/task_config.h ****       uint16_t len;
+  63:Core/RTOS/task_config.h ****     } flash;
+  64:Core/RTOS/task_config.h **** 
+  65:Core/RTOS/task_config.h ****     struct  
+  66:Core/RTOS/task_config.h ****     {
+  67:Core/RTOS/task_config.h ****       uint8_t state; //0=of, 1=on, 2=blimk
+  68:Core/RTOS/task_config.h ****     } led;
+  69:Core/RTOS/task_config.h ****   } data;
+  70:Core/RTOS/task_config.h ****   
+  71:Core/RTOS/task_config.h **** }output_request_t;
+  72:Core/RTOS/task_config.h **** 
+  73:Core/RTOS/task_config.h **** //shared data structure
+  74:Core/RTOS/task_config.h **** typedef struct  
+  75:Core/RTOS/task_config.h **** {
+  76:Core/RTOS/task_config.h ****   system_health_t health;
+  77:Core/RTOS/task_config.h ****   cubesat_status_t status;
+  78:Core/RTOS/task_config.h ****   SemaphoreHandle_t mutex;
+  79:Core/RTOS/task_config.h **** }shared_data_t;
+  80:Core/RTOS/task_config.h **** 
+  81:Core/RTOS/task_config.h **** //event group bits
+  82:Core/RTOS/task_config.h **** #define EVENT_LORA_RX           (1 << 0)
+  83:Core/RTOS/task_config.h **** #define EVENT_RTC_ALARM         (1 << 1)
+  84:Core/RTOS/task_config.h **** #define EVENT_BATTERY_LOW       (1 << 2)
+  85:Core/RTOS/task_config.h **** #define EVENT_CRITICAL_ERROR    (1 << 3)
+  86:Core/RTOS/task_config.h **** 
+  87:Core/RTOS/task_config.h **** //GLOBAL HANDLE
+  88:Core/RTOS/task_config.h **** extern QueueHandle_t cmdQueue;
+  89:Core/RTOS/task_config.h **** extern QueueHandle_t outQueue;
+  90:Core/RTOS/task_config.h **** extern SemaphoreHandle_t healthMutex;
+  91:Core/RTOS/task_config.h **** extern SemaphoreHandle_t i2cMutex;
+  92:Core/RTOS/task_config.h **** extern SemaphoreHandle_t sdMutex;
+  93:Core/RTOS/task_config.h **** extern EventGroupHandle_t systemEvents;
+  94:Core/RTOS/task_config.h **** extern shared_data_t g_shared;
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 9
+
+
+  95:Core/RTOS/task_config.h **** 
+  96:Core/RTOS/task_config.h **** //TASK FUNCTION
+  97:Core/RTOS/task_config.h **** void Task_CommandReceiver(void *pvParameters);
+  98:Core/RTOS/task_config.h **** void Task_StateMachine(void *pvParameters);
+  99:Core/RTOS/task_config.h **** void Task_OutputManager(void *pvParameters);
+ 100:Core/RTOS/task_config.h **** 
+ 101:Core/RTOS/task_config.h **** //helper function
+ 102:Core/RTOS/task_config.h **** void Task_Init(void);
+ 103:Core/RTOS/task_config.h **** void SharedData_Init(void);
+ 104:Core/RTOS/task_config.h **** 
+ 105:Core/RTOS/task_config.h **** // Thread-safe accessors
+ 106:Core/RTOS/task_config.h **** static inline void SharedData_Lock(void) {
+ 107:Core/RTOS/task_config.h ****     xSemaphoreTake(g_shared.mutex, portMAX_DELAY);
+ 108:Core/RTOS/task_config.h **** }
+ 109:Core/RTOS/task_config.h **** 
+ 110:Core/RTOS/task_config.h **** static inline void SharedData_Unlock(void) {
+ 111:Core/RTOS/task_config.h ****     xSemaphoreGive(g_shared.mutex);
+ 112:Core/RTOS/task_config.h **** }
+ 113:Core/RTOS/task_config.h **** 
+ 114:Core/RTOS/task_config.h **** // Queue helpers
+ 115:Core/RTOS/task_config.h **** static inline BaseType_t SendCommand(const command_msg_t *cmd, TickType_t timeout) {
+ 116:Core/RTOS/task_config.h ****     return xQueueSend(cmdQueue, cmd, timeout);
+ 117:Core/RTOS/task_config.h **** }
+ 118:Core/RTOS/task_config.h **** 
+ 119:Core/RTOS/task_config.h **** static inline BaseType_t ReceiveCommand(command_msg_t *cmd, TickType_t timeout) {
+ 120:Core/RTOS/task_config.h ****     return xQueueReceive(cmdQueue, cmd, timeout);
+ 121:Core/RTOS/task_config.h **** }
+ 122:Core/RTOS/task_config.h **** 
+ 123:Core/RTOS/task_config.h **** static inline BaseType_t SendOutput(const output_request_t *req, TickType_t timeout) {
+ 124:Core/RTOS/task_config.h ****     return xQueueSend(outQueue, req, timeout);
+ 125:Core/RTOS/task_config.h **** }
+ 126:Core/RTOS/task_config.h **** 
+ 127:Core/RTOS/task_config.h **** static inline BaseType_t ReceiveOutput(output_request_t *req, TickType_t timeout) {
+ 271              		.loc 2 127 26 view .LVU45
+ 272              	.LBB8:
+ 128:Core/RTOS/task_config.h ****     return xQueueReceive(outQueue, req, timeout);
+ 273              		.loc 2 128 5 view .LVU46
+ 274              		.loc 2 128 12 is_stmt 0 view .LVU47
+ 275 0022 4FF0FF32 		mov	r2, #-1
+ 276 0026 01A9     		add	r1, sp, #4
+ 277              	.LVL24:
+ 278              		.loc 2 128 12 view .LVU48
+ 279 0028 0A4B     		ldr	r3, .L23
+ 280 002a 1868     		ldr	r0, [r3]
+ 281 002c FFF7FEFF 		bl	xQueueReceive
+ 282              	.LVL25:
+ 283              		.loc 2 128 12 view .LVU49
+ 284              	.LBE8:
+ 285              	.LBE7:
+  20:Core/RTOS/task_output_manager.c ****         {
+ 286              		.loc 1 20 12 view .LVU50
+ 287 0030 0128     		cmp	r0, #1
+ 288 0032 ECD1     		bne	.L18
+  22:Core/RTOS/task_output_manager.c ****             {
+ 289              		.loc 1 22 13 is_stmt 1 view .LVU51
+  22:Core/RTOS/task_output_manager.c ****             {
+ 290              		.loc 1 22 24 is_stmt 0 view .LVU52
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 10
+
+
+ 291 0034 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+  22:Core/RTOS/task_output_manager.c ****             {
+ 292              		.loc 1 22 13 view .LVU53
+ 293 0038 012B     		cmp	r3, #1
+ 294 003a E5D0     		beq	.L19
+ 295 003c 022B     		cmp	r3, #2
+ 296 003e 05D0     		beq	.L20
+ 297 0040 002B     		cmp	r3, #0
+ 298 0042 E4D1     		bne	.L18
+  25:Core/RTOS/task_output_manager.c ****                 break;
+ 299              		.loc 1 25 17 is_stmt 1 view .LVU54
+ 300 0044 01A8     		add	r0, sp, #4
+ 301 0046 FFF7FEFF 		bl	ProcessLog
+ 302              	.LVL26:
+  26:Core/RTOS/task_output_manager.c ****             case OUT_TELEMETRY:
+ 303              		.loc 1 26 17 view .LVU55
+ 304 004a E0E7     		b	.L18
+ 305              	.L20:
+  31:Core/RTOS/task_output_manager.c ****                 break;
+ 306              		.loc 1 31 17 view .LVU56
+ 307 004c 01A8     		add	r0, sp, #4
+ 308 004e FFF7FEFF 		bl	ProcessFlashWrite
+ 309              	.LVL27:
+  32:Core/RTOS/task_output_manager.c ****             case OUT_LED:
+ 310              		.loc 1 32 17 view .LVU57
+ 311 0052 DCE7     		b	.L18
+ 312              	.L24:
+ 313              		.align	2
+ 314              	.L23:
+ 315 0054 00000000 		.word	outQueue
+ 316              		.cfi_endproc
+ 317              	.LFE159:
+ 319              		.text
+ 320              	.Letext0:
+ 321              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 322              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 323              		.file 5 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 324              		.file 6 "Middlewares/Third_Party/FreeRTOS/Source/include/queue.h"
+ 325              		.file 7 "Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h"
+ 326              		.file 8 "Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h"
+ 327              		.file 9 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 328              		.file 10 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 329              		.file 11 "Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 330              		.file 12 "Core/Lib/sdcard.h"
+ 331              		.file 13 "Core/Lib/lora_e32.h"
+ 332              		.file 14 "Core/Hardware/hardware.h"
+ 333              		.file 15 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 334              		.file 16 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ARM GAS  C:\Users\admin\AppData\Local\Temp\cca9L7JA.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 task_output_manager.c
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:19     .text.ProcessLog:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:24     .text.ProcessLog:00000000 ProcessLog
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:61     .text.ProcessLog:00000018 $d
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:66     .text.ProcessTelemetry:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:71     .text.ProcessTelemetry:00000000 ProcessTelemetry
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:98     .text.ProcessTelemetry:00000014 $d
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:103    .rodata.ProcessFlashWrite.str1.4:00000000 $d
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:107    .text.ProcessFlashWrite:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:112    .text.ProcessFlashWrite:00000000 ProcessFlashWrite
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:206    .text.ProcessFlashWrite:00000058 $d
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:215    .text.Task_OutputManager:00000000 $t
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:221    .text.Task_OutputManager:00000000 Task_OutputManager
+C:\Users\admin\AppData\Local\Temp\cca9L7JA.s:315    .text.Task_OutputManager:00000054 $d
+
+UNDEFINED SYMBOLS
+strlen
+HAL_UART_Transmit
+huart3
+LoRa_E32_Send
+lora_handle
+xQueueSemaphoreTake
+SD_WriteScience
+xQueueGenericSend
+snprintf
+sdMutex
+xQueueReceive
+outQueue

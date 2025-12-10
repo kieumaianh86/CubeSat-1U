@@ -19,19 +19,23 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "hardware.h"
+#include "sdcard.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+FATFS fs;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -41,14 +45,18 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-I2C_HandleTypeDef hi2c1;
+DCMI_HandleTypeDef hdcmi;
+DMA_HandleTypeDef hdma_dcmi;
+
 I2C_HandleTypeDef hi2c2;
-I2C_HandleTypeDef hi2c3;
 I2C_HandleTypeDef hi2c4;
+
+RTC_HandleTypeDef hrtc;
+
+SD_HandleTypeDef hsd1;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
-UART_HandleTypeDef huart6;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -59,37 +67,30 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_USART6_UART_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_USART3_UART_Init(void);
 static void MX_I2C4_Init(void);
 static void MX_I2C2_Init(void);
-static void MX_I2C3_Init(void);
+static void MX_DCMI_Init(void);
+static void MX_SDMMC1_SD_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_RTC_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-float accel_x;
-float accel_y;
-float accel_z;
-float gyro_x;
-float gyro_y;
-float gyro_z;
-float temp;
-int ready;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//hardware_t hw;
-//hw_status_t status;
+
+
 /* USER CODE END 0 */
 
 /**
@@ -113,7 +114,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	//SCB_DisableDCache();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -125,26 +126,217 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
-  MX_USART6_UART_Init();
-  MX_I2C1_Init();
-  MX_USART3_UART_Init();
   MX_I2C4_Init();
   MX_I2C2_Init();
-  MX_I2C3_Init();
+  MX_DCMI_Init();
+  MX_SDMMC1_SD_Init();
+  MX_FATFS_Init();
+  MX_USART3_UART_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-//	mpu6050_handle_t mpu;
-//mpu6050_config_t config = {
-//    .hi2c = &hi2c1,
-//    .device_addr = 0x68,
-//    .accel_scale = MPU6050_ACCEL_SCALE_2G,
-//    .gyro_scale = MPU6050_GYRO_SCALE_250DPS,
-//    .i2c_timeout_ms = 100
-//};
-
-//mpu6050_init(&mpu, &config);
-//HAL_Delay(50);
-//mpu6050_init_process(&mpu);
+	Hardware_UART_Printf("\r\n=== SD Card Test ===\r\n");
+    Hardware_UART_Printf("NOTE: If mount fails, check:\r\n");
+    Hardware_UART_Printf("  1. SD card formatted as FAT32\r\n");
+    Hardware_UART_Printf("  2. Use sd_diskio_fixed.c for alignment\r\n");
+    Hardware_UART_Printf("\r\n");
+    
+    // Kiểm tra SD Detect Pin (nếu có)
+    Hardware_UART_Printf("0. Check SD Detect Pin...");
+    // Nếu bạn có SD_DETECT_PIN, uncomment dòng sau:
+    // HAL_GPIO_ReadPin(SD_DETECT_GPIO_Port, SD_DETECT_Pin);
+    Hardware_UART_Printf("Skip\r\n");
+    
+    // Delay để SD card khởi động
+    Hardware_UART_Printf("   Waiting for SD card ready...");
+    HAL_Delay(1000);
+    Hardware_UART_Printf("Done\r\n");
+    
+    // Kiểm tra BSP SD driver
+    Hardware_UART_Printf("1. Check BSP SD Init...");
+    uint8_t bsp_status = BSP_SD_Init();
+    Hardware_UART_Printf("Result=%d ", bsp_status);
+    
+    if (bsp_status == MSD_OK) {
+        Hardware_UART_Printf("(OK)\r\n");
+        
+        // Kiểm tra SD card info
+        BSP_SD_CardInfo CardInfo;
+        BSP_SD_GetCardInfo(&CardInfo);
+        Hardware_UART_Printf("   Card Type: %lu\r\n", CardInfo.CardType);
+        Hardware_UART_Printf("   Card Version: %lu\r\n", CardInfo.CardVersion);
+        Hardware_UART_Printf("   Card Size: %lu MB\r\n", 
+               (CardInfo.LogBlockNbr * CardInfo.LogBlockSize) / (1024*1024));
+    } else {
+        Hardware_UART_Printf("(FAIL)\r\n");
+        Hardware_UART_Printf("   Error codes:\r\n");
+        Hardware_UART_Printf("   1 = MSD_ERROR (No SD card detected)\r\n");
+        Hardware_UART_Printf("   2 = MSD_ERROR_SD_NOT_PRESENT\r\n");
+        Hardware_UART_Printf("\r\n");
+        Hardware_UART_Printf("   Solutions:\r\n");
+        Hardware_UART_Printf("   - Check SD card is inserted\r\n");
+        Hardware_UART_Printf("   - Check SDMMC pins in CubeMX\r\n");
+        Hardware_UART_Printf("   - Try different SD card\r\n");
+        Hardware_UART_Printf("   - Reduce SDMMC clock speed\r\n");
+    }
+    
+    HAL_Delay(100);
+    
+    /* Detailed Debug */
+    Hardware_UART_Printf("\r\n=== Detailed Mount Debug ===\r\n");
+    
+    // Test 1: Disk driver
+    Hardware_UART_Printf("1. Testing disk driver...\r\n");
+    DSTATUS dstatus = disk_initialize(0);
+    Hardware_UART_Printf("   disk_initialize(0) = 0x%02X\r\n", dstatus);
+    if (dstatus == 0) {
+        Hardware_UART_Printf("   [OK] Disk ready\r\n");
+    } else {
+        Hardware_UART_Printf("   [FAIL] Disk error:\r\n");
+        if (dstatus & 0x01) Hardware_UART_Printf("     - STA_NOINIT: Not initialized\r\n");
+        if (dstatus & 0x02) Hardware_UART_Printf("     - STA_NODISK: No disk\r\n");
+        if (dstatus & 0x04) Hardware_UART_Printf("     - STA_PROTECT: Write protected\r\n");
+    }
+    
+    // Test 2: Mount
+    Hardware_UART_Printf("\r\n2. Testing f_mount...\r\n");
+    FRESULT fres = f_mount(&fs, "0:", 1);
+    Hardware_UART_Printf("   f_mount result = %d\r\n", fres);
+    
+    switch(fres) {
+        case FR_OK:
+            Hardware_UART_Printf("   [OK] Mounted!\r\n");
+            break;
+        case FR_DISK_ERR:
+            Hardware_UART_Printf("   [FAIL] FR_DISK_ERR (1) - Hardware error\r\n");
+            break;
+        case FR_NOT_READY:
+            Hardware_UART_Printf("   [FAIL] FR_NOT_READY (3) - Disk not ready\r\n");
+            break;
+        case FR_NO_FILESYSTEM:
+            Hardware_UART_Printf("   [FAIL] FR_NO_FILESYSTEM (13)\r\n");
+            Hardware_UART_Printf("   *** SD CARD NOT FORMATTED AS FAT32! ***\r\n");
+            Hardware_UART_Printf("   *** FORMAT IT ON PC AS FAT32 ***\r\n");
+            break;
+        case FR_INVALID_DRIVE:
+            Hardware_UART_Printf("   [FAIL] FR_INVALID_DRIVE (11)\r\n");
+            break;
+        default:
+            Hardware_UART_Printf("   [FAIL] Error: %d\r\n", fres);
+            break;
+    }
+    
+    // Test 3: Read sector (dùng static buffer để tránh lỗi alignment)
+    if (dstatus == 0) {
+        Hardware_UART_Printf("\r\n3. Testing disk read...\r\n");
+        static uint8_t test_buffer[512] __attribute__((aligned(32)));
+        DRESULT dres = disk_read(0, test_buffer, 0, 1);
+        Hardware_UART_Printf("   disk_read = %d ", dres);
+        if (dres == RES_OK) {
+            Hardware_UART_Printf("OK\r\n");
+            Hardware_UART_Printf("   Sector 0: %02X %02X %02X %02X...\r\n", 
+                   test_buffer[0], test_buffer[1], test_buffer[2], test_buffer[3]);
+        } else {
+            Hardware_UART_Printf("FAIL\r\n");
+        }
+    }
+    
+    Hardware_UART_Printf("\r\n======================\r\n\r\n");
+    
+    /* Test SD Card */
+    sd_status_t status;
+    uint8_t data[100];
+    uint32_t len;
+    
+    // 2. Mount filesystem
+    Hardware_UART_Printf("2. Mount SD...");
+    status = SD_Init();
+    if (status == SD_OK) {
+        Hardware_UART_Printf("OK\r\n");
+    } else {
+        Hardware_UART_Printf("FAIL (%d)\r\n", status);
+        
+        // Debug chi tiết FRESULT
+        Hardware_UART_Printf("\r\n=== FatFS Mount Debug ===\r\n");
+        FRESULT fres = f_mount(&fs, "0:", 1);
+        Hardware_UART_Printf("f_mount FRESULT = %d\r\n", fres);
+        Hardware_UART_Printf("\r\nFRESULT codes:\r\n");
+        Hardware_UART_Printf("  0 = FR_OK (Success)\r\n");
+        Hardware_UART_Printf("  1 = FR_DISK_ERR (Hardware error)\r\n");
+        Hardware_UART_Printf("  2 = FR_INT_ERR (Assert failed)\r\n");
+        Hardware_UART_Printf("  3 = FR_NOT_READY (Disk not ready)\r\n");
+        Hardware_UART_Printf("  4 = FR_NO_FILE\r\n");
+        Hardware_UART_Printf("  5 = FR_NO_PATH\r\n");
+        Hardware_UART_Printf("  6 = FR_INVALID_NAME\r\n");
+        Hardware_UART_Printf("  7 = FR_DENIED\r\n");
+        Hardware_UART_Printf("  8 = FR_EXIST\r\n");
+        Hardware_UART_Printf("  9 = FR_INVALID_OBJECT\r\n");
+        Hardware_UART_Printf(" 10 = FR_WRITE_PROTECTED\r\n");
+        Hardware_UART_Printf(" 11 = FR_INVALID_DRIVE\r\n");
+        Hardware_UART_Printf(" 12 = FR_NOT_ENABLED\r\n");
+        Hardware_UART_Printf(" 13 = FR_NO_FILESYSTEM (Not formatted FAT)\r\n");
+        Hardware_UART_Printf(" 14 = FR_MKFS_ABORTED\r\n");
+        Hardware_UART_Printf(" 15 = FR_TIMEOUT\r\n");
+        
+        // Test disk_initialize
+        Hardware_UART_Printf("\r\n=== Disk Driver Test ===\r\n");
+        DSTATUS disk_stat = disk_initialize(0);
+        Hardware_UART_Printf("disk_initialize = 0x%02X\r\n", disk_stat);
+        Hardware_UART_Printf("  0x00 = OK\r\n");
+        Hardware_UART_Printf("  0x01 = STA_NOINIT (Not initialized)\r\n");
+        Hardware_UART_Printf("  0x02 = STA_NODISK (No disk)\r\n");
+        Hardware_UART_Printf("  0x04 = STA_PROTECT (Write protected)\r\n");
+        
+        // Thử format nếu không có filesystem
+        if (fres == FR_NO_FILESYSTEM) {
+            Hardware_UART_Printf("\r\n=== No filesystem detected ===\r\n");
+            Hardware_UART_Printf("SD card needs to be formatted as FAT32\r\n");
+            Hardware_UART_Printf("Options:\r\n");
+            Hardware_UART_Printf("  1. Format on PC as FAT32\r\n");
+            Hardware_UART_Printf("  2. Or try f_mkfs() to format here\r\n");
+        }
+        
+        while(1);
+    }
+    
+    // 2. Ghi dữ liệu
+    Hardware_UART_Printf("2. Write data...");
+    for (int i = 0; i < 100; i++) {
+        data[i] = i;
+    }
+    status = SD_WriteScience(data, 100);
+    Hardware_UART_Printf("%s\r\n", (status == SD_OK) ? "OK" : "FAIL");
+    
+    // 3. Đọc lại
+    Hardware_UART_Printf("3. Read data...");
+    len = 100;
+    status = SD_ReadScience(data, &len);
+    if (status == SD_OK) {
+        Hardware_UART_Printf("OK (%lu bytes)\r\n", len);
+        
+        // Kiểm tra dữ liệu
+        uint8_t ok = 1;
+        for (int i = 0; i < 100; i++) {
+            if (data[i] != i) {
+                ok = 0;
+                Hardware_UART_Printf("   Error at byte %d\r\n", i);
+                break;
+            }
+        }
+        if (ok) Hardware_UART_Printf("   Data verified OK\r\n");
+    } else {
+        Hardware_UART_Printf("FAIL\r\n");
+    }
+    
+    // 4. Xem thông tin
+    uint32_t free = SD_GetFreeKB();
+    uint32_t used = SD_GetUsedKB();
+    Hardware_UART_Printf("4. Info:\r\n");
+    Hardware_UART_Printf("   Free: %lu KB\r\n", free);
+    Hardware_UART_Printf("   Used: %lu KB\r\n", used);
+    
+    Hardware_UART_Printf("\r\n=== Test Done ===\r\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -187,31 +379,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//		if (mpu6050_read_all(&mpu) == MPU6050_OK)
-//    {
-//        accel_x = mpu.accel_scaled.x;
-//        accel_y = mpu.accel_scaled.y;
-//        accel_z = mpu.accel_scaled.z;
-//        
-//        gyro_x = mpu.gyro_scaled.x;
-//        gyro_y = mpu.gyro_scaled.y;
-//        gyro_z = mpu.gyro_scaled.z;
-//        
-//        temp = mpu.temp_scaled;
-//    }
-//    HAL_Delay(10);
+		HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//		if (mpu6050_is_ready(&mpu))
-//    {
-//        if (mpu6050_read_all(&mpu) == MPU6050_OK)
-//        {
-//            accel_x = mpu.accel_scaled.x;
-//            accel_y = mpu.accel_scaled.y;
-//            accel_z = mpu.accel_scaled.z;
-//        }
-//    }
     
   }
   /* USER CODE END 3 */
@@ -239,10 +410,20 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 10;
+  RCC_OscInitStruct.PLL.PLLP = 2;
+  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLR = 2;
+  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
+  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOMEDIUM;
+  RCC_OscInitStruct.PLL.PLLFRACN = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -259,7 +440,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
+  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
@@ -268,50 +449,39 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
+  * @brief DCMI Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2C1_Init(void)
+static void MX_DCMI_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+  /* USER CODE BEGIN DCMI_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+  /* USER CODE END DCMI_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+  /* USER CODE BEGIN DCMI_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00707CBB;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  /* USER CODE END DCMI_Init 1 */
+  hdcmi.Instance = DCMI;
+  hdcmi.Init.SynchroMode = DCMI_SYNCHRO_HARDWARE;
+  hdcmi.Init.PCKPolarity = DCMI_PCKPOLARITY_FALLING;
+  hdcmi.Init.VSPolarity = DCMI_VSPOLARITY_LOW;
+  hdcmi.Init.HSPolarity = DCMI_HSPOLARITY_LOW;
+  hdcmi.Init.CaptureRate = DCMI_CR_ALL_FRAME;
+  hdcmi.Init.ExtendedDataMode = DCMI_EXTEND_DATA_8B;
+  hdcmi.Init.JPEGMode = DCMI_JPEG_DISABLE;
+  hdcmi.Init.ByteSelectMode = DCMI_BSM_ALL;
+  hdcmi.Init.ByteSelectStart = DCMI_OEBS_ODD;
+  hdcmi.Init.LineSelectMode = DCMI_LSM_ALL;
+  hdcmi.Init.LineSelectStart = DCMI_OELS_ODD;
+  if (HAL_DCMI_Init(&hdcmi) != HAL_OK)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN DCMI_Init 2 */
 
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
+  /* USER CODE END DCMI_Init 2 */
 
 }
 
@@ -364,54 +534,6 @@ static void MX_I2C2_Init(void)
 }
 
 /**
-  * @brief I2C3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C3_Init(void)
-{
-
-  /* USER CODE BEGIN I2C3_Init 0 */
-
-  /* USER CODE END I2C3_Init 0 */
-
-  /* USER CODE BEGIN I2C3_Init 1 */
-
-  /* USER CODE END I2C3_Init 1 */
-  hi2c3.Instance = I2C3;
-  hi2c3.Init.Timing = 0x00707CBB;
-  hi2c3.Init.OwnAddress1 = 0;
-  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c3.Init.OwnAddress2 = 0;
-  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C3_Init 2 */
-
-  /* USER CODE END I2C3_Init 2 */
-
-}
-
-/**
   * @brief I2C4 Initialization Function
   * @param None
   * @retval None
@@ -427,7 +549,7 @@ static void MX_I2C4_Init(void)
 
   /* USER CODE END I2C4_Init 1 */
   hi2c4.Instance = I2C4;
-  hi2c4.Init.Timing = 0x10707DBC;
+  hi2c4.Init.Timing = 0x00707CBB;
   hi2c4.Init.OwnAddress1 = 0;
   hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -456,6 +578,104 @@ static void MX_I2C4_Init(void)
   /* USER CODE BEGIN I2C4_Init 2 */
 
   /* USER CODE END I2C4_Init 2 */
+
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Enable the WakeUp
+  */
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
+  * @brief SDMMC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SDMMC1_SD_Init(void)
+{
+
+  /* USER CODE BEGIN SDMMC1_Init 0 */
+
+  /* USER CODE END SDMMC1_Init 0 */
+
+  /* USER CODE BEGIN SDMMC1_Init 1 */
+
+  /* USER CODE END SDMMC1_Init 1 */
+  hsd1.Instance = SDMMC1;
+  hsd1.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
+  hsd1.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
+  hsd1.Init.BusWide = SDMMC_BUS_WIDE_4B;
+  hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+  hsd1.Init.ClockDiv = 8;
+  /* USER CODE BEGIN SDMMC1_Init 2 */
+
+  /* USER CODE END SDMMC1_Init 2 */
 
 }
 
@@ -556,50 +776,18 @@ static void MX_USART3_UART_Init(void)
 }
 
 /**
-  * @brief USART6 Initialization Function
-  * @param None
-  * @retval None
+  * Enable DMA controller clock
   */
-static void MX_USART6_UART_Init(void)
+static void MX_DMA_Init(void)
 {
 
-  /* USER CODE BEGIN USART6_Init 0 */
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
-  /* USER CODE END USART6_Init 0 */
-
-  /* USER CODE BEGIN USART6_Init 1 */
-
-  /* USER CODE END USART6_Init 1 */
-  huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
-  huart6.Init.WordLength = UART_WORDLENGTH_8B;
-  huart6.Init.StopBits = UART_STOPBITS_1;
-  huart6.Init.Parity = UART_PARITY_NONE;
-  huart6.Init.Mode = UART_MODE_TX_RX;
-  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart6.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart6.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart6) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetTxFifoThreshold(&huart6, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&huart6, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_DisableFifoMode(&huart6) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART6_Init 2 */
-
-  /* USER CODE END USART6_Init 2 */
+  /* DMA interrupt init */
+  /* DMA1_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
 
 }
 
@@ -622,57 +810,35 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOJ_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, LORA_M1_Pin|GATE_CAM_Pin|LORA_AUXB1_Pin|LORA_M0B12_Pin
+                          |GATE_TEMP_Pin|GATE_MAG_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GATE_GPS_GPIO_Port, GATE_GPS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, TEMP_DATA_Pin|GATE_CAM_Pin|GATE_LORA_Pin|GATE_IMU_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LORA_M1_Pin|LORA_M0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, LORA_M0_Pin|CAM_RSTD12_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, CAM_PWDN_Pin|CAM_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GATE_TEMP_Pin|GATE_MAG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GATE_LORA_Pin|GATE_IMU_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : CAM_D6_Pin CAM_VSYNC_Pin CAM_D5_Pin CAM_D7_Pin */
-  GPIO_InitStruct.Pin = CAM_D6_Pin|CAM_VSYNC_Pin|CAM_D5_Pin|CAM_D7_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  /*Configure GPIO pins : LORA_M1_Pin GATE_CAM_Pin LORA_AUXB1_Pin LORA_M0B12_Pin
+                           GATE_TEMP_Pin GATE_MAG_Pin */
+  GPIO_InitStruct.Pin = LORA_M1_Pin|GATE_CAM_Pin|LORA_AUXB1_Pin|LORA_M0B12_Pin
+                          |GATE_TEMP_Pin|GATE_MAG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
-  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CAM_D2_Pin */
-  GPIO_InitStruct.Pin = CAM_D2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
-  HAL_GPIO_Init(CAM_D2_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CAM_D3_Pin */
-  GPIO_InitStruct.Pin = CAM_D3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
-  HAL_GPIO_Init(CAM_D3_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CAM_D4_Pin */
-  GPIO_InitStruct.Pin = CAM_D4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
-  HAL_GPIO_Init(CAM_D4_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GATE_GPS_Pin */
   GPIO_InitStruct.Pin = GATE_GPS_Pin;
@@ -681,39 +847,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GATE_GPS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : TEMP_DATA_Pin GATE_CAM_Pin GATE_LORA_Pin GATE_IMU_Pin */
-  GPIO_InitStruct.Pin = TEMP_DATA_Pin|GATE_CAM_Pin|GATE_LORA_Pin|GATE_IMU_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pin : LORA_AUX_Pin */
   GPIO_InitStruct.Pin = LORA_AUX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(LORA_AUX_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LORA_M1_Pin LORA_M0_Pin */
-  GPIO_InitStruct.Pin = LORA_M1_Pin|LORA_M0_Pin;
+  /*Configure GPIO pins : LORA_M0_Pin CAM_RSTD12_Pin */
+  GPIO_InitStruct.Pin = LORA_M0_Pin|CAM_RSTD12_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CAM_D1_Pin CAM_D0_Pin CAM_DCLK_Pin */
-  GPIO_InitStruct.Pin = CAM_D1_Pin|CAM_D0_Pin|CAM_DCLK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MAG_DRDY_Pin */
-  GPIO_InitStruct.Pin = MAG_DRDY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MAG_DRDY_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GPS_PPS_Pin */
   GPIO_InitStruct.Pin = GPS_PPS_Pin;
@@ -728,20 +873,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : CQAM_HRFF_Pin */
-  GPIO_InitStruct.Pin = CQAM_HRFF_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_DCMI;
-  HAL_GPIO_Init(CQAM_HRFF_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : GATE_TEMP_Pin GATE_MAG_Pin */
-  GPIO_InitStruct.Pin = GATE_TEMP_Pin|GATE_MAG_Pin;
+  /*Configure GPIO pins : GATE_LORA_Pin GATE_IMU_Pin */
+  GPIO_InitStruct.Pin = GATE_LORA_Pin|GATE_IMU_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : GPS_PPSB0_Pin */
+  GPIO_InitStruct.Pin = GPS_PPSB0_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPS_PPSB0_GPIO_Port, &GPIO_InitStruct);
 
   /*AnalogSwitch Config */
   HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC2, SYSCFG_SWITCH_PC2_CLOSE);
