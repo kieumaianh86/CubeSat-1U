@@ -31,6 +31,53 @@ uint8_t SD_IsReady(void) {
     return sd_ready;
 }
 
+// Hàm lưu buffer ảnh vào SD card
+sd_status_t SaveBufferToSD(uint8_t *buffer, uint32_t size) {
+    static unsigned long photo_number = 1;
+    char filename[30];
+    FIL file;
+    UINT bytes_written;
+    
+    // Tạo tên file
+    sprintf(filename, "0:/IMG_%04lu.jpg", photo_number);
+    
+    // Mở file để ghi
+    if (f_open(&file, filename, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK) {
+        return SD_WRITE_ERROR;
+    }
+    
+    // Ghi dữ liệu
+    FRESULT res = f_write(&file, buffer, size, &bytes_written);
+    
+    // Đóng file
+    f_close(&file);
+    
+    if (res == FR_OK && bytes_written == size) {
+        photo_number++;  // Tăng số cho ảnh tiếp theo
+        return SD_OK;
+    }
+    
+    return SD_WRITE_ERROR;
+}
+
+const char* SD_GetStatusString(sd_status_t status) {
+    switch (status) {
+        case SD_OK:
+            return "SD_OK";
+        case SD_ERROR:
+            return "SD_ERROR";
+        case SD_MOUNT_ERROR:
+            return "SD_MOUNT_ERROR";
+        case SD_NOT_READY:
+            return "SD_NOT_READY";
+        case SD_WRITE_ERROR:
+            return "SD_WRITE_ERROR";
+        case SD_READ_ERROR:
+            return "SD_READ_ERROR";
+    }
+    return "SD_UNKNOWN_STATUS";
+}
+
 sd_status_t SD_WriteScience(const uint8_t *data, uint32_t len) {
     if (!sd_ready) return SD_NOT_READY;
     
