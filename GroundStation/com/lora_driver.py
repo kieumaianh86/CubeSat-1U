@@ -113,7 +113,7 @@ class LoRa:
     # ----------------------------
     # 4️ Gửi lệnh điều khiển
     # ----------------------------
-    def send_command(self, command: str):
+    def send_command(self, text: str):
         """Gửi lệnh điều khiển (ví dụ: SCIENCE, SAFE, COMM, CONFIG...)"""
         payload = text.upper().encode()
         self.send(packet_type=0x02, payload=payload)
