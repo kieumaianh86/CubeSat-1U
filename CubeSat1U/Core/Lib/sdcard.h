@@ -31,4 +31,7 @@ uint32_t SD_GetUsedKB(void);
 sd_status_t SD_WriteFile(const char* filename, const uint8_t *data, uint32_t len);
 sd_status_t SD_ReadFile(const char* filename, uint8_t *data, uint32_t *len);
 sd_status_t SD_DeleteFile(const char* filename);
+
+sd_status_t SaveBufferToSD(uint8_t *buffer, uint32_t size);
+const char* SD_GetStatusString(sd_status_t status);
 #endif
